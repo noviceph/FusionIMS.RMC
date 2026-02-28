@@ -304,6 +304,35 @@ input[type=radio],input[type=checkbox]{accent-color:var(--accent);cursor:pointer
 /* ── SMOOTH TRANSITIONS ── */
 .pg{animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── ACTIVITY FEED / COMMENTS ── */
+.activity-feed{display:flex;flex-direction:column;gap:0}
+.act-item{display:flex;gap:12px;padding:10px 0;position:relative}
+.act-item:not(:last-child)::after{content:'';position:absolute;left:15px;top:36px;bottom:0;width:1px;background:var(--bd);z-index:0}
+.act-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;z-index:1;border:2px solid var(--bd)}
+.act-body{flex:1;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.act-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.act-user{font-size:.76rem;font-weight:700;color:var(--text1)}
+.act-time{font-size:.6rem;color:var(--text3)}
+.act-text{font-size:.78rem;color:var(--text2);line-height:1.5}
+.act-photos{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.act-photo{width:60px;height:60px;border-radius:5px;object-fit:cover;border:1px solid var(--purple);cursor:pointer}
+.act-assist{margin-top:5px;font-size:.65rem;color:var(--purple);font-weight:600}
+
+/* ── TURNOVER CARD ── */
+.turnover-card{background:rgba(255,184,0,.05);border:1px solid rgba(255,184,0,.25);border-radius:8px;padding:10px 13px;margin:5px 0}
+.turnover-from{font-size:.72rem;color:var(--warn)}
+.turnover-arrow{font-size:.8rem;color:var(--text3);margin:0 5px}
+
+/* ── PERSONNEL CREDIT LIST ── */
+.credit-list{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.credit-chip{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--bd);border-radius:20px;padding:3px 10px;font-size:.7rem}
+.credit-chip .av{width:20px;height:20px;font-size:.52rem}
+.credit-role{font-size:.58rem;color:var(--text2)}
+
+/* ── ASSIGN PANEL ── */
+.assign-panel{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.2);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.shift-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;font-size:.6rem;font-weight:700;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -578,12 +607,28 @@ let USERS = [
 
 // ── JOB ORDERS ─────────────────────────────────────────────────────
 let JOBS = [
-  {id:'JO-00001',equip:'DeepWell Pump G-PP-930',defect:'Uneven resistance reading, motor winding suspect',sec:'Utility Process',dept:'Instrumentation',pn:1,st:'open',req:'Maria Santos',reqId:7,date:'2026-02-27',photos:[],personnel:[],materials:[],sel:false},
-  {id:'JO-00002',equip:'Centrifugal Pump P-202',defect:'Bearing overheating and abnormal vibration above limit',sec:'Production Line 1',dept:'Mechanical',pn:2,st:'progress',req:'Maria Santos',reqId:7,assignedTo:'Arnold Padernal',assignedId:5,date:'2026-02-26',photos:[],personnel:['Arnold Padernal'],materials:[{item:'6308 Bearing',qty:2},{item:'Bearing Grease',qty:1}],sel:false},
-  {id:'JO-00003',equip:'Siemens S7-1200 CPU Module',defect:'PROFINET communication error — Production Line 3 halted',sec:'Automation Room',dept:'Instrumentation',pn:1,st:'progress',req:'Jomarh Mangila',reqId:3,assignedTo:'Arnold Padernal',assignedId:5,date:'2026-02-27',photos:[],personnel:['Arnold Padernal','Juan Cruz'],materials:[],sel:false},
-  {id:'JO-00004',equip:'ABB ACS580 VFD — Motor 7',defect:'OC1 overcurrent fault on startup, motor tripping repeatedly',sec:'MCC Room B',dept:'Electrical',pn:2,st:'done',req:'Jack Melad',reqId:4,assignedTo:'Juan Cruz',assignedId:6,closedAt:'2026-02-26 14:30',date:'2026-02-25',photos:[],personnel:['Juan Cruz'],materials:[{item:'Contactor',qty:1}],rootCause:'Loose motor terminal connection causing overcurrent',taskDone:'Tightened motor terminals, tested VFD startup sequence',sel:false},
-  {id:'JO-00005',equip:'Hydraulic Press HP-01',defect:'Hydraulic oil leak at cylinder seals',sec:'Fabrication Area',dept:'Mechanical',pn:2,st:'open',req:'Maria Santos',reqId:7,date:'2026-02-28',photos:[],personnel:[],materials:[],sel:false},
-  {id:'JO-00006',equip:'Cooling Tower Fan CT-3',defect:'Fan motor overload tripping during operation',sec:'Utility Area',dept:'Electrical',pn:1,st:'open',req:'Jack Melad',reqId:4,date:'2026-02-28',photos:[],personnel:[],materials:[],sel:false},
+  {id:'JO-00001',equip:'DeepWell Pump G-PP-930',defect:'Uneven resistance reading, motor winding suspect',sec:'Utility Process',dept:'Instrumentation',pn:1,st:'open',req:'Maria Santos',reqId:7,date:'2026-02-27',photos:[],personnel:[],materials:[],comments:[],turnoverHistory:[],sel:false},
+  {id:'JO-00002',equip:'Centrifugal Pump P-202',defect:'Bearing overheating and abnormal vibration above limit',sec:'Production Line 1',dept:'Mechanical',pn:2,st:'progress',req:'Maria Santos',reqId:7,assignedTo:'Arnold Padernal',assignedId:5,acceptedAt:'2026-02-26 08:15',date:'2026-02-26',photos:[],personnel:['Arnold Padernal'],materials:[{item:'6308 Bearing',qty:2},{item:'Bearing Grease',qty:1}],sel:false,
+    comments:[
+      {id:'c1',user:'Arnold Padernal',userId:5,type:'progress',text:'Dismantled pump bearing housing. Confirmed bearing worn out — excessive play detected. Ordered replacement bearing from stockroom.',assistants:[],photos:[],ts:'2026-02-26 09:30'},
+      {id:'c2',user:'Arnold Padernal',userId:5,type:'progress',text:'Replacement bearing arrived. Proceeding with installation. Juan Cruz assisting with alignment.',assistants:['Juan Cruz'],photos:[],ts:'2026-02-26 11:00'},
+    ],
+    turnoverHistory:[
+      {id:'t1',fromUser:'Arnold Padernal',fromUserId:5,toUser:'Juan Cruz',toUserId:6,note:'Bearing installed, need to re-align shaft before test run. Continue on night shift.',ts:'2026-02-26 17:00',shift:'Day → Night'}
+    ]},
+  {id:'JO-00003',equip:'Siemens S7-1200 CPU Module',defect:'PROFINET communication error — Production Line 3 halted',sec:'Automation Room',dept:'Instrumentation',pn:1,st:'progress',req:'Jomarh Mangila',reqId:3,assignedTo:'Arnold Padernal',assignedId:5,acceptedAt:'2026-02-27 07:45',date:'2026-02-27',photos:[],personnel:['Arnold Padernal','Juan Cruz'],materials:[],
+    comments:[
+      {id:'c3',user:'Arnold Padernal',userId:5,type:'update',text:'Checked PROFINET topology. CPU diagnostic buffer shows "Device not accessible" on IO block IM-155. Cable at X1 port shows physical damage.',assistants:[],photos:[],ts:'2026-02-27 08:10'},
+    ],
+    turnoverHistory:[],sel:false},
+  {id:'JO-00004',equip:'ABB ACS580 VFD — Motor 7',defect:'OC1 overcurrent fault on startup, motor tripping repeatedly',sec:'MCC Room B',dept:'Electrical',pn:2,st:'done',req:'Jack Melad',reqId:4,assignedTo:'Juan Cruz',assignedId:6,closedAt:'2026-02-26 14:30',acceptedAt:'2026-02-25 08:00',date:'2026-02-25',photos:[],personnel:['Juan Cruz'],materials:[{item:'Contactor',qty:1}],rootCause:'Loose motor terminal connection causing overcurrent',taskDone:'Tightened motor terminals, tested VFD startup sequence',
+    comments:[
+      {id:'c4',user:'Juan Cruz',userId:6,type:'progress',text:'Checked VFD fault log — OC1 consistently at startup. Motor terminals U,V,W inspected — T3 terminal was loose. Tightened and retested.',assistants:[],photos:[],ts:'2026-02-25 10:30'},
+      {id:'c5',user:'Juan Cruz',userId:6,type:'resolved',text:'VFD started successfully 3 consecutive times. No OC1 fault recurrence. Motor running at rated current. Job ready for closure.',assistants:[],photos:[],ts:'2026-02-26 13:00'},
+    ],
+    turnoverHistory:[],sel:false},
+  {id:'JO-00005',equip:'Hydraulic Press HP-01',defect:'Hydraulic oil leak at cylinder seals',sec:'Fabrication Area',dept:'Mechanical',pn:2,st:'open',req:'Maria Santos',reqId:7,date:'2026-02-28',photos:[],personnel:[],materials:[],comments:[],turnoverHistory:[],sel:false},
+  {id:'JO-00006',equip:'Cooling Tower Fan CT-3',defect:'Fan motor overload tripping during operation',sec:'Utility Area',dept:'Electrical',pn:1,st:'open',req:'Jack Melad',reqId:4,date:'2026-02-28',photos:[],personnel:[],materials:[],comments:[],turnoverHistory:[],sel:false},
 ];
 
 // ── ASSETS ────────────────────────────────────────────────────────
@@ -701,6 +746,12 @@ function initApp(){
   renderSidebar();
   renderUserInfo();
   setInterval(updateClock, 1000); updateClock();
+  // Set notification badge for this user
+  setTimeout(()=>{
+    const unread = NOTIFICATIONS.filter(n=>!n.read&&(!n.targetUserId||n.targetUserId===currentUser.id)).length;
+    const btn = document.getElementById('notif-btn');
+    if(btn && unread>0) btn.setAttribute('data-count', unread);
+  }, 200);
   navigate('dashboard');
 }
 
@@ -964,44 +1015,58 @@ function renderJobOrders(){
         ${['All ('+JOBS.length+')','🟡 Open','🔵 Progress','🟢 Done','🔴 P1 Critical'][i]}
       </button>`).join('')}
   </div>
-  <div class="tbl-wrap">
-    <table class="ftbl">
-      <thead><tr>
-        <th><input type="checkbox" id="chk-all" onchange="selAllJOs(this)" style="accent-color:var(--accent)"/></th>
-        <th>JO Number</th><th>Equipment / Defect</th><th>Section</th>
-        <th>Dept</th><th>P#</th><th>Status</th><th>Requestor</th><th>Assigned</th><th>Date</th><th>📷</th><th>Actions</th>
-      </tr></thead>
-      <tbody>
-        ${filtered.length?filtered.map(j=>`
-          <tr>
-            <td><input type="checkbox" class="jo-chk" data-id="${j.id}" ${j.sel?'checked':''} onchange="rowSelJO(this)" style="accent-color:var(--accent)"/></td>
-            <td class="mono fw7" style="color:var(--accent);cursor:pointer" onclick="viewJO('${j.id}')">${j.id}</td>
-            <td style="cursor:pointer;max-width:200px" onclick="viewJO('${j.id}')">
-              <div class="fw7 fs7">${j.equip}</div>
-              <div class="tm" style="font-size:.65rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px">${j.defect}</div>
-            </td>
-            <td class="tm fs7">${j.sec||'—'}</td>
-            <td><span class="tag">${j.dept}</span></td>
-            <td><span class="fw7" style="color:${PC(j.pn)};font-size:1.1rem">P${j.pn}</span></td>
-            <td>${stBadge(j.st)}</td>
-            <td class="tm fs7">${j.req}</td>
-            <td class="fs7">${j.assignedTo||'<span class="tm">Unassigned</span>'}</td>
-            <td class="tm fs7">${j.date}</td>
-            <td>${j.photos?.length?`<span class="tag-purple" style="font-size:.6rem;padding:1px 5px;border-radius:3px">📷${j.photos.length}</span>`:'<span class="tm" style="font-size:.65rem">—</span>'}</td>
-            <td>
-              <div style="display:flex;gap:3px;flex-wrap:wrap">
-                <button class="btn btn-primary btn-xs" onclick="viewJO('${j.id}')">👁</button>
-                <button class="btn btn-primary btn-xs" onclick="printOneJO('${j.id}')">🖨️</button>
-                <button class="btn btn-success btn-xs" onclick="exportOneJO('${j.id}')">📥</button>
-                <button class="btn btn-purple btn-xs" onclick="addPhotoToJO('${j.id}')">📷</button>
-                ${j.st!=='done'&&(can.privs?.all||can.privs?.jo_close)?`<button class="btn btn-danger btn-xs" onclick="closeJO('${j.id}')">🔒</button>`:''}
-              </div>
-            </td>
-          </tr>`).join(''):
-          `<tr><td colspan="12" style="text-align:center;padding:28px;color:var(--text2)">No job orders found matching filter</td></tr>`}
-      </tbody>
-    </table>
-  </div>
+      <div class="tbl-wrap">
+        <table class="ftbl">
+          <thead><tr>
+            <th><input type="checkbox" id="chk-all" onchange="selAllJOs(this)" style="accent-color:var(--accent)"/></th>
+            <th>JO Number</th><th>Equipment / Defect</th><th>Section</th>
+            <th>Dept</th><th>P#</th><th>Status</th><th>Requestor</th><th>Assigned To</th><th>Date</th><th>Updates</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${filtered.length?filtered.map(j=>`
+              <tr>
+                <td><input type="checkbox" class="jo-chk" data-id="${j.id}" ${j.sel?'checked':''} onchange="rowSelJO(this)" style="accent-color:var(--accent)"/></td>
+                <td class="mono fw7" style="color:var(--accent);cursor:pointer;white-space:nowrap" onclick="viewJO('${j.id}')">${j.id}</td>
+                <td style="cursor:pointer;max-width:200px" onclick="viewJO('${j.id}')">
+                  <div class="fw7 fs7">${j.equip}</div>
+                  <div class="tm" style="font-size:.65rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px">${j.defect}</div>
+                </td>
+                <td class="tm fs7">${j.sec||'—'}</td>
+                <td><span class="tag">${j.dept}</span></td>
+                <td><span class="fw7" style="color:${PC(j.pn)};font-size:1.1rem">P${j.pn}</span></td>
+                <td>${stBadge(j.st)}</td>
+                <td class="tm fs7">${j.req}</td>
+                <td class="fs7">
+                  ${j.assignedTo
+                    ? `<div style="display:flex;align-items:center;gap:5px">
+                        <div class="av ${ROLE_DEFS[USERS.find(u=>u.name===j.assignedTo)?.role]?.avClass||'av-technician'}" style="width:20px;height:20px;font-size:.52rem">${j.assignedTo.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+                        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">${j.assignedTo}</span>
+                       </div>`
+                    : `<span style="color:var(--warn);font-size:.68rem;font-weight:700">⚠️ Unassigned</span>`}
+                </td>
+                <td class="tm fs7">${j.date}</td>
+                <td>
+                  <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+                    ${j.photos?.length?`<span class="tag-purple" style="font-size:.6rem;padding:1px 6px">📷${j.photos.length}</span>`:''}
+                    ${j.comments?.length?`<span class="tag" style="font-size:.6rem;padding:1px 6px">💬${j.comments.length}</span>`:''}
+                    ${j.turnoverHistory?.length?`<span class="tag-warn" style="font-size:.6rem;padding:1px 6px">🔄${j.turnoverHistory.length}</span>`:''}
+                    ${!j.photos?.length&&!j.comments?.length&&!j.turnoverHistory?.length?`<span class="tm" style="font-size:.65rem">—</span>`:''}
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex;gap:3px;flex-wrap:wrap">
+                    <button class="btn btn-primary btn-xs" onclick="viewJO('${j.id}')">👁</button>
+                    <button class="btn btn-primary btn-xs" onclick="printOneJO('${j.id}')">🖨️</button>
+                    <button class="btn btn-success btn-xs" onclick="exportOneJO('${j.id}')">📥</button>
+                    <button class="btn btn-purple btn-xs" onclick="addPhotoToJO('${j.id}')">📷</button>
+                    ${j.st!=='done'&&(can.privs?.all||can.privs?.jo_close)?`<button class="btn btn-danger btn-xs" onclick="closeJO('${j.id}')">🔒</button>`:''}
+                  </div>
+                </td>
+              </tr>`).join(''):
+              `<tr><td colspan="12" style="text-align:center;padding:28px;color:var(--text2)">No job orders found matching filter</td></tr>`}
+          </tbody>
+        </table>
+      </div>
   <div id="jo-sel-bar" style="display:none;margin-top:10px;padding:8px 14px;background:rgba(0,212,255,.06);border:1px solid var(--accent);border-radius:6px;gap:8px;align-items:center;flex-wrap:wrap">
     <span class="fs7 fw7" id="jo-sel-ct" style="color:var(--accent)">0 selected</span>
     <button class="btn btn-success btn-sm" onclick="exportSelJOs()">📥 Export Selected</button>
@@ -1015,69 +1080,195 @@ function rowSelJO(cb){const j=JOBS.find(x=>x.id===cb.dataset.id);if(j)j.sel=cb.c
 function updateJOSel(){const n=JOBS.filter(j=>j.sel).length;const b=document.getElementById('jo-sel-bar');if(b){b.style.display=n>0?'flex':'none';document.getElementById('jo-sel-ct').textContent=n+' selected';}}
 function clearSelJOs(){JOBS.forEach(j=>j.sel=false);document.getElementById('chk-all').checked=false;updateJOSel();renderJobOrders();}
 
+function getAllCreditedPersonnel(j){
+  // Collect everyone who ever touched this JO
+  const names = new Map(); // name → {role, source}
+  if(j.assignedTo) names.set(j.assignedTo,{role:'Primary Technician',color:'var(--green)'});
+  (j.personnel||[]).forEach(p=>{ if(!names.has(p)) names.set(p,{role:'Technician',color:'var(--accent)'}); });
+  (j.turnoverHistory||[]).forEach(t=>{
+    if(!names.has(t.fromUser)) names.set(t.fromUser,{role:'Turnover (From)',color:'var(--warn)'});
+    if(!names.has(t.toUser))   names.set(t.toUser,{role:'Turnover (To)',color:'var(--warn)'});
+  });
+  (j.comments||[]).forEach(c=>{
+    if(!names.has(c.user)) names.set(c.user,{role:'Contributor',color:'var(--accent)'});
+    (c.assistants||[]).forEach(a=>{ if(a&&!names.has(a)) names.set(a,{role:'Assistant',color:'var(--purple)'}); });
+  });
+  return [...names.entries()];
+}
+
 function viewJO(id){
   const j = JOBS.find(x=>x.id===id);
   if(!j) return;
   const el = document.getElementById('pg-joborders');
   const can = currentUser;
+  const isSupervisor = can.privs?.all||can.privs?.jo_assign;
+  const isAssignedTech = j.assignedId===can.id;
+  const canComment = can.privs?.all||can.privs?.jo_comment||can.privs?.jo_accept||isAssignedTech;
+  const canTurnover = (isAssignedTech||can.privs?.all) && j.st==='progress';
+  const credited = getAllCreditedPersonnel(j);
+
+  // Build activity feed items from comments + turnover history merged & sorted
+  const allActivity = [
+    // JO created event
+    {ts:j.date+' 00:00', type:'created', user:j.req, text:`Job Order created for ${j.equip}. Assigned to ${j.dept} department.`},
+    ...(j.acceptedAt ? [{ts:j.acceptedAt,type:'accepted',user:j.assignedTo||'Technician',text:`Job accepted and started. Status changed to IN PROGRESS.`}] : []),
+    ...(j.comments||[]).map(c=>({...c,type:c.type||'comment'})),
+    ...(j.turnoverHistory||[]).map(t=>({ts:t.ts,type:'turnover',user:t.fromUser,text:`Shift turnover to ${t.toUser}. Shift: ${t.shift}. Note: ${t.note}`,turnover:t})),
+    ...(j.closedAt ? [{ts:j.closedAt,type:'closed',user:can.name,text:`Job Order closed and archived.`}] : []),
+  ].sort((a,b)=>a.ts.localeCompare(b.ts));
+
+  const actIcons = {created:{ico:'📋',bg:'rgba(0,212,255,.15)',bd:'rgba(0,212,255,.4)'},accepted:{ico:'✅',bg:'rgba(0,255,157,.15)',bd:'rgba(0,255,157,.4)'},progress:{ico:'🔧',bg:'rgba(167,139,250,.15)',bd:'rgba(167,139,250,.4)'},update:{ico:'📝',bg:'rgba(0,212,255,.1)',bd:'var(--bd)'},comment:{ico:'💬',bg:'rgba(0,212,255,.1)',bd:'var(--bd)'},resolved:{ico:'✔️',bg:'rgba(0,255,157,.15)',bd:'rgba(0,255,157,.3)'},turnover:{ico:'🔄',bg:'rgba(255,184,0,.15)',bd:'rgba(255,184,0,.4)'},closed:{ico:'🔒',bg:'rgba(255,61,90,.1)',bd:'rgba(255,61,90,.3)'}};
+
   el.innerHTML=`
-  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-    <button class="btn btn-sm" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="joView='list';renderJobOrders()">← Back to List</button>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn btn-primary btn-sm" onclick="printOneJO('${id}')">🖨️ Print JO</button>
-      <button class="btn btn-success btn-sm" onclick="exportOneJO('${id}')">📥 Export Excel</button>
-      <button class="btn btn-purple btn-sm" onclick="addPhotoToJO('${id}')">📷 Add Photo</button>
-      ${j.st==='open'&&(can.privs?.all||can.privs?.jo_accept)?`<button class="btn btn-success btn-sm" onclick="acceptJO('${id}')">✅ Accept Job</button>`:''}
-      ${j.st!=='done'&&(can.privs?.all||can.privs?.jo_close)?`<button class="btn btn-danger btn-sm" onclick="closeJO('${id}')">🔒 Close JO</button>`:''}
+  <!-- TOP ACTION BAR -->
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center">
+    <button class="btn btn-sm" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="joView='list';renderJobOrders()">← Back</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <!-- SUPERVISOR: Assign technician -->
+      ${isSupervisor && j.st!=='done' ? `<button class="btn btn-primary btn-sm" onclick="openAssignModal('${id}')">👤 Assign Technician</button>` : ''}
+      <!-- TECHNICIAN: Accept job -->
+      ${j.st==='open' && (can.privs?.all||can.privs?.jo_accept) ? `<button class="btn btn-success btn-sm" onclick="acceptJO('${id}')">✅ Accept Job</button>` : ''}
+      <!-- COMMENT / PROGRESS UPDATE -->
+      ${canComment && j.st!=='done' ? `<button class="btn btn-purple btn-sm" onclick="openCommentModal('${id}')">💬 Add Update</button>` : ''}
+      <!-- TURNOVER -->
+      ${canTurnover ? `<button class="btn btn-warn btn-sm" onclick="openTurnoverModal('${id}')">🔄 Turnover Shift</button>` : ''}
+      <!-- CLOSE JO -->
+      ${j.st!=='done' && (can.privs?.all||can.privs?.jo_close) ? `<button class="btn btn-danger btn-sm" onclick="closeJO('${id}')">🔒 Close JO</button>` : ''}
+      <button class="btn btn-primary btn-sm" onclick="printOneJO('${id}')">🖨️ Print</button>
+      <button class="btn btn-success btn-sm" onclick="exportOneJO('${id}')">📥 Excel</button>
+      <button class="btn btn-purple btn-sm" onclick="addPhotoToJO('${id}')">📷 Photo</button>
     </div>
   </div>
-  <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px">
-    <div class="jo-hdr">
-      <div>
-        <div class="jo-co">FUSION IMS</div>
-        <div class="jo-co-sub">Industrial Management System</div>
-        <div class="jo-co-note">DO NOT LEAVE ANYTHING BLANK.<br>IF NOT APPLICABLE, WRITE "N/A"</div>
-      </div>
-      <div>
-        <div class="jo-title">MAINTENANCE JOB ORDER FORM</div>
-        <div class="jo-plant">${j.equip}</div>
-      </div>
-      <div class="jo-right">
-        <div class="jo-docno">Doc. No. FUSION-MAINT-JO-001<br>Revision No. 01</div>
-        <div style="margin-top:6px"><div class="fs7 tm" style="text-align:right">Job Order #</div><div class="jo-num-box">${j.id}</div></div>
+
+  <div class="grid-2" style="gap:14px;align-items:start">
+    <!-- LEFT COLUMN: JO Details -->
+    <div>
+      <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:12px">
+        <div class="jo-hdr">
+          <div>
+            <div class="jo-co">FUSION IMS</div>
+            <div class="jo-co-sub">Industrial Management System</div>
+            <div class="jo-co-note">Revision No. 01</div>
+          </div>
+          <div>
+            <div class="jo-title">MAINTENANCE JOB ORDER</div>
+            <div class="jo-plant">${j.equip}</div>
+          </div>
+          <div class="jo-right">
+            <div style="margin-top:4px"><div class="jo-num-box">${j.id}</div></div>
+          </div>
+        </div>
+
+        <!-- ASSIGN PANEL (supervisor only, open/progress) -->
+        ${isSupervisor && j.st!=='done' ? `
+        <div class="assign-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <div>
+              <div style="font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:4px">⚡ SUPERVISOR ASSIGN</div>
+              ${j.assignedTo
+                ? `<div style="font-size:.78rem">Currently assigned: <strong>${j.assignedTo}</strong> <span class="shift-badge">On Duty</span></div>`
+                : `<div style="font-size:.78rem;color:var(--warn)">⚠️ No technician assigned yet</div>`}
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openAssignModal('${id}')">👤 ${j.assignedTo?'Reassign':'Assign Now'}</button>
+          </div>
+        </div>` : ''}
+
+        <div class="ph" style="margin-top:4px">Part I — Requestor Details</div>
+        <div class="vgrid">
+          <div class="vf"><div class="vf-lbl">Requestor</div><div class="vf-val">${j.req}</div></div>
+          <div class="vf"><div class="vf-lbl">Equipment</div><div class="vf-val fw7">${j.equip}</div></div>
+          <div class="vf"><div class="vf-lbl">Section</div><div class="vf-val">${j.sec||'—'}</div></div>
+          <div class="vf"><div class="vf-lbl">Date Created</div><div class="vf-val">${j.date}</div></div>
+          <div class="vf" style="grid-column:span 4"><div class="vf-lbl">Description of Defect</div><div class="vf-val fw7" style="color:var(--warn)">${j.defect}</div></div>
+          <div class="vf"><div class="vf-lbl">Dept Incharge</div><div class="vf-val"><span class="tag">${j.dept}</span></div></div>
+          <div class="vf"><div class="vf-lbl">Priority</div><div class="vf-val fw7" style="color:${PC(j.pn)};font-size:1.1rem">P${j.pn}</div></div>
+          <div class="vf"><div class="vf-lbl">Status</div><div class="vf-val">${stBadge(j.st)}</div></div>
+          <div class="vf"><div class="vf-lbl">Assigned To</div><div class="vf-val">${j.assignedTo||'<span style="color:var(--warn)">Unassigned</span>'}</div></div>
+          ${j.acceptedAt?`<div class="vf" style="grid-column:span 2"><div class="vf-lbl">Accepted At</div><div class="vf-val">${j.acceptedAt}</div></div>`:''}
+          ${j.closedAt?`<div class="vf" style="grid-column:span 2"><div class="vf-lbl">Closed At</div><div class="vf-val" style="color:var(--green)">${j.closedAt}</div></div>`:''}
+        </div>
+
+        <!-- ALL CREDITED PERSONNEL -->
+        ${credited.length ? `
+        <div class="ph ph2" style="margin-top:8px">👷 All Credited Personnel</div>
+        <div class="credit-list">
+          ${credited.map(([name,info])=>{
+            const u=USERS.find(x=>x.name===name);
+            const rdC=u?ROLE_DEFS[u.role]:null;
+            return `<div class="credit-chip">
+              <div class="av ${rdC?.avClass||''}" style="width:22px;height:22px;font-size:.55rem;background:${info.color}">${name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+              <div>
+                <div style="font-size:.72rem;font-weight:700">${name}</div>
+                <div class="credit-role">${info.role}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>` : ''}
+
+        ${j.materials?.length?`
+        <div class="ph ph4" style="margin-top:8px">Materials Used</div>
+        <table class="mat-tbl" style="margin:6px 0">
+          <thead><tr><th>#</th><th>Item</th><th>QTY</th></tr></thead>
+          <tbody>${j.materials.map((m,i)=>`<tr><td style="padding:4px 8px;text-align:center">${i+1}</td><td style="padding:4px 8px">${m.item}</td><td style="padding:4px 8px;text-align:center">${m.qty}</td></tr>`).join('')}</tbody>
+        </table>`:''}
+
+        ${j.photos?.length?`
+        <div class="ph ph3" style="margin-top:8px">📷 Photos (${j.photos.length})</div>
+        <div class="pg-wrap" style="margin-top:6px">
+          ${j.photos.map(p=>`<div class="pg-thumb"><img src="${p}" onclick="showPhoto('${p}')"/></div>`).join('')}
+        </div>`:''}
       </div>
     </div>
-    <div class="ph">Part I: Requestor Details</div>
-    <div class="vgrid">
-      <div class="vf"><div class="vf-lbl">Requestor</div><div class="vf-val">${j.req}</div></div>
-      <div class="vf"><div class="vf-lbl">Equipment / Tag</div><div class="vf-val fw7">${j.equip}</div></div>
-      <div class="vf"><div class="vf-lbl">Plant / Section</div><div class="vf-val">${j.sec||'—'}</div></div>
-      <div class="vf"><div class="vf-lbl">Date Created</div><div class="vf-val">${j.date}</div></div>
-      <div class="vf" style="grid-column:span 4"><div class="vf-lbl">Description of Defect</div><div class="vf-val">${j.defect}</div></div>
-      <div class="vf"><div class="vf-lbl">Maintenance Incharge</div><div class="vf-val"><span class="tag">${j.dept}</span></div></div>
-      <div class="vf"><div class="vf-lbl">Priority</div><div class="vf-val fw7" style="color:${PC(j.pn)};font-size:1.1rem">PRIORITY ${j.pn}</div></div>
-      <div class="vf"><div class="vf-lbl">Status</div><div class="vf-val">${stBadge(j.st)}</div></div>
-      <div class="vf"><div class="vf-lbl">Assigned To</div><div class="vf-val">${j.assignedTo||'<span class="tm">Unassigned</span>'}</div></div>
+
+    <!-- RIGHT COLUMN: Activity Feed -->
+    <div>
+      <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-family:var(--font-hdr);font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2)">📋 Activity Feed</div>
+          <span class="tag">${allActivity.length} events</span>
+        </div>
+
+        <div class="activity-feed" id="act-feed-${id}">
+          ${allActivity.map(act=>{
+            const ai=actIcons[act.type]||actIcons.comment;
+            return `<div class="act-item">
+              <div class="act-icon" style="background:${ai.bg};border-color:${ai.bd}">${ai.ico}</div>
+              <div class="act-body">
+                <div class="act-meta">
+                  <span class="act-user">${act.user}</span>
+                  <span class="act-time">${act.ts}</span>
+                  ${act.type==='turnover'?`<span class="turnover-badge">🔄 TURNOVER</span>`:''}
+                  ${act.type==='resolved'?`<span style="background:rgba(0,255,157,.12);border:1px solid rgba(0,255,157,.3);color:var(--green);font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:10px">RESOLVED</span>`:''}
+                </div>
+                <div class="act-text">${act.text||''}</div>
+                ${act.assistants?.length?`<div class="act-assist">👥 Assisted by: ${act.assistants.join(', ')}</div>`:''}
+                ${act.photos?.length?`<div class="act-photos">${act.photos.map(p=>`<img class="act-photo" src="${p}" onclick="showPhoto('${p}')"/>`).join('')}</div>`:''}
+                ${act.type==='turnover'&&act.turnover?`
+                <div class="turnover-card" style="margin-top:6px">
+                  <div style="font-size:.65rem;color:var(--text2);margin-bottom:3px">Shift Handover Details</div>
+                  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+                    <span class="turnover-from">${act.turnover.fromUser}</span>
+                    <span class="turnover-arrow">→</span>
+                    <span style="color:var(--green);font-weight:700;font-size:.72rem">${act.turnover.toUser}</span>
+                    <span class="shift-badge" style="margin-left:4px">${act.turnover.shift}</span>
+                  </div>
+                  <div style="font-size:.7rem;color:var(--text2);margin-top:4px">📝 ${act.turnover.note}</div>
+                </div>`:''}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+
+        <!-- ADD COMMENT SHORTCUT (if can comment) -->
+        ${canComment && j.st!=='done' ? `
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)">
+          <button class="btn btn-purple" style="width:100%" onclick="openCommentModal('${id}')">
+            💬 Add Progress Update / Comment
+          </button>
+          ${canTurnover?`<button class="btn btn-warn" style="width:100%;margin-top:6px" onclick="openTurnoverModal('${id}')">🔄 Handover / Shift Turnover</button>`:''}
+        </div>` : ''}
+      </div>
     </div>
-    ${j.personnel?.length?`
-    <div class="ph ph2">Part II: Maintenance Personnel</div>
-    <div class="vgrid">
-      ${j.personnel.map((p,i)=>`<div class="vf"><div class="vf-lbl">Personnel ${i+1}</div><div class="vf-val">${p}</div></div>`).join('')}
-      ${j.rootCause?`<div class="vf" style="grid-column:span 4"><div class="vf-lbl">Root Cause</div><div class="vf-val">${j.rootCause}</div></div>`:''}
-      ${j.taskDone?`<div class="vf" style="grid-column:span 4"><div class="vf-lbl">Task Performed</div><div class="vf-val">${j.taskDone}</div></div>`:''}
-    </div>`:''}
-    ${j.photos?.length?`
-    <div class="ph ph3">📷 Job Site Photos (${j.photos.length})</div>
-    <div class="pg-wrap">
-      ${j.photos.map(p=>`<div class="pg-thumb"><img src="${p}" onclick="showPhoto('${p}')"/></div>`).join('')}
-    </div>`:''}
-    ${j.materials?.length?`
-    <div class="ph ph4">Materials Used</div>
-    <table class="mat-tbl" style="margin:6px 0">
-      <thead><tr><th>#</th><th>Item Description</th><th>QTY</th></tr></thead>
-      <tbody>${j.materials.map((m,i)=>`<tr><td style="padding:5px 8px;text-align:center">${i+1}</td><td style="padding:5px 8px">${m.item}</td><td style="padding:5px 8px;text-align:center">${m.qty}</td></tr>`).join('')}</tbody>
-    </table>`:''}
-    ${j.closedAt?`<div class="ph ph2">Closed At: ${j.closedAt}</div>`:''}
   </div>`;
 }
 
@@ -1287,27 +1478,349 @@ function submitJO(){
     id:'JO-'+String(JOBS.length+1).padStart(5,'0'),equip:eq,defect:def,
     sec:document.getElementById('jo-sec')?.value||'—',dept,pn,st:'open',
     req:currentUser.name,reqId:currentUser.id,
-    date:new Date().toISOString().slice(0,10),photos,personnel,materials,sel:false,
-    task:document.getElementById('jo-task')?.value||'',rootCause:document.getElementById('jo-root')?.value||''
+    date:new Date().toISOString().slice(0,10),
+    photos,personnel,materials,
+    comments:[],turnoverHistory:[],sel:false,
+    task:document.getElementById('jo-task')?.value||'',
+    rootCause:document.getElementById('jo-root')?.value||''
   };
   JOBS.unshift(nj);
-  NOTIFICATIONS.unshift({id:Date.now(),type:'info',msg:`${nj.id} created — ${dept} dept notified.`,time:'Just now',read:false});
-  toast(`✅ ${nj.id} submitted! ${dept} department notified.`,'var(--green)');
+
+  // Push notifications to ALL technicians/supervisors in that department
+  const deptUsers = USERS.filter(u=>u.dept===dept && u.status==='active' && u.id!==currentUser.id);
+  const pLabel = pn===1?'🔴 PRIORITY 1':'🟡 PRIORITY '+pn;
+  deptUsers.forEach(u=>{
+    pushNotif('warn', `${pLabel} — New JO: ${nj.id} | ${eq} | ${def.slice(0,50)}`, u.id);
+  });
+  // Also notify all supervisors/managers
+  USERS.filter(u=>['supervisor','manager','administrator'].includes(u.role)&&u.status==='active'&&u.id!==currentUser.id&&u.dept!==dept).forEach(u=>{
+    pushNotif('info', `New JO ${nj.id} submitted by ${currentUser.name} → ${dept}`, u.id);
+  });
+
+  toast(`✅ ${nj.id} submitted! ${deptUsers.length} ${dept} personnel notified.`,'var(--green)');
   joView='list'; renderJobOrders();
 }
 
 function acceptJO(id){
   const j=JOBS.find(x=>x.id===id);if(!j)return;
-  j.st='progress';j.assignedTo=currentUser.name;j.assignedId=currentUser.id;j.acceptedAt=new Date().toLocaleString('en-PH');
-  toast('✅ Job accepted! Status updated to IN PROGRESS.','var(--green)');
+  j.st='progress';
+  j.assignedTo=currentUser.name;
+  j.assignedId=currentUser.id;
+  j.acceptedAt=new Date().toLocaleString('en-PH');
+  if(!j.personnel) j.personnel=[];
+  if(!j.personnel.includes(currentUser.name)) j.personnel.push(currentUser.name);
+  // Push notification to supervisor/requestor
+  pushNotif('success', `${id} accepted by ${currentUser.name}. Status: IN PROGRESS.`, j.reqId);
+  USERS.filter(u=>u.role==='supervisor'&&u.dept===j.dept&&u.id!==currentUser.id).forEach(u=>{
+    pushNotif('success', `${id} accepted by ${currentUser.name}`, u.id);
+  });
+  toast('✅ Job accepted! You are now the primary technician.','var(--green)');
   viewJO(id);
 }
 
 function closeJO(id){
   const j=JOBS.find(x=>x.id===id);if(!j)return;
-  j.st='done';j.closedAt=new Date().toLocaleString('en-PH');
-  toast('🔒 '+id+' closed and archived!','var(--accent)');
-  renderJobOrders();
+
+  // Compile ALL credited personnel before closing
+  const credited = getAllCreditedPersonnel(j);
+  const creditNames = credited.map(([name])=>name);
+
+  j.st='done';
+  j.closedAt=new Date().toLocaleString('en-PH');
+  j.closedBy=currentUser.name;
+  j.finalPersonnel=creditNames;
+
+  // Push notification to everyone credited + requestor
+  creditNames.forEach(name=>{
+    const u=USERS.find(x=>x.name===name);
+    if(u && u.id!==currentUser.id) pushNotif('success',`${id} closed! You are credited for this job.`,u.id);
+  });
+  pushNotif('success', `${id} closed by ${currentUser.name}. All credits recorded.`, j.reqId);
+
+  toast(`🔒 ${id} closed! ${creditNames.length} personnel credited.`,'var(--green)');
+  joView='list'; renderJobOrders();
+}
+
+// ── ASSIGN TECHNICIAN (Supervisor) ────────────────────────────────
+function openAssignModal(id){
+  const j=JOBS.find(x=>x.id===id); if(!j)return;
+  // Get technicians from the same department
+  const deptTechs = USERS.filter(u=>u.dept===j.dept && ['technician','supervisor'].includes(u.role) && u.status==='active');
+  const allTechs  = USERS.filter(u=>['technician','supervisor'].includes(u.role) && u.status==='active');
+
+  document.getElementById('asset-modal-title').textContent=`👤 Assign Technician — ${j.id}`;
+  document.getElementById('asset-modal-body').innerHTML=`
+    <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:.78rem">
+      <div class="fw7">${j.equip}</div>
+      <div class="tm" style="margin-top:2px">${j.defect}</div>
+      <div style="margin-top:5px;display:flex;gap:6px;flex-wrap:wrap">
+        <span class="tag">${j.dept}</span>
+        <span style="color:${PC(j.pn)};font-weight:700">P${j.pn}</span>
+        ${stBadge(j.st)}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Assign to Technician *</label>
+      <select class="form-input" id="assign-tech-sel">
+        <option value="">— Select Technician —</option>
+        ${deptTechs.length ? `<optgroup label="── ${j.dept} Dept (Recommended)">`+
+          deptTechs.map(u=>`<option value="${u.id}" ${j.assignedId===u.id?'selected':''}>${u.name} (${ROLE_DEFS[u.role]?.label||u.role})</option>`).join('')+
+          `</optgroup>` : ''}
+        <optgroup label="── Other Departments">
+          ${allTechs.filter(u=>u.dept!==j.dept).map(u=>`<option value="${u.id}">${u.name} — ${u.dept}</option>`).join('')}
+        </optgroup>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Shift</label>
+      <select class="form-input" id="assign-shift-sel">
+        <option>Day Shift (06:00–18:00)</option>
+        <option>Night Shift (18:00–06:00)</option>
+        <option>Mid Shift (14:00–22:00)</option>
+        <option>On Call</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Supervisor Note (optional)</label>
+      <textarea class="form-input" id="assign-note" rows="2" placeholder="Any special instructions for the technician..."></textarea>
+    </div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-solid" onclick="doAssignTechnician('${id}')">✅ Assign Technician</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  openModal('asset-modal');
+}
+
+function doAssignTechnician(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  const sel=document.getElementById('assign-tech-sel');
+  const uid=parseInt(sel?.value);
+  if(!uid){toast('⚠️ Please select a technician.','var(--warn)');return;}
+  const u=USERS.find(x=>x.id===uid);if(!u)return;
+  const shift=document.getElementById('assign-shift-sel')?.value||'Day Shift';
+  const note=document.getElementById('assign-note')?.value||'';
+
+  const prev=j.assignedTo;
+  j.assignedTo=u.name;
+  j.assignedId=u.id;
+  if(j.st==='open') j.st='open'; // stays open until tech accepts
+
+  // Push notification to assigned technician
+  pushNotif('warn', `📋 You have been assigned to ${id} — ${j.equip} | ${shift}${note?' | Note: '+note:''}`, u.id);
+  // If there was a previous assignee, notify them too
+  if(prev && prev!==u.name){
+    const prevU=USERS.find(x=>x.name===prev);
+    if(prevU) pushNotif('info', `You have been unassigned from ${id}. Reassigned to ${u.name}.`, prevU.id);
+  }
+  closeModal('asset-modal');
+  toast(`✅ ${u.name} assigned to ${id} (${shift})!`,'var(--green)');
+  viewJO(id);
+}
+
+// ── ADD COMMENT / PROGRESS UPDATE ─────────────────────────────────
+function openCommentModal(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  document.getElementById('asset-modal-title').textContent=`💬 Add Update — ${j.id}`;
+  document.getElementById('asset-modal-body').innerHTML=`
+    <div style="font-size:.75rem;color:var(--text2);margin-bottom:12px">
+      <span class="fw7 tm" style="color:var(--text1)">${j.equip}</span> · ${j.dept} · ${stBadge(j.st)}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Update Type</label>
+      <div class="radio-group">
+        <label class="radio-opt"><input type="radio" name="ctype" value="progress" checked> 🔧 Progress Update</label>
+        <label class="radio-opt"><input type="radio" name="ctype" value="update"> 📝 General Comment</label>
+        <label class="radio-opt"><input type="radio" name="ctype" value="resolved"> ✔️ Issue Resolved</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Update / Comment *</label>
+      <textarea class="form-input" id="cm-text" rows="3" placeholder="Describe what was done, findings, or progress update..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Additional Personnel Assisting (names, comma separated)</label>
+      <input class="form-input" id="cm-assist" placeholder="e.g. Juan Cruz, Ben Torres"/>
+      <div class="form-hint">These names will be automatically credited in the final job record.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Attach Photos (optional)</label>
+      <div class="pg-wrap" id="cm-photos">
+        <div class="pg-add" onclick="openCam('comment')"><span>📷</span>Camera</div>
+        <div class="pg-add" onclick="document.getElementById('cm-photo-file').click()"><span>🖼️</span>Gallery</div>
+      </div>
+      <input type="file" id="cm-photo-file" accept="image/*" multiple style="display:none" onchange="addCmPhotos(event)"/>
+    </div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-solid" onclick="saveComment('${id}')">💬 Post Update</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  // set cam target to comment photos
+  photoContainer='cm-photos';
+  openModal('asset-modal');
+}
+
+function addCmPhotos(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>addPhotoThumb(ev.target.result,'cm-photos');r.readAsDataURL(f);});}
+
+function saveComment(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  const text=(document.getElementById('cm-text')?.value||'').trim();
+  if(!text){toast('⚠️ Comment text is required.','var(--warn)');return;}
+  const type=document.querySelector('input[name="ctype"]:checked')?.value||'progress';
+  const assistRaw=(document.getElementById('cm-assist')?.value||'').trim();
+  const assistants=assistRaw?assistRaw.split(',').map(s=>s.trim()).filter(Boolean):[];
+  const photos=Array.from(document.querySelectorAll('#cm-photos img')).map(i=>i.src);
+  const ts=new Date().toLocaleString('en-PH',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+  if(!j.comments) j.comments=[];
+  j.comments.push({id:'c'+Date.now(),user:currentUser.name,userId:currentUser.id,type,text,assistants,photos,ts});
+
+  // Credit assistants into personnel list
+  assistants.forEach(a=>{
+    if(a && !j.personnel?.includes(a)){
+      if(!j.personnel) j.personnel=[];
+      j.personnel.push(a);
+    }
+  });
+
+  // Push notifications
+  // Notify supervisor
+  USERS.filter(u=>u.role==='supervisor'&&u.dept===j.dept).forEach(u=>{
+    if(u.id!==currentUser.id) pushNotif('info',`${id}: ${currentUser.name} posted an update — ${text.slice(0,60)}`,u.id);
+  });
+  // Notify manager
+  USERS.filter(u=>u.role==='manager').forEach(u=>{
+    pushNotif('info',`${id} update by ${currentUser.name}: ${text.slice(0,50)}`,u.id);
+  });
+  // Notify named assistants
+  assistants.forEach(aName=>{
+    const au=USERS.find(x=>x.name===aName);
+    if(au) pushNotif('success',`You have been credited as assistant on ${id} — ${j.equip}`,au.id);
+  });
+
+  closeModal('asset-modal');
+  toast('💬 Update posted!','var(--green)');
+  viewJO(id);
+}
+
+// ── TURNOVER / SHIFT HANDOVER ─────────────────────────────────────
+function openTurnoverModal(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  const otherTechs=USERS.filter(u=>['technician','supervisor'].includes(u.role)&&u.status==='active'&&u.id!==currentUser.id);
+
+  document.getElementById('asset-modal-title').textContent=`🔄 Shift Turnover — ${j.id}`;
+  document.getElementById('asset-modal-body').innerHTML=`
+    <div style="background:rgba(255,184,0,.06);border:1px solid rgba(255,184,0,.25);border-radius:8px;padding:12px;margin-bottom:14px">
+      <div style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--warn);margin-bottom:5px">⚠️ SHIFT HANDOVER</div>
+      <div style="font-size:.8rem;line-height:1.5">
+        All previous personnel will remain credited. The next shift technician will continue this job.
+        Your work and progress will be recorded and preserved.
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border-radius:8px;margin-bottom:12px">
+      <div class="av ${ROLE_DEFS[currentUser.role]?.avClass||''}" style="width:28px;height:28px;font-size:.68rem">${currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div>
+        <div class="fs7 fw7">${currentUser.name} (Current — Handing Over)</div>
+        <div style="font-size:.6rem;color:var(--text2)">${currentUser.dept} · ${ROLE_DEFS[currentUser.role]?.label||''}</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Hand Over To *</label>
+      <select class="form-input" id="to-tech-sel">
+        <option value="">— Select Next Shift Technician —</option>
+        ${USERS.filter(u=>u.dept===j.dept && ['technician','supervisor'].includes(u.role) && u.status==='active' && u.id!==currentUser.id).map(u=>`
+          <option value="${u.id}">${u.name} (${ROLE_DEFS[u.role]?.label||u.role}) — ${u.dept}</option>`).join('')}
+        ${USERS.filter(u=>u.dept!==j.dept && ['technician','supervisor'].includes(u.role) && u.status==='active' && u.id!==currentUser.id).length?
+          `<optgroup label="── Other Departments">
+            ${USERS.filter(u=>u.dept!==j.dept && ['technician','supervisor'].includes(u.role) && u.status==='active' && u.id!==currentUser.id).map(u=>`
+            <option value="${u.id}">${u.name} — ${u.dept}</option>`).join('')}
+          </optgroup>`:''}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Shift Handover</label>
+      <select class="form-input" id="to-shift-sel">
+        <option>Day → Night</option>
+        <option>Night → Day</option>
+        <option>Day → Mid</option>
+        <option>Mid → Night</option>
+        <option>Emergency Handover</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Work Done This Shift *</label>
+      <textarea class="form-input" id="to-done" rows="2" placeholder="Describe what was accomplished this shift..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Pending Items for Next Shift *</label>
+      <textarea class="form-input" id="to-note" rows="2" placeholder="What still needs to be done, safety notes, precautions..."></textarea>
+    </div>`;
+
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-warn" onclick="saveTurnover('${id}')">🔄 Confirm Handover</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  openModal('asset-modal');
+}
+
+function saveTurnover(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  const toUid=parseInt(document.getElementById('to-tech-sel')?.value);
+  if(!toUid){toast('⚠️ Please select who to hand over to.','var(--warn)');return;}
+  const toU=USERS.find(x=>x.id===toUid);if(!toU)return;
+  const done=(document.getElementById('to-done')?.value||'').trim();
+  const note=(document.getElementById('to-note')?.value||'').trim();
+  if(!note){toast('⚠️ Pending items note is required.','var(--warn)');return;}
+  const shift=document.getElementById('to-shift-sel')?.value||'Day → Night';
+  const ts=new Date().toLocaleString('en-PH',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+  // Add to turnover history
+  if(!j.turnoverHistory) j.turnoverHistory=[];
+  j.turnoverHistory.push({
+    id:'t'+Date.now(),
+    fromUser:currentUser.name,fromUserId:currentUser.id,
+    toUser:toU.name,toUserId:toU.id,
+    shift,done,note,ts
+  });
+
+  // Ensure both are in personnel
+  if(!j.personnel) j.personnel=[];
+  if(!j.personnel.includes(currentUser.name)) j.personnel.push(currentUser.name);
+  if(!j.personnel.includes(toU.name)) j.personnel.push(toU.name);
+
+  // Update assignment to new technician
+  j.assignedTo=toU.name;
+  j.assignedId=toU.id;
+
+  // Also log as activity comment
+  if(!j.comments) j.comments=[];
+  j.comments.push({
+    id:'c'+Date.now(),user:currentUser.name,userId:currentUser.id,
+    type:'progress',
+    text:`Shift handover completed. Work done: ${done||'See turnover record.'}`,
+    assistants:[],photos:[],ts
+  });
+
+  // Push notifications
+  pushNotif('warn', `🔄 ${id} handed over to you by ${currentUser.name}. Shift: ${shift}. ${note.slice(0,80)}`, toU.id);
+  USERS.filter(u=>u.role==='supervisor'&&u.dept===j.dept).forEach(u=>{
+    if(u.id!==currentUser.id) pushNotif('info',`${id} shift turnover: ${currentUser.name} → ${toU.name} (${shift})`,u.id);
+  });
+
+  closeModal('asset-modal');
+  toast(`🔄 Handover complete! ${toU.name} is now the active technician. You remain credited.`,'var(--warn)');
+  viewJO(id);
+}
+
+// ── PUSH NOTIFICATION HELPER ──────────────────────────────────────
+function pushNotif(type, msg, targetUserId){
+  const ts = new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+  NOTIFICATIONS.unshift({id:Date.now()+Math.random(),type,msg,time:'Just now ('+ts+')',read:false,targetUserId});
+  // Update bell badge count
+  const unread = NOTIFICATIONS.filter(n=>!n.read && (!n.targetUserId || n.targetUserId===currentUser?.id)).length;
+  const btn = document.getElementById('notif-btn');
+  if(btn) { if(unread>0) btn.setAttribute('data-count',unread); else btn.removeAttribute('data-count'); }
 }
 
 function addPhotoToJO(id){
@@ -2245,17 +2758,19 @@ function showNotifs(){
   const p=document.getElementById('notif-popup');
   if(p.style.display==='block'){p.style.display='none';return;}
   p.style.display='block';
-  document.getElementById('notif-list').innerHTML=NOTIFICATIONS.map(n=>`
+  // Show only notifications relevant to current user (no targetUserId = global, or matches me)
+  const myNotifs = NOTIFICATIONS.filter(n=>!n.targetUserId || n.targetUserId===currentUser.id);
+  document.getElementById('notif-list').innerHTML = myNotifs.length ? myNotifs.slice(0,12).map(n=>`
     <div style="padding:10px 12px;border-radius:7px;margin-bottom:4px;background:${n.read?'transparent':'rgba(0,212,255,.04)'};border:1px solid ${n.read?'transparent':'rgba(0,212,255,.1)'}">
       <div style="display:flex;gap:8px;align-items:flex-start">
-        <span>${n.type==='danger'?'🔴':n.type==='warn'?'🟡':n.type==='success'?'🟢':'🔵'}</span>
-        <div>
+        <span style="font-size:.85rem">${n.type==='danger'?'🔴':n.type==='warn'?'🟡':n.type==='success'?'🟢':'🔵'}</span>
+        <div style="flex:1">
           <div style="font-size:.75rem;line-height:1.4">${n.msg}</div>
           <div style="font-size:.6rem;color:var(--text3);margin-top:2px">${n.time}</div>
         </div>
       </div>
-    </div>`).join('');
-  NOTIFICATIONS.forEach(n=>n.read=true);
+    </div>`).join('') : `<div style="padding:16px;text-align:center;color:var(--text2);font-size:.78rem">No notifications</div>`;
+  myNotifs.forEach(n=>n.read=true);
   document.getElementById('notif-btn').removeAttribute('data-count');
 }
 document.addEventListener('click',e=>{if(!document.getElementById('notif-popup')?.contains(e.target)&&e.target.id!=='notif-btn'){const p=document.getElementById('notif-popup');if(p)p.style.display='none';}});
