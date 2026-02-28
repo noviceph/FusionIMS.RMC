@@ -1,0 +1,2308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FUSION IMS v2.1 — Industrial Management System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   FUSION IMS — Complete Design System
+═══════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06090f;--bg2:#0a1020;--bg3:#0e1830;--panel:#091428;
+  --accent:#00d4ff;--accent2:#0055cc;--green:#00ff9d;
+  --warn:#ffb800;--danger:#ff3d5a;--purple:#a78bfa;--pink:#f472b6;
+  --text1:#d8eeff;--text2:#5a82a8;--text3:#2e4d72;
+  --bd:#132040;--bd2:#1e3560;
+  --font:'Inter',sans-serif;--font-mono:'Share Tech Mono',monospace;--font-hdr:'Rajdhani',sans-serif;
+}
+html,body{background:var(--bg);color:var(--text1);font-family:var(--font);font-size:13.5px;height:100%;overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+/* ── LOGIN ── */
+#LOGIN{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(0,85,204,.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,212,255,.08) 0%,transparent 50%)}
+.login-box{width:420px;max-width:95vw}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo-text{font-family:var(--font-hdr);font-size:3.5rem;font-weight:700;letter-spacing:8px;
+  background:linear-gradient(135deg,#00d4ff,#0077ff,#00ff9d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.login-sub{font-size:.65rem;letter-spacing:4px;text-transform:uppercase;color:var(--text2);margin-top:4px}
+.login-card{background:var(--panel);border:1px solid var(--bd2);border-radius:16px;padding:32px;
+  box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(0,212,255,.05),inset 0 1px 0 rgba(255,255,255,.04)}
+.login-title{font-family:var(--font-hdr);font-size:1.1rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:24px;text-align:center}
+.lf{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.ll{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2)}
+.li{background:var(--bg3);border:1.5px solid var(--bd);color:var(--text1);padding:10px 14px;border-radius:8px;font-size:.85rem;width:100%;font-family:var(--font);transition:border .2s,background .2s}
+.li:focus{border-color:var(--accent);outline:none;background:var(--bg2)}
+.login-role-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:20px}
+.lrole{background:var(--bg3);border:1.5px solid var(--bd);border-radius:7px;padding:8px 10px;cursor:pointer;font-size:.72rem;font-weight:600;text-align:center;transition:all .15s;color:var(--text2)}
+.lrole:hover,.lrole.on{background:rgba(0,212,255,.1);border-color:var(--accent);color:var(--accent)}
+.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:#fff;font-size:.88rem;font-weight:700;border-radius:8px;cursor:pointer;font-family:var(--font-hdr);letter-spacing:2px;text-transform:uppercase;transition:all .2s}
+.btn-login:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.login-hint{font-size:.65rem;color:var(--text3);text-align:center;margin-top:12px}
+
+/* ── APP LAYOUT ── */
+#APP{display:none;height:100vh;overflow:hidden;flex-direction:column}
+#APP.show{display:flex}
+.app-inner{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sb{width:220px;background:var(--panel);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;transition:width .25s}
+.sb.collapsed{width:56px}
+.sb-brand{padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;min-height:56px}
+.sb-logo{font-family:var(--font-hdr);font-size:1.3rem;font-weight:700;letter-spacing:4px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.sb-ver{font-size:.55rem;color:var(--text3);letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+.sb-user{padding:10px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px;min-height:54px}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:#fff;flex-shrink:0;font-family:var(--font-hdr)}
+.un{font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.ur{font-size:.58rem;text-transform:uppercase;letter-spacing:1px;margin-top:1px;white-space:nowrap}
+.sb-nav{flex:1;padding:8px 0;overflow-y:auto}
+.nav-grp{padding:4px 0}
+.nav-lbl{padding:5px 14px 2px;font-size:.52rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);white-space:nowrap;overflow:hidden}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;border-left:3px solid transparent;font-size:.78rem;color:var(--text2);transition:all .15s;white-space:nowrap;overflow:hidden}
+.ni:hover{background:rgba(0,212,255,.05);color:var(--text1);border-left-color:rgba(0,212,255,.3)}
+.ni.on{background:rgba(0,212,255,.1);border-left-color:var(--accent);color:var(--accent)}
+.ni-ico{width:20px;text-align:center;font-size:.9rem;flex-shrink:0}
+.ni-txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ni-badge{background:var(--danger);color:#fff;border-radius:10px;padding:1px 6px;font-size:.55rem;font-weight:700;margin-left:auto;flex-shrink:0}
+.sb-foot{padding:10px 14px;border-top:1px solid var(--bd)}
+.sb-toggle{width:100%;background:var(--bg3);border:1px solid var(--bd);color:var(--text2);padding:6px;border-radius:6px;cursor:pointer;font-size:.7rem;transition:all .15s}
+.sb-toggle:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── TOPBAR ── */
+.tb{height:50px;background:var(--panel);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0}
+.tb-title{font-family:var(--font-hdr);font-size:.95rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;white-space:nowrap}
+.live-dot{display:flex;align-items:center;gap:5px;font-size:.58rem;color:var(--green);letter-spacing:1px;white-space:nowrap}
+.live-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+.tb-r{margin-left:auto;display:flex;align-items:center;gap:6px}
+.tbtn{background:var(--bg3);border:1px solid var(--bd);color:var(--text2);padding:5px 11px;border-radius:6px;cursor:pointer;font-size:.7rem;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.tbtn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;padding:18px;background:var(--bg)}
+.pg{display:none}.pg.on{display:block}
+
+/* ── CARDS / STATS ── */
+.stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.stat-card{background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:14px 18px;flex:1;min-width:130px;position:relative;overflow:hidden;cursor:default}
+.stat-card::before{content:'';position:absolute;inset:0;opacity:.04;background:linear-gradient(135deg,var(--accent),transparent)}
+.sc-num{font-family:var(--font-hdr);font-size:2rem;font-weight:700;line-height:1}
+.sc-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--text2);margin-top:3px}
+.sc-ico{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:1.6rem;opacity:.2}
+
+/* ── SECTION TITLE ── */
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.sec-title{font-family:var(--font-hdr);font-size:1rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';width:3px;height:18px;background:linear-gradient(var(--accent),var(--accent2));border-radius:2px}
+
+/* ── TABLE STYLES ── */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--bd)}
+.ftbl{width:100%;border-collapse:collapse;font-size:.78rem;min-width:600px}
+.ftbl th{text-align:left;padding:9px 12px;font-size:.58rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--bd);background:var(--panel);position:sticky;top:0;white-space:nowrap}
+.ftbl td{padding:9px 12px;border-bottom:1px solid rgba(19,32,64,.6);vertical-align:middle}
+.ftbl tr:last-child td{border-bottom:none}
+.ftbl tr:hover td{background:rgba(255,255,255,.015)}
+.ftbl tr.on td{background:rgba(0,212,255,.05)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 15px;border-radius:7px;cursor:pointer;font-size:.76rem;font-weight:700;border:1.5px solid;transition:all .15s;white-space:nowrap;font-family:var(--font)}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.12)}
+.btn-primary{background:rgba(0,212,255,.12);border-color:var(--accent);color:var(--accent)}
+.btn-success{background:rgba(0,255,157,.1);border-color:var(--green);color:var(--green)}
+.btn-warn{background:rgba(255,184,0,.1);border-color:var(--warn);color:var(--warn)}
+.btn-danger{background:rgba(255,61,90,.1);border-color:var(--danger);color:var(--danger)}
+.btn-purple{background:rgba(167,139,250,.1);border-color:var(--purple);color:var(--purple)}
+.btn-solid{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:#fff;font-weight:800}
+.btn-sm{padding:4px 10px;font-size:.68rem}
+.btn-xs{padding:2px 8px;font-size:.62rem}
+
+/* ── FORM ELEMENTS ── */
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.form-label{font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2)}
+.form-input{background:var(--bg3);border:1.5px solid var(--bd);color:var(--text1);padding:8px 12px;border-radius:7px;font-size:.82rem;width:100%;font-family:var(--font);transition:border .2s}
+.form-input:focus{border-color:var(--accent);outline:none;background:var(--bg2)}
+select.form-input{-webkit-appearance:none;cursor:pointer}
+textarea.form-input{resize:vertical;min-height:80px}
+.form-row{display:grid;gap:10px}
+.col-2{grid-template-columns:1fr 1fr}
+.col-3{grid-template-columns:1fr 1fr 1fr}
+.col-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.radio-group{display:flex;gap:16px;flex-wrap:wrap;padding:5px 0}
+.radio-opt{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.78rem}
+input[type=radio],input[type=checkbox]{accent-color:var(--accent);cursor:pointer}
+.form-hint{font-size:.62rem;color:var(--text3);margin-top:2px;font-style:italic}
+
+/* ── BADGES / TAGS ── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:20px;font-size:.6rem;font-weight:700;border:1px solid}
+.badge::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0}
+.badge-open{color:#ffb800;background:rgba(255,184,0,.1);border-color:rgba(255,184,0,.3)}
+.badge-progress{color:#00d4ff;background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.25)}
+.badge-done{color:#00ff9d;background:rgba(0,255,157,.08);border-color:rgba(0,255,157,.2)}
+.badge-danger{color:#ff3d5a;background:rgba(255,61,90,.1);border-color:rgba(255,61,90,.3)}
+.tag{background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);border-radius:5px;padding:1px 7px;font-size:.62rem;color:var(--accent)}
+.tag-green{background:rgba(0,255,157,.08);border:1px solid rgba(0,255,157,.2);color:var(--green)}
+.tag-warn{background:rgba(255,184,0,.08);border:1px solid rgba(255,184,0,.2);color:var(--warn)}
+.tag-purple{background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);color:var(--purple)}
+.tag-danger{background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.2);color:var(--danger)}
+
+/* ── MODAL ── */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8000;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.modal-ov.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--bd2);border-radius:14px;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.7)}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--panel);z-index:1}
+.modal-title{font-family:var(--font-hdr);font-size:1rem;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.modal-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem;line-height:1;padding:4px;transition:color .15s}
+.modal-close:hover{color:var(--danger)}
+.modal-body{padding:20px}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--bd);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:18px;right:18px;padding:12px 20px;border-radius:10px;font-size:.8rem;font-weight:700;z-index:9999;
+  transform:translateX(130%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:340px;line-height:1.4;
+  background:var(--panel);border:1px solid;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(0)}
+
+/* ── PART HEADER (JO Form) ── */
+.ph{background:linear-gradient(90deg,rgba(0,43,91,.9),rgba(0,26,58,.9));color:#7ec8ff;padding:6px 14px;font-family:var(--font-hdr);font-size:.62rem;font-weight:700;letter-spacing:2.5px;margin:12px 0 6px;border-radius:5px;border-left:3px solid var(--accent);display:flex;justify-content:space-between;align-items:center;text-transform:uppercase}
+.ph2{border-left-color:var(--green)}
+.ph3{border-left-color:var(--purple)}
+.ph4{border-left-color:var(--warn)}
+
+/* ── KPI CHART ── */
+.chart-card{background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px}
+.chart-title{font-family:var(--font-hdr);font-size:.78rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:12px}
+.chart-wrap{position:relative;height:200px}
+
+/* ── GRID UTILS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+
+/* ── MISC ── */
+.mono{font-family:var(--font-mono)}
+.fw7{font-weight:700}
+.fs7{font-size:.72rem}
+.tm{color:var(--text2)}
+.dot-sep{width:4px;height:4px;border-radius:50%;background:var(--bd2);flex-shrink:0}
+.divider{border:none;border-top:1px solid var(--bd);margin:14px 0}
+.action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--panel);border:1px solid var(--bd);border-radius:8px;align-items:center}
+.abar-lbl{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-right:4px}
+.search-box{background:var(--bg3);border:1px solid var(--bd);color:var(--text1);padding:6px 12px;border-radius:6px;font-size:.76rem;outline:none;width:200px;font-family:var(--font)}
+.search-box:focus{border-color:var(--accent)}
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.fb{background:var(--bg3);border:1px solid var(--bd);color:var(--text2);padding:4px 12px;border-radius:5px;cursor:pointer;font-size:.68rem;font-weight:600;transition:all .15s}
+.fb.on{background:rgba(0,212,255,.1);border-color:var(--accent);color:var(--accent)}
+.pb{font-family:var(--font-hdr);font-size:.78rem;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:6px;border:1px solid rgba(0,212,255,.3);background:rgba(0,212,255,.06);color:var(--accent)}
+
+/* ── PERMISSIONS TABLE ── */
+.priv-tbl{width:100%;border-collapse:collapse;font-size:.75rem}
+.priv-tbl th{text-align:left;padding:7px 10px;font-size:.58rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--bd);background:var(--bg3)}
+.priv-tbl td{padding:7px 10px;border-bottom:1px solid rgba(19,32,64,.5)}
+.priv-tbl td:first-child{font-weight:600;color:var(--text1)}
+.priv-section{background:var(--bg2);padding:6px 10px;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--bd)}
+
+/* ── AVATAR COLORS ── */
+.av-admin{background:linear-gradient(135deg,#ff3d5a,#a00)}
+.av-manager{background:linear-gradient(135deg,#a78bfa,#5b21b6)}
+.av-supervisor{background:linear-gradient(135deg,#ffb800,#a05700)}
+.av-technician{background:linear-gradient(135deg,#00d4ff,#0055aa)}
+.av-operator{background:linear-gradient(135deg,#00ff9d,#009955)}
+.av-qa{background:linear-gradient(135deg,#f472b6,#a0105a)}
+.av-stockroom{background:linear-gradient(135deg,#fb923c,#a03200)}
+.av-finance{background:linear-gradient(135deg,#34d399,#006644)}
+.av-hr{background:linear-gradient(135deg,#818cf8,#2200aa)}
+
+/* ── PHOTO GRID ── */
+.pg-wrap{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.pg-thumb{position:relative;width:80px;height:80px;border-radius:7px;overflow:hidden;border:2px solid var(--purple);cursor:pointer;flex-shrink:0}
+.pg-thumb img{width:100%;height:100%;object-fit:cover}
+.pg-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.8);color:var(--danger);border:none;border-radius:50%;width:17px;height:17px;cursor:pointer;font-size:.58rem;display:flex;align-items:center;justify-content:center}
+.pg-add{width:80px;height:80px;border:2px dashed var(--purple);border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--purple);font-size:.58rem;gap:3px;background:rgba(167,139,250,.04);flex-shrink:0;transition:all .2s}
+.pg-add:hover{background:rgba(167,139,250,.1)}
+.pg-add span{font-size:1.2rem}
+
+/* ── CHECKLIST TABLE ── */
+.chk-tbl{width:100%;border-collapse:collapse;font-size:.73rem;margin:5px 0}
+.chk-tbl th{background:var(--bg3);padding:5px 8px;border:1px solid var(--bd);font-size:.58rem;font-weight:700;color:var(--text2)}
+.chk-tbl td{border-bottom:1px solid rgba(19,32,64,.5);padding:5px 8px;vertical-align:middle}
+.mat-tbl{width:100%;border-collapse:collapse;font-size:.73rem}
+.mat-tbl th{background:var(--bg3);padding:4px 8px;border:1px solid var(--bd);font-size:.58rem;font-weight:700;color:var(--text2)}
+.mat-tbl td{border:1px solid var(--bd)}
+.mini-inp{background:transparent;border:none;color:var(--text1);padding:5px 7px;width:100%;font-size:.75rem;font-family:var(--font)}
+
+/* ── JO HEADER BOX ── */
+.jo-hdr{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:12px;align-items:start;border-bottom:2px solid var(--accent);padding-bottom:14px;margin-bottom:8px}
+.jo-co{font-family:var(--font-hdr);font-size:1.05rem;font-weight:700;color:var(--accent);letter-spacing:1.5px}
+.jo-co-sub{font-size:.62rem;color:var(--text2);margin-top:2px}
+.jo-co-note{font-size:.58rem;color:var(--warn);margin-top:5px;line-height:1.5;font-style:italic}
+.jo-title{text-align:center;font-family:var(--font-hdr);font-size:.92rem;font-weight:700;letter-spacing:2px}
+.jo-plant{font-size:.82rem;font-weight:700;color:var(--accent);margin-top:4px;min-height:20px;text-align:center;font-family:var(--font-hdr)}
+.jo-right{text-align:right}
+.jo-docno{font-size:.6rem;color:var(--text2);line-height:1.6}
+.jo-num-box{font-family:var(--font-mono);font-size:1.3rem;font-weight:700;color:var(--green);border:2px solid var(--green);padding:3px 10px;border-radius:5px;display:inline-block;margin-top:6px;letter-spacing:2px}
+
+/* ── PRIORITY REF TABLE ── */
+.prio-ref{width:100%;border-collapse:collapse;font-size:.68rem;margin:6px 0 14px}
+.prio-ref th{background:#001a3a;color:#7ec8ff;padding:5px 8px;border:1px solid var(--bd);font-size:.6rem}
+.prio-ref td{border:1px solid var(--bd);padding:5px 8px;vertical-align:top}
+
+/* ── PRIO NOTE ── */
+.prio-note{padding:8px 12px;border-radius:6px;font-size:.73rem;font-weight:700;background:var(--bg3);margin:4px 0 10px;line-height:1.5}
+
+/* ── VIEW GRID ── */
+.vgrid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin:6px 0}
+.vf{background:var(--bg3);border-radius:6px;padding:8px 11px;border:1px solid var(--bd)}
+.vf-lbl{font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2)}
+.vf-val{font-size:.82rem;font-weight:600;color:var(--text1);margin-top:3px;word-break:break-word}
+
+/* ── AI CHAT ── */
+.ai-chat{display:flex;flex-direction:column;height:calc(100vh - 180px);min-height:400px}
+.ai-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px}
+.ai-msg{max-width:78%;padding:12px 15px;border-radius:12px;font-size:.8rem;line-height:1.6}
+.ai-msg.user{background:rgba(0,85,204,.2);border:1px solid rgba(0,85,204,.3);align-self:flex-end;border-radius:12px 12px 3px 12px}
+.ai-msg.bot{background:var(--panel);border:1px solid var(--bd);align-self:flex-start;border-radius:12px 12px 12px 3px}
+.ai-msg.bot .ai-name{font-size:.6rem;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.ai-input-row{display:flex;gap:8px;margin-top:10px}
+.ai-inp{flex:1;background:var(--bg3);border:1.5px solid var(--bd);color:var(--text1);padding:10px 14px;border-radius:8px;font-size:.82rem;font-family:var(--font)}
+.ai-inp:focus{border-color:var(--accent);outline:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sb{display:none}
+  .col-2,.col-3,.col-4,.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .jo-hdr{grid-template-columns:1fr}
+  .vgrid{grid-template-columns:1fr 1fr}
+  .stat-row .stat-card{min-width:calc(50% - 6px)}
+}
+
+/* ── NOTIFICATION DOT ── */
+.notif-dot{position:relative}.notif-dot::after{content:attr(data-count);position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;border-radius:10px;padding:0 4px;font-size:.5rem;font-weight:700;min-width:14px;text-align:center;line-height:14px}
+
+/* ── PROGRESS BAR ── */
+.prog-bar{background:var(--bg3);border-radius:4px;height:6px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;border-radius:4px;transition:width .5s ease}
+
+/* ── KNOWLEDGE BASE CARD ── */
+.kb-card{background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s;margin-bottom:8px}
+.kb-card:hover{border-color:var(--accent);background:rgba(0,212,255,.03);transform:translateY(-1px)}
+.kb-cat{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.kb-title{font-family:var(--font-hdr);font-size:.9rem;font-weight:600;color:var(--text1);margin-bottom:4px}
+.kb-desc{font-size:.72rem;color:var(--text2);line-height:1.5}
+
+/* ── SHIFT/TURNOVER ── */
+.turnover-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:.62rem;font-weight:700;background:rgba(255,184,0,.12);border:1px solid rgba(255,184,0,.3);color:var(--warn)}
+
+/* ── SMOOTH TRANSITIONS ── */
+.pg{animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN PAGE ═══════════════════════════════════════════════ -->
+<div id="LOGIN">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-text">FUSION</div>
+      <div class="login-sub">Industrial Management System v2.1</div>
+    </div>
+    <div class="login-card">
+      <div class="login-title">Sign In to Continue</div>
+      <div class="form-group">
+        <label class="form-label">Username / Employee ID</label>
+        <input class="li form-input" id="li-user" placeholder="Enter username" value="administrator"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="li form-input" id="li-pass" type="password" placeholder="Enter password" value="admin123" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div style="margin-bottom:16px">
+        <div class="form-label" style="margin-bottom:8px">Quick Role Select (Demo)</div>
+        <div class="login-role-grid" id="quick-roles"></div>
+      </div>
+      <button class="btn-login" onclick="doLogin()">🔐 Sign In</button>
+      <div class="login-hint">Default admin: administrator / admin123</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP SHELL ════════════════════════════════════════════════ -->
+<div id="APP">
+  <!-- TOPBAR -->
+  <div class="tb">
+    <div class="tb-title" id="tb-title">Dashboard</div>
+    <div class="live-dot">LIVE</div>
+    <div class="tb-r">
+      <span id="tb-time" class="tm" style="font-size:.66rem;font-family:var(--font-mono)"></span>
+      <button class="tbtn" onclick="exportCurrentPage()">📥 Export</button>
+      <button class="tbtn notif-dot" data-count="3" id="notif-btn" onclick="showNotifs()">🔔</button>
+      <button class="tbtn" onclick="showUserMenu()" id="user-tbtn">👤 <span id="tb-user-name"></span></button>
+      <button class="tbtn" onclick="doLogout()" style="color:var(--danger);border-color:rgba(255,61,90,.3)">⏻</button>
+    </div>
+  </div>
+
+  <div class="app-inner">
+    <!-- SIDEBAR -->
+    <div class="sb" id="SIDEBAR">
+      <div class="sb-brand">
+        <div>
+          <div class="sb-logo">FUSION</div>
+          <div class="sb-ver">IMS v2.1</div>
+        </div>
+      </div>
+      <div class="sb-user" id="sb-user-info"></div>
+      <nav class="sb-nav" id="SB_NAV"></nav>
+      <div class="sb-foot">
+        <button class="sb-toggle" onclick="toggleSidebar()">◀ Collapse</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" id="CONTENT">
+      <!-- PAGES ARE RENDERED HERE BY JS -->
+      <div class="pg" id="pg-dashboard"></div>
+      <div class="pg" id="pg-joborders"></div>
+      <div class="pg" id="pg-assets"></div>
+      <div class="pg" id="pg-stockroom"></div>
+      <div class="pg" id="pg-kpi"></div>
+      <div class="pg" id="pg-production"></div>
+      <div class="pg" id="pg-ai"></div>
+      <div class="pg" id="pg-plc"></div>
+      <div class="pg" id="pg-hr"></div>
+      <div class="pg" id="pg-admin"></div>
+      <div class="pg" id="pg-profile"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODALS ════════════════════════════════════════════════════ -->
+<!-- JO Modal -->
+<div class="modal-ov" id="jo-modal">
+  <div class="modal" style="width:920px;max-width:96vw">
+    <div class="modal-hdr">
+      <div class="modal-title" id="jo-modal-title">📝 New Job Order</div>
+      <button class="modal-close" onclick="closeModal('jo-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="jo-modal-body"></div>
+  </div>
+</div>
+
+<!-- User Modal (Admin) -->
+<div class="modal-ov" id="user-modal">
+  <div class="modal" style="width:780px;max-width:96vw">
+    <div class="modal-hdr">
+      <div class="modal-title" id="user-modal-title">👤 Add New User</div>
+      <button class="modal-close" onclick="closeModal('user-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="user-modal-body"></div>
+    <div class="modal-foot" id="user-modal-foot"></div>
+  </div>
+</div>
+
+<!-- Asset Modal -->
+<div class="modal-ov" id="asset-modal">
+  <div class="modal" style="width:680px;max-width:96vw">
+    <div class="modal-hdr">
+      <div class="modal-title" id="asset-modal-title">📦 Asset</div>
+      <button class="modal-close" onclick="closeModal('asset-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="asset-modal-body"></div>
+    <div class="modal-foot" id="asset-modal-foot"></div>
+  </div>
+</div>
+
+<!-- Camera Modal -->
+<div class="modal-ov" id="cam-modal">
+  <div class="modal" style="width:480px;max-width:96vw">
+    <div class="modal-hdr">
+      <div class="modal-title">📷 Capture Photo</div>
+      <button class="modal-close" onclick="closeCam()">✕</button>
+    </div>
+    <div class="modal-body">
+      <video id="cam-vid" autoplay playsinline style="width:100%;border-radius:8px;background:#000;max-height:260px;object-fit:cover"></video>
+      <canvas id="cam-cvs" style="display:none"></canvas>
+      <div id="cam-prev" style="margin-top:10px"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-purple" id="cam-cap-btn" onclick="capPhoto()">📸 Capture</button>
+        <button class="btn btn-success" id="cam-save-btn" onclick="savePhoto()" style="display:none">✅ Save</button>
+        <button class="btn" id="cam-ret-btn" style="display:none;background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="retakePhoto()">🔄 Retake</button>
+        <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeCam()">Cancel</button>
+      </div>
+      <div id="cam-status" style="font-size:.7rem;color:var(--text2);margin-top:8px">Initializing camera...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-ov" id="import-modal">
+  <div class="modal" style="width:640px;max-width:96vw">
+    <div class="modal-hdr">
+      <div class="modal-title">📤 Import from Excel</div>
+      <button class="modal-close" onclick="closeModal('import-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="drop-zone" style="border:2px dashed var(--warn);border-radius:10px;padding:28px;text-align:center;cursor:pointer;color:var(--warn);transition:all .2s;background:rgba(255,184,0,.03)"
+        onclick="document.getElementById('xl-file').click()"
+        ondragover="event.preventDefault();this.style.background='rgba(255,184,0,.08)'"
+        ondragleave="this.style.background='rgba(255,184,0,.03)'"
+        ondrop="dropXL(event)">
+        <div style="font-size:2.5rem;margin-bottom:8px">📊</div>
+        <div style="font-size:.85rem;font-weight:700;margin-bottom:4px">Click to browse or drag & drop Excel file</div>
+        <div style="font-size:.68rem;color:var(--text2)">Supports .xlsx · .xls · .csv</div>
+      </div>
+      <input type="file" id="xl-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="readXL(event)"/>
+      <div id="import-preview" style="margin-top:12px"></div>
+      <div style="margin-top:10px;background:var(--bg3);border-radius:7px;padding:10px;font-size:.7rem;color:var(--text2);line-height:1.7">
+        <span style="color:var(--warn);font-weight:700">📋 Required columns:</span>
+        Equipment Description · Description of Defect · Maintenance Incharge · Priority Number · Requestor Name · Plant / Section
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-success" onclick="dlTemplate()">📥 Download Template</button>
+        <button class="btn btn-warn" id="do-import-btn" style="display:none" onclick="doImport()">✅ Import All</button>
+        <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('import-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-ov" id="confirm-modal">
+  <div class="modal" style="width:400px;max-width:96vw">
+    <div class="modal-hdr">
+      <div class="modal-title" id="confirm-title">Confirm</div>
+      <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="confirm-msg" style="font-size:.88rem;line-height:1.6;margin-bottom:6px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="confirm-yes">Yes, Proceed</button>
+      <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('confirm-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Photo Viewer -->
+<div id="photo-viewer" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center;cursor:pointer" onclick="this.style.display='none'">
+  <img id="pv-img" style="max-width:90vw;max-height:88vh;border-radius:10px;border:2px solid var(--purple)"/>
+  <div style="position:absolute;top:16px;right:20px;color:#fff;font-size:1.6rem;cursor:pointer" onclick="document.getElementById('photo-viewer').style.display='none'">✕</div>
+  <a id="pv-dl" style="position:absolute;bottom:16px;right:20px;color:var(--green);font-size:.8rem;font-weight:700;text-decoration:none;background:rgba(0,0,0,.6);padding:6px 14px;border-radius:6px" onclick="event.stopPropagation()">📥 Download</a>
+</div>
+
+<!-- Notif Popup -->
+<div id="notif-popup" style="display:none;position:fixed;top:58px;right:18px;width:320px;background:var(--panel);border:1px solid var(--bd2);border-radius:10px;z-index:8500;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--bd);font-family:var(--font-hdr);font-size:.8rem;font-weight:700;letter-spacing:1px;display:flex;justify-content:space-between">
+    🔔 NOTIFICATIONS <button onclick="document.getElementById('notif-popup').style.display='none'" style="background:none;border:none;color:var(--text2);cursor:pointer">✕</button>
+  </div>
+  <div id="notif-list" style="max-height:340px;overflow-y:auto;padding:8px"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="TOAST"></div>
+
+<!-- Hidden file inputs -->
+<input type="file" id="photo-file-input" accept="image/*" multiple style="display:none" onchange="addPhotosFromFile(event)"/>
+
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   FUSION IMS v2.1 — Complete Application Logic
+═══════════════════════════════════════════════════════════════════ */
+
+// ── ROLE DEFINITIONS ──────────────────────────────────────────────
+const ROLE_DEFS = {
+  administrator: {label:'Administrator',color:'#ff3d5a',avClass:'av-admin',
+    pages:['dashboard','joborders','assets','stockroom','kpi','production','ai','plc','hr','admin'],
+    privs:['all']},
+  manager: {label:'Manager',color:'#a78bfa',avClass:'av-manager',
+    pages:['dashboard','joborders','assets','kpi','production','ai','plc'],
+    privs:['jo.view','jo.approve','jo.close','asset.view','kpi.view','kpi.export','prod.view','ai.access']},
+  supervisor: {label:'Supervisor',color:'#ffb800',avClass:'av-supervisor',
+    pages:['dashboard','joborders','assets','kpi','production','ai','plc'],
+    privs:['jo.view','jo.create','jo.close','jo.assign','asset.view','prod.view','ai.access']},
+  technician: {label:'Technician',color:'#00d4ff',avClass:'av-technician',
+    pages:['dashboard','joborders','ai','plc'],
+    privs:['jo.view','jo.accept','jo.comment','ai.access','plc.view']},
+  operator: {label:'Operator',color:'#00ff9d',avClass:'av-operator',
+    pages:['dashboard','joborders','production'],
+    privs:['jo.view','jo.create','prod.log','prod.view']},
+  qa: {label:'QA/QC',color:'#f472b6',avClass:'av-qa',
+    pages:['dashboard','joborders','assets'],
+    privs:['jo.view','jo.approve_qa','asset.view']},
+  stockroom: {label:'Stockroom',color:'#fb923c',avClass:'av-stockroom',
+    pages:['dashboard','stockroom','assets'],
+    privs:['stock.view','stock.receive','stock.issue','asset.view','asset.transfer']},
+  finance: {label:'Finance',color:'#34d399',avClass:'av-finance',
+    pages:['dashboard','stockroom','kpi'],
+    privs:['stock.view','stock.approve','kpi.view']},
+  hr: {label:'HR',color:'#818cf8',avClass:'av-hr',
+    pages:['dashboard','hr','kpi'],
+    privs:['hr.view','hr.edit','kpi.view']},
+};
+
+// ── DEPARTMENTS ────────────────────────────────────────────────────
+const DEPTS = ['Instrumentation','Electrical','Mechanical','Welder','Civil','QA/QC','Stockroom','Production','HR','Finance','IT/Admin'];
+
+// ── USER DATA ──────────────────────────────────────────────────────
+let USERS = [
+  {id:1,empId:'ADM-001',name:'System Administrator',role:'administrator',dept:'IT/Admin',email:'admin@fusion.ims',phone:'09171234567',password:'admin123',status:'active',joined:'2024-01-01',
+   privs:{all:true}},
+  {id:2,empId:'MGR-001',name:'Ramon Del Rosario',role:'manager',dept:'Production',email:'rdelrosario@fusion.ims',phone:'09181234567',password:'pass123',status:'active',joined:'2024-01-15',
+   privs:{jo_view:true,jo_approve:true,jo_close:true,kpi_view:true,kpi_export:true,prod_view:true,ai_access:true}},
+  {id:3,empId:'SUP-001',name:'Jomarh Mangila',role:'supervisor',dept:'Instrumentation',email:'jmangila@fusion.ims',phone:'09191234567',password:'pass123',status:'active',joined:'2024-02-01',
+   privs:{jo_view:true,jo_create:true,jo_close:true,jo_assign:true,prod_view:true,ai_access:true}},
+  {id:4,empId:'SUP-002',name:'Jack Melad',role:'supervisor',dept:'Electrical',email:'jmelad@fusion.ims',phone:'09201234567',password:'pass123',status:'active',joined:'2024-02-01',
+   privs:{jo_view:true,jo_create:true,jo_close:true,jo_assign:true,prod_view:true,ai_access:true}},
+  {id:5,empId:'TEC-001',name:'Arnold Padernal',role:'technician',dept:'Instrumentation',email:'apadernal@fusion.ims',phone:'09211234567',password:'pass123',status:'active',joined:'2024-03-01',
+   privs:{jo_view:true,jo_accept:true,jo_comment:true,ai_access:true}},
+  {id:6,empId:'TEC-002',name:'Juan Cruz',role:'technician',dept:'Electrical',email:'jcruz@fusion.ims',phone:'09221234567',password:'pass123',status:'active',joined:'2024-03-15',
+   privs:{jo_view:true,jo_accept:true,jo_comment:true,ai_access:true}},
+  {id:7,empId:'OPR-001',name:'Maria Santos',role:'operator',dept:'Production',email:'msantos@fusion.ims',phone:'09231234567',password:'pass123',status:'active',joined:'2024-04-01',
+   privs:{jo_view:true,jo_create:true,prod_log:true,prod_view:true}},
+  {id:8,empId:'QA-001',name:'Rosa Flores',role:'qa',dept:'QA/QC',email:'rflores@fusion.ims',phone:'09241234567',password:'pass123',status:'active',joined:'2024-04-15',
+   privs:{jo_view:true,jo_approve_qa:true,asset_view:true}},
+  {id:9,empId:'STK-001',name:'Ben Torres',role:'stockroom',dept:'Stockroom',email:'btorres@fusion.ims',phone:'09251234567',password:'pass123',status:'active',joined:'2024-05-01',
+   privs:{stock_view:true,stock_receive:true,stock_issue:true,asset_view:true,asset_transfer:true}},
+  {id:10,empId:'HR-001',name:'Grace Aquino',role:'hr',dept:'HR',email:'gaquino@fusion.ims',phone:'09261234567',password:'pass123',status:'active',joined:'2024-05-15',
+   privs:{hr_view:true,hr_edit:true,kpi_view:true}},
+];
+
+// ── JOB ORDERS ─────────────────────────────────────────────────────
+let JOBS = [
+  {id:'JO-00001',equip:'DeepWell Pump G-PP-930',defect:'Uneven resistance reading, motor winding suspect',sec:'Utility Process',dept:'Instrumentation',pn:1,st:'open',req:'Maria Santos',reqId:7,date:'2026-02-27',photos:[],personnel:[],materials:[],sel:false},
+  {id:'JO-00002',equip:'Centrifugal Pump P-202',defect:'Bearing overheating and abnormal vibration above limit',sec:'Production Line 1',dept:'Mechanical',pn:2,st:'progress',req:'Maria Santos',reqId:7,assignedTo:'Arnold Padernal',assignedId:5,date:'2026-02-26',photos:[],personnel:['Arnold Padernal'],materials:[{item:'6308 Bearing',qty:2},{item:'Bearing Grease',qty:1}],sel:false},
+  {id:'JO-00003',equip:'Siemens S7-1200 CPU Module',defect:'PROFINET communication error — Production Line 3 halted',sec:'Automation Room',dept:'Instrumentation',pn:1,st:'progress',req:'Jomarh Mangila',reqId:3,assignedTo:'Arnold Padernal',assignedId:5,date:'2026-02-27',photos:[],personnel:['Arnold Padernal','Juan Cruz'],materials:[],sel:false},
+  {id:'JO-00004',equip:'ABB ACS580 VFD — Motor 7',defect:'OC1 overcurrent fault on startup, motor tripping repeatedly',sec:'MCC Room B',dept:'Electrical',pn:2,st:'done',req:'Jack Melad',reqId:4,assignedTo:'Juan Cruz',assignedId:6,closedAt:'2026-02-26 14:30',date:'2026-02-25',photos:[],personnel:['Juan Cruz'],materials:[{item:'Contactor',qty:1}],rootCause:'Loose motor terminal connection causing overcurrent',taskDone:'Tightened motor terminals, tested VFD startup sequence',sel:false},
+  {id:'JO-00005',equip:'Hydraulic Press HP-01',defect:'Hydraulic oil leak at cylinder seals',sec:'Fabrication Area',dept:'Mechanical',pn:2,st:'open',req:'Maria Santos',reqId:7,date:'2026-02-28',photos:[],personnel:[],materials:[],sel:false},
+  {id:'JO-00006',equip:'Cooling Tower Fan CT-3',defect:'Fan motor overload tripping during operation',sec:'Utility Area',dept:'Electrical',pn:1,st:'open',req:'Jack Melad',reqId:4,date:'2026-02-28',photos:[],personnel:[],materials:[],sel:false},
+];
+
+// ── ASSETS ────────────────────────────────────────────────────────
+let ASSETS = [
+  {id:'AST-001',code:'PT-SIEM-001',name:'Pressure Transmitter SITRANS P320',cat:'Instrumentation',brand:'Siemens',model:'SITRANS P320',serial:'SN-SIM-20001',dept:'Instrumentation',assignedTo:'Arnold Padernal',status:'active',loc:'Control Room A',value:85000,date:'2024-01-15',history:[]},
+  {id:'AST-002',code:'VFD-ABB-001',name:'ABB ACS580 Variable Frequency Drive',cat:'Electrical',brand:'ABB',model:'ACS580-01-246A-4',serial:'SN-ABB-30002',dept:'Electrical',assignedTo:'Juan Cruz',status:'active',loc:'MCC Room B',value:125000,date:'2024-02-01',history:[]},
+  {id:'AST-003',code:'PLC-SIE-001',name:'Siemens S7-1200 CPU 1214C',cat:'PLC',brand:'Siemens',model:'6ES7214-1AG40-0XB0',serial:'SN-SIE-10003',dept:'Instrumentation',assignedTo:'Arnold Padernal',status:'active',loc:'Automation Room',value:45000,date:'2024-02-15',history:[]},
+  {id:'AST-004',code:'WLD-LIN-001',name:'Lincoln Electric Welder',cat:'Mechanical',brand:'Lincoln Electric',model:'Power MIG 360MP',serial:'SN-LIN-40004',dept:'Mechanical',assignedTo:'',status:'in-stock',loc:'Fabrication Area',value:55000,date:'2024-03-01',history:[]},
+  {id:'AST-005',code:'FT-ENDRESS-001',name:'Endress+Hauser Flow Transmitter',cat:'Instrumentation',brand:'Endress+Hauser',model:'Promag 50W',serial:'SN-END-20005',dept:'Instrumentation',assignedTo:'Arnold Padernal',status:'active',loc:'Process Line 1',value:65000,date:'2024-03-15',history:[]},
+];
+
+// ── INVENTORY ─────────────────────────────────────────────────────
+let INVENTORY = [
+  {id:'INV-001',name:'6308 Deep Groove Ball Bearing',cat:'Mechanical',brand:'SKF',model:'6308-2RS',qty:12,reorder:5,unit:'pcs',price:850,loc:'Shelf A-1'},
+  {id:'INV-002',name:'Siemens S7-1200 SM1221 Digital Input Module',cat:'PLC Spare',brand:'Siemens',model:'6ES7221-1BF32-0XB0',qty:3,reorder:2,unit:'pcs',price:8500,loc:'Shelf B-3'},
+  {id:'INV-003',name:'ABB Contactor A16-30-10',cat:'Electrical',brand:'ABB',model:'A16-30-10',qty:8,reorder:4,unit:'pcs',price:1200,loc:'Shelf C-2'},
+  {id:'INV-004',name:'Hydraulic Cylinder Seal Kit',cat:'Mechanical',brand:'Parker',model:'SH-75-150',qty:2,reorder:3,unit:'sets',price:4500,loc:'Shelf A-4'},
+  {id:'INV-005',name:'SITRANS P320 Pressure Transmitter',cat:'Instrumentation',brand:'Siemens',model:'7MF4433',qty:1,reorder:1,unit:'pcs',price:85000,loc:'Shelf B-1'},
+  {id:'INV-006',name:'Cable Gland M20',cat:'Electrical',brand:'Weidmüller',model:'GP-M20',qty:45,reorder:20,unit:'pcs',price:120,loc:'Shelf D-1'},
+  {id:'INV-007',name:'Bearing Grease LGMT3',cat:'Mechanical',brand:'SKF',model:'LGMT3/1',qty:6,reorder:3,unit:'cans',price:650,loc:'Shelf A-2'},
+];
+
+// ── PRODUCTION LOGS ────────────────────────────────────────────────
+let PROD_LOGS = [
+  {id:'PL-001',date:'2026-02-28',shift:'Day',target:100,actual:94,downtime:72,operator:'Maria Santos',status:'running',notes:'Pump P-202 bearing issue caused 1.2hr downtime'},
+  {id:'PL-002',date:'2026-02-27',shift:'Day',target:100,actual:98,downtime:18,operator:'Maria Santos',status:'completed',notes:'Normal operation'},
+  {id:'PL-003',date:'2026-02-26',shift:'Night',target:100,actual:87,downtime:156,operator:'Pedro Reyes',status:'completed',notes:'VFD fault caused extended downtime on Line 3'},
+  {id:'PL-004',date:'2026-02-25',shift:'Day',target:100,actual:100,downtime:0,operator:'Maria Santos',status:'completed',notes:'Full production — no issues'},
+  {id:'PL-005',date:'2026-02-24',shift:'Day',target:100,actual:91,downtime:54,operator:'Maria Santos',status:'completed',notes:'Scheduled maintenance on cooling tower'},
+];
+
+// ── AI KNOWLEDGE BASE ──────────────────────────────────────────────
+const AI_KB = [
+  {kw:['vfd','oc1','overcurrent','fault'],ans:'OC1 fault on VFD typically indicates overcurrent during startup. Common causes: (1) Loose motor terminal connections — tighten all terminals, (2) Motor winding damaged — check resistance with megger, (3) Excessive load — check driven equipment for mechanical binding, (4) Acceleration ramp too fast — increase acceleration time in VFD parameters. Recommended action: De-energize VFD, inspect motor terminals, meg-test motor insulation (should be >1MΩ).'},
+  {kw:['s7-1200','profinet','communication','error'],ans:'Siemens S7-1200 PROFINET communication errors are usually caused by: (1) IP address conflict — verify unique IPs, (2) Cable fault — check RJ45 connectors and shielding, (3) Device name mismatch — verify device names in hardware config, (4) Module failure — check LED indicators on the CPU and IO modules. In TIA Portal: check Diagnostics buffer (Online > Device diagnostics) for specific fault code.'},
+  {kw:['pressure','transmitter','calibrate','calibration'],ans:'Pressure Transmitter Calibration (2-point method): (1) Apply 0% signal (0 bar) — adjust ZERO, (2) Apply 100% signal (full range) — adjust SPAN, (3) Verify mid-range 50% output. For HART devices: use a HART communicator to trim the sensor. Accept deviation ±0.1% of full scale. Document in calibration sheet with date, technician, and equipment serial numbers. Recalibrate every 12 months or per manufacturer recommendation.'},
+  {kw:['bearing','vibration','overheating'],ans:'Bearing failure symptoms: overheating (>70°C) and vibration. Causes: (1) Under/over-lubrication, (2) Misalignment, (3) Contamination, (4) Overload, (5) Wrong bearing type. Corrective action: (1) Measure vibration with analyzer, (2) Check alignment with dial indicator, (3) Check bearing temperature with IR thermometer, (4) Replace bearing per manufacturer spec (SKF 6308-2RS for standard motors), (5) Relubricate per schedule.'},
+  {kw:['plc','siemens','logo','programming'],ans:'Siemens LOGO! Programming: Use LOGO! Soft Comfort software. Program types: FBD (Function Block Diagram) or LAD (Ladder). Basic elements: I/O contacts, coils, timers, counters, comparators. Download: Connect via LOGO! USB cable or Ethernet (LOGO! 8). Default IP: 192.168.0.3. Steps: (1) Create new project, (2) Select CPU model, (3) Program in FBD/LAD, (4) Compile, (5) Download to PLC.'},
+  {kw:['osha','safety','permit','hot work','welding'],ans:'Hot Work Permit Requirements (OSHA 29 CFR 1910.252): (1) Fire watch must be present during and 30 minutes after work, (2) Remove flammables within 35 feet, (3) Cover floor drains and openings, (4) Have fire extinguisher readily available, (5) Post HOT WORK signs, (6) Obtain signed permit from safety officer. PPE required: welding helmet (shade 10+), leather gloves, welding jacket, safety shoes.'},
+  {kw:['nc2','nc3','instrumentation','control','certification'],ans:'TESDA NC2 Instrumentation & Control Systems Servicing covers: (1) Install, configure, test and commission I&C systems, (2) Calibrate field instruments, (3) Troubleshoot I&C systems, (4) Maintain I&C systems. NC3 adds: System integration, PLC programming, SCADA operation. Assessment: Demonstration + Written exam. Duration: 320 hrs (NC2), 640 hrs (NC3). Contact TESDA regional office for schedule.'},
+  {kw:['hydraulic','oil','leak','seal'],ans:'Hydraulic Cylinder Seal Failure: Symptoms: visible oil leak at cylinder rod. Repair steps: (1) Release hydraulic pressure completely, (2) Tag and lockout/tagout hydraulic unit, (3) Extend cylinder rod fully to expose all seals, (4) Remove end cap and piston rod, (5) Replace rod seal, piston seals, O-rings, and backup rings per seal kit (Parker SH series), (6) Torque end cap to specification, (7) Test at 50%, then 100% rated pressure, (8) Check for leaks.'},
+  {kw:['dp','differential pressure','transmitter','level'],ans:'DP Transmitter for Level Measurement: HP (High Pressure) side connects to bottom of vessel, LP (Low Pressure) side connects to top (vapor space). Formula: Level = DP / (ρ × g). Calibration: (1) Drain vessel completely — DP should read 0 (zero level), (2) Fill vessel to max — DP should read max range. Common issues: (1) Impulse lines blocked — purge with nitrogen, (2) Wet leg changed — recalibrate, (3) Density change — reconfigure density compensation.'},
+  {kw:['motor','3 phase','wiring','connection'],ans:'3-Phase Motor Wiring (Star/Delta): Star (Y): U1-V1-W1 to supply, W2-U2-V2 jumpered together (neutral). Current = Phase voltage / √3 × R. Delta (Δ): U1-W2, V1-U2, W1-V2 connected to supply. For Star-Delta starter: Timer setting = motor acceleration time (typically 5-10 sec). Cable sizing: Full Load Current × 1.25 (NEC). Protection: Overload relay set at 100-110% FLA. Megger test before energizing: >1MΩ phase-to-ground.'},
+];
+
+// ── NOTIFICATIONS ──────────────────────────────────────────────────
+let NOTIFICATIONS = [
+  {id:1,type:'danger',msg:'JO-00001: DeepWell Pump — Priority 1 open for 2 hours',time:'10 min ago',read:false},
+  {id:2,type:'warn',msg:'INV-004: Hydraulic Seal Kit below reorder level (qty: 2)',time:'30 min ago',read:false},
+  {id:3,type:'info',msg:'JO-00003 accepted by Arnold Padernal',time:'1 hr ago',read:false},
+  {id:4,type:'success',msg:'JO-00004 closed and archived successfully',time:'2 hr ago',read:true},
+];
+
+// ── APP STATE ──────────────────────────────────────────────────────
+let currentUser = null;
+let currentPage = 'dashboard';
+let camStream = null;
+let capturedPhoto = null;
+let camTarget = 'form';
+let photoContainer = null;
+let importData = [];
+let joView = 'list'; // 'list' or 'form'
+let editingJO = null;
+let editingUser = null;
+let editingAsset = null;
+let matRows = 3;
+let chartInstances = {};
+
+// ── LOGIN ──────────────────────────────────────────────────────────
+function initLoginRoles(){
+  const demoRoles = ['administrator','supervisor','technician','operator','stockroom'];
+  const grid = document.getElementById('quick-roles');
+  if(!grid) return;
+  grid.innerHTML = demoRoles.map(r=>`
+    <div class="lrole" onclick="quickRole('${r}')" id="qr-${r}">${ROLE_DEFS[r].label}</div>`).join('');
+}
+
+function quickRole(role){
+  document.querySelectorAll('.lrole').forEach(el=>el.classList.remove('on'));
+  document.getElementById('qr-'+role)?.classList.add('on');
+  const user = USERS.find(u=>u.role===role);
+  if(user){
+    document.getElementById('li-user').value = user.empId;
+    document.getElementById('li-pass').value = user.password;
+  }
+}
+
+function doLogin(){
+  const uInput = (document.getElementById('li-user')?.value||'').trim().toLowerCase();
+  const pInput = (document.getElementById('li-pass')?.value||'').trim();
+  const user = USERS.find(u=>
+    (u.empId.toLowerCase()===uInput || u.name.toLowerCase()===uInput || u.email.toLowerCase()===uInput) &&
+    u.password===pInput && u.status==='active'
+  );
+  if(!user){ toast('❌ Invalid credentials or account inactive.','var(--danger)'); return; }
+  currentUser = user;
+  document.getElementById('LOGIN').style.display='none';
+  document.getElementById('APP').classList.add('show');
+  initApp();
+  toast(`✅ Welcome back, ${user.name.split(' ')[0]}!`,'var(--green)');
+}
+
+function doLogout(){
+  showConfirm('Sign out of FUSION IMS?', ()=>{
+    currentUser = null;
+    document.getElementById('APP').classList.remove('show');
+    document.getElementById('LOGIN').style.display='flex';
+    document.getElementById('li-pass').value='';
+    initLoginRoles();
+  });
+}
+
+// ── APP INIT ───────────────────────────────────────────────────────
+function initApp(){
+  renderSidebar();
+  renderUserInfo();
+  setInterval(updateClock, 1000); updateClock();
+  navigate('dashboard');
+}
+
+function renderUserInfo(){
+  const u = currentUser;
+  const rd = ROLE_DEFS[u.role];
+  document.getElementById('tb-user-name').textContent = u.name.split(' ')[0];
+  document.getElementById('sb-user-info').innerHTML=`
+    <div class="av ${rd.avClass}">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+    <div>
+      <div class="un">${u.name}</div>
+      <div class="ur" style="color:${rd.color}">${rd.label}</div>
+    </div>`;
+}
+
+function renderSidebar(){
+  const u = currentUser;
+  const rd = ROLE_DEFS[u.role];
+  const pages = rd.pages;
+
+  const navGroups = [
+    {label:'Overview', items:[
+      {id:'dashboard',ico:'📊',lbl:'Dashboard'},
+    ]},
+    {label:'Maintenance', items:[
+      {id:'joborders',ico:'🔧',lbl:'Job Orders',badge:()=>JOBS.filter(j=>j.st==='open').length||null},
+      {id:'assets',ico:'📦',lbl:'Asset Management'},
+    ]},
+    {label:'Operations', items:[
+      {id:'stockroom',ico:'🏭',lbl:'Stockroom',badge:()=>INVENTORY.filter(i=>i.qty<=i.reorder).length||null},
+      {id:'production',ico:'⚙️',lbl:'Production'},
+      {id:'kpi',ico:'📈',lbl:'KPI & Reports'},
+    ]},
+    {label:'Knowledge', items:[
+      {id:'ai',ico:'🤖',lbl:'AI Assistant'},
+      {id:'plc',ico:'📚',lbl:'PLC & Instruments'},
+    ]},
+    {label:'Administration', items:[
+      {id:'hr',ico:'👥',lbl:'HR & Personnel'},
+      {id:'admin',ico:'🛡️',lbl:'Admin Control',badge:()=>null},
+    ]},
+  ];
+
+  let nav = '';
+  navGroups.forEach(g=>{
+    const visible = g.items.filter(i=>pages.includes(i.id));
+    if(!visible.length) return;
+    nav += `<div class="nav-grp"><div class="nav-lbl">${g.label}</div>`;
+    visible.forEach(item=>{
+      const badge = item.badge?.();
+      nav += `<div class="ni ${currentPage===item.id?'on':''}" onclick="navigate('${item.id}')" id="nav-${item.id}">
+        <span class="ni-ico">${item.ico}</span>
+        <span class="ni-txt">${item.lbl}</span>
+        ${badge?`<span class="ni-badge">${badge}</span>`:''}
+      </div>`;
+    });
+    nav += `</div>`;
+  });
+  document.getElementById('SB_NAV').innerHTML = nav;
+}
+
+function toggleSidebar(){
+  const sb = document.getElementById('SIDEBAR');
+  sb.classList.toggle('collapsed');
+  document.querySelector('.sb-toggle').textContent = sb.classList.contains('collapsed')?'▶ Expand':'◀ Collapse';
+}
+
+function navigate(page){
+  const u = currentUser;
+  const rd = ROLE_DEFS[u.role];
+  if(!rd.pages.includes(page) && !rd.privs?.includes('all')) {
+    toast('⚠️ You do not have access to this module.','var(--warn)'); return;
+  }
+  currentPage = page;
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  const pgEl = document.getElementById('pg-'+page);
+  const navEl = document.getElementById('nav-'+page);
+  if(pgEl) pgEl.classList.add('on');
+  if(navEl) navEl.classList.add('on');
+  const titles = {dashboard:'📊 Dashboard',joborders:'🔧 Job Orders',assets:'📦 Asset Management',stockroom:'🏭 Stockroom',kpi:'📈 KPI & Reports',production:'⚙️ Production',ai:'🤖 AI Assistant',plc:'📚 PLC & Instruments',hr:'👥 HR & Personnel',admin:'🛡️ Admin Control',profile:'👤 My Profile'};
+  document.getElementById('tb-title').textContent = titles[page]||page;
+  renderPage(page);
+  renderSidebar();
+}
+
+function renderPage(page){
+  const renderers = {
+    dashboard: renderDashboard,
+    joborders: renderJobOrders,
+    assets: renderAssets,
+    stockroom: renderStockroom,
+    kpi: renderKPI,
+    production: renderProduction,
+    ai: renderAI,
+    plc: renderPLC,
+    hr: renderHR,
+    admin: renderAdmin,
+  };
+  renderers[page]?.();
+}
+
+function updateClock(){
+  const el = document.getElementById('tb-time');
+  if(el) el.textContent = new Date().toLocaleString('en-PH',{weekday:'short',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────
+function renderDashboard(){
+  const el = document.getElementById('pg-dashboard');
+  const openJOs = JOBS.filter(j=>j.st==='open').length;
+  const inProgJOs = JOBS.filter(j=>j.st==='progress').length;
+  const p1JOs = JOBS.filter(j=>j.pn===1&&j.st!=='done').length;
+  const lowStock = INVENTORY.filter(i=>i.qty<=i.reorder).length;
+  const todayProd = PROD_LOGS[0];
+  const efficiency = todayProd ? Math.round((todayProd.actual/todayProd.target)*100) : 0;
+
+  el.innerHTML = `
+  <div class="stat-row">
+    <div class="stat-card" onclick="navigate('joborders')" style="cursor:pointer;border-color:rgba(255,184,0,.3)">
+      <div class="sc-num" style="color:var(--warn)">${openJOs}</div>
+      <div class="sc-lbl">Open Job Orders</div>
+      <div class="sc-ico">🔧</div>
+    </div>
+    <div class="stat-card" onclick="navigate('joborders')" style="cursor:pointer;border-color:rgba(255,61,90,.3)">
+      <div class="sc-num" style="color:var(--danger)">${p1JOs}</div>
+      <div class="sc-lbl">Priority 1 Critical</div>
+      <div class="sc-ico">⚠️</div>
+    </div>
+    <div class="stat-card" style="border-color:rgba(0,212,255,.25)">
+      <div class="sc-num" style="color:var(--accent)">${inProgJOs}</div>
+      <div class="sc-lbl">In Progress</div>
+      <div class="sc-ico">⚙️</div>
+    </div>
+    <div class="stat-card" style="border-color:rgba(0,255,157,.25)">
+      <div class="sc-num" style="color:var(--green)">${efficiency}%</div>
+      <div class="sc-lbl">Today's Efficiency</div>
+      <div class="sc-ico">📈</div>
+    </div>
+    <div class="stat-card" onclick="navigate('stockroom')" style="cursor:pointer;border-color:rgba(255,61,90,.3)">
+      <div class="sc-num" style="color:${lowStock>0?'var(--danger)':'var(--green)'}">${lowStock}</div>
+      <div class="sc-lbl">Low Stock Alerts</div>
+      <div class="sc-ico">📦</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:14px">
+    <div>
+      <div class="sec-hdr"><div class="sec-title">Recent Job Orders</div><button class="btn btn-primary btn-sm" onclick="navigate('joborders')">View All</button></div>
+      <div class="tbl-wrap">
+        <table class="ftbl">
+          <thead><tr><th>JO #</th><th>Equipment</th><th>Dept</th><th>P#</th><th>Status</th></tr></thead>
+          <tbody>
+            ${JOBS.slice(0,5).map(j=>`<tr style="cursor:pointer" onclick="navigate('joborders')">
+              <td class="mono fw7" style="color:var(--accent)">${j.id}</td>
+              <td><div class="fw7 fs7">${j.equip}</div></td>
+              <td><span class="tag">${j.dept}</span></td>
+              <td><span style="color:${PC(j.pn)};font-weight:700">P${j.pn}</span></td>
+              <td>${stBadge(j.st)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="sec-hdr"><div class="sec-title">Production (Last 5 Days)</div></div>
+      <div class="chart-card">
+        <div class="chart-wrap"><canvas id="dash-prod-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div>
+      <div class="sec-hdr"><div class="sec-title">Low Stock Items</div></div>
+      ${INVENTORY.filter(i=>i.qty<=i.reorder).map(i=>`
+        <div class="kb-card" style="padding:10px 12px;margin-bottom:6px">
+          <div class="fw7 fs7">${i.name}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+            <span class="tag-danger" style="font-size:.62rem;padding:1px 6px;border-radius:4px;background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.2);color:var(--danger)">QTY: ${i.qty} / Reorder: ${i.reorder}</span>
+            <span class="tag">${i.cat}</span>
+          </div>
+        </div>`).join('')||'<div class="tm fs7">✅ All stock levels OK</div>'}
+    </div>
+    <div>
+      <div class="sec-hdr"><div class="sec-title">Active Personnel</div></div>
+      ${USERS.filter(u=>u.status==='active').slice(0,5).map(u=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)">
+          <div class="av ${ROLE_DEFS[u.role]?.avClass||''}" style="width:28px;height:28px;font-size:.7rem">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+          <div>
+            <div class="fs7 fw7">${u.name}</div>
+            <div style="font-size:.62rem;color:${ROLE_DEFS[u.role]?.color||'var(--text2)'}">${ROLE_DEFS[u.role]?.label||u.role}</div>
+          </div>
+          <span class="tag" style="margin-left:auto;font-size:.58rem">${u.dept}</span>
+        </div>`).join('')}
+    </div>
+    <div>
+      <div class="sec-hdr"><div class="sec-title">Notifications</div></div>
+      ${NOTIFICATIONS.slice(0,4).map(n=>`
+        <div style="padding:8px 0;border-bottom:1px solid var(--bd);display:flex;gap:8px">
+          <div style="font-size:.8rem">${n.type==='danger'?'🔴':n.type==='warn'?'🟡':n.type==='success'?'🟢':'🔵'}</div>
+          <div>
+            <div class="fs7" style="line-height:1.4">${n.msg}</div>
+            <div style="font-size:.6rem;color:var(--text3);margin-top:2px">${n.time}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+
+  // Chart
+  setTimeout(()=>{
+    const ctx = document.getElementById('dash-prod-chart');
+    if(!ctx) return;
+    if(chartInstances['dash-prod']) chartInstances['dash-prod'].destroy();
+    chartInstances['dash-prod'] = new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:PROD_LOGS.map(p=>p.date.slice(5)).reverse(),
+        datasets:[
+          {label:'Target',data:PROD_LOGS.map(p=>p.target).reverse(),backgroundColor:'rgba(0,212,255,.2)',borderColor:'var(--accent)',borderWidth:1.5,borderRadius:4},
+          {label:'Actual',data:PROD_LOGS.map(p=>p.actual).reverse(),backgroundColor:'rgba(0,255,157,.25)',borderColor:'var(--green)',borderWidth:1.5,borderRadius:4},
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#5a82a8',font:{size:10}}}},scales:{x:{ticks:{color:'#5a82a8',font:{size:10}},grid:{color:'rgba(30,53,96,.5)'}},y:{ticks:{color:'#5a82a8',font:{size:10}},grid:{color:'rgba(30,53,96,.5)'},beginAtZero:true,max:110}}}
+    });
+  },100);
+}
+
+// ── JOB ORDERS ─────────────────────────────────────────────────────
+let joFilter = 'all', joSearch = '';
+const PC = (pn)=>({1:'#ff3d5a',2:'#ffb800',3:'#00d4ff',4:'#a78bfa'}[pn]||'#fff');
+const SL = {open:'OPEN',progress:'IN PROGRESS',done:'DONE'};
+function stBadge(st){const m={open:'badge-open',progress:'badge-progress',done:'badge-done'};return `<span class="badge ${m[st]||''}">${SL[st]||st}</span>`;}
+
+function renderJobOrders(){
+  const el = document.getElementById('pg-joborders');
+  if(joView==='form'){ renderJOForm(el); return; }
+  const can = currentUser;
+  const isAdmin = can.role==='administrator';
+  const canCreate = can.privs?.all||can.privs?.jo_create;
+
+  const filtered = JOBS.filter(j=>{
+    const mf = joFilter==='all'||j.st===joFilter||(joFilter==='p1'&&j.pn===1);
+    const ms = !joSearch||[j.id,j.equip,j.defect,j.dept,j.req].join(' ').toLowerCase().includes(joSearch.toLowerCase());
+    return mf&&ms;
+  });
+
+  el.innerHTML=`
+  <div class="action-bar">
+    <span class="abar-lbl">Actions:</span>
+    ${canCreate?`<button class="btn btn-solid btn-sm" onclick="joView='form';renderJobOrders()">➕ New JO</button>`:''}
+    <button class="btn btn-primary btn-sm" onclick="printAllJOs()">🖨️ Print All</button>
+    <button class="btn btn-success btn-sm" onclick="exportJOExcel()">📥 Export Excel</button>
+    <button class="btn btn-warn btn-sm" onclick="openModal('import-modal')">📤 Import Excel</button>
+    <button class="btn btn-purple btn-sm" onclick="openCam('list')">📷 Camera</button>
+    <input class="search-box" placeholder="🔍 Search..." value="${joSearch}" oninput="joSearch=this.value;renderJobOrders()" style="margin-left:auto"/>
+  </div>
+  <div class="filter-bar">
+    ${['all','open','progress','done','p1'].map((f,i)=>`
+      <button class="fb ${joFilter===f?'on':''}" onclick="joFilter='${f}';renderJobOrders()">
+        ${['All ('+JOBS.length+')','🟡 Open','🔵 Progress','🟢 Done','🔴 P1 Critical'][i]}
+      </button>`).join('')}
+  </div>
+  <div class="tbl-wrap">
+    <table class="ftbl">
+      <thead><tr>
+        <th><input type="checkbox" id="chk-all" onchange="selAllJOs(this)" style="accent-color:var(--accent)"/></th>
+        <th>JO Number</th><th>Equipment / Defect</th><th>Section</th>
+        <th>Dept</th><th>P#</th><th>Status</th><th>Requestor</th><th>Assigned</th><th>Date</th><th>📷</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.length?filtered.map(j=>`
+          <tr>
+            <td><input type="checkbox" class="jo-chk" data-id="${j.id}" ${j.sel?'checked':''} onchange="rowSelJO(this)" style="accent-color:var(--accent)"/></td>
+            <td class="mono fw7" style="color:var(--accent);cursor:pointer" onclick="viewJO('${j.id}')">${j.id}</td>
+            <td style="cursor:pointer;max-width:200px" onclick="viewJO('${j.id}')">
+              <div class="fw7 fs7">${j.equip}</div>
+              <div class="tm" style="font-size:.65rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px">${j.defect}</div>
+            </td>
+            <td class="tm fs7">${j.sec||'—'}</td>
+            <td><span class="tag">${j.dept}</span></td>
+            <td><span class="fw7" style="color:${PC(j.pn)};font-size:1.1rem">P${j.pn}</span></td>
+            <td>${stBadge(j.st)}</td>
+            <td class="tm fs7">${j.req}</td>
+            <td class="fs7">${j.assignedTo||'<span class="tm">Unassigned</span>'}</td>
+            <td class="tm fs7">${j.date}</td>
+            <td>${j.photos?.length?`<span class="tag-purple" style="font-size:.6rem;padding:1px 5px;border-radius:3px">📷${j.photos.length}</span>`:'<span class="tm" style="font-size:.65rem">—</span>'}</td>
+            <td>
+              <div style="display:flex;gap:3px;flex-wrap:wrap">
+                <button class="btn btn-primary btn-xs" onclick="viewJO('${j.id}')">👁</button>
+                <button class="btn btn-primary btn-xs" onclick="printOneJO('${j.id}')">🖨️</button>
+                <button class="btn btn-success btn-xs" onclick="exportOneJO('${j.id}')">📥</button>
+                <button class="btn btn-purple btn-xs" onclick="addPhotoToJO('${j.id}')">📷</button>
+                ${j.st!=='done'&&(can.privs?.all||can.privs?.jo_close)?`<button class="btn btn-danger btn-xs" onclick="closeJO('${j.id}')">🔒</button>`:''}
+              </div>
+            </td>
+          </tr>`).join(''):
+          `<tr><td colspan="12" style="text-align:center;padding:28px;color:var(--text2)">No job orders found matching filter</td></tr>`}
+      </tbody>
+    </table>
+  </div>
+  <div id="jo-sel-bar" style="display:none;margin-top:10px;padding:8px 14px;background:rgba(0,212,255,.06);border:1px solid var(--accent);border-radius:6px;gap:8px;align-items:center;flex-wrap:wrap">
+    <span class="fs7 fw7" id="jo-sel-ct" style="color:var(--accent)">0 selected</span>
+    <button class="btn btn-success btn-sm" onclick="exportSelJOs()">📥 Export Selected</button>
+    <button class="btn btn-primary btn-sm" onclick="printSelJOs()">🖨️ Print Selected</button>
+    <button class="btn btn-sm" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="clearSelJOs()">✕ Clear</button>
+  </div>`;
+}
+
+function selAllJOs(cb){document.querySelectorAll('.jo-chk').forEach(c=>{c.checked=cb.checked;const j=JOBS.find(x=>x.id===c.dataset.id);if(j)j.sel=cb.checked;});updateJOSel();}
+function rowSelJO(cb){const j=JOBS.find(x=>x.id===cb.dataset.id);if(j)j.sel=cb.checked;updateJOSel();}
+function updateJOSel(){const n=JOBS.filter(j=>j.sel).length;const b=document.getElementById('jo-sel-bar');if(b){b.style.display=n>0?'flex':'none';document.getElementById('jo-sel-ct').textContent=n+' selected';}}
+function clearSelJOs(){JOBS.forEach(j=>j.sel=false);document.getElementById('chk-all').checked=false;updateJOSel();renderJobOrders();}
+
+function viewJO(id){
+  const j = JOBS.find(x=>x.id===id);
+  if(!j) return;
+  const el = document.getElementById('pg-joborders');
+  const can = currentUser;
+  el.innerHTML=`
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+    <button class="btn btn-sm" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="joView='list';renderJobOrders()">← Back to List</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="printOneJO('${id}')">🖨️ Print JO</button>
+      <button class="btn btn-success btn-sm" onclick="exportOneJO('${id}')">📥 Export Excel</button>
+      <button class="btn btn-purple btn-sm" onclick="addPhotoToJO('${id}')">📷 Add Photo</button>
+      ${j.st==='open'&&(can.privs?.all||can.privs?.jo_accept)?`<button class="btn btn-success btn-sm" onclick="acceptJO('${id}')">✅ Accept Job</button>`:''}
+      ${j.st!=='done'&&(can.privs?.all||can.privs?.jo_close)?`<button class="btn btn-danger btn-sm" onclick="closeJO('${id}')">🔒 Close JO</button>`:''}
+    </div>
+  </div>
+  <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px">
+    <div class="jo-hdr">
+      <div>
+        <div class="jo-co">FUSION IMS</div>
+        <div class="jo-co-sub">Industrial Management System</div>
+        <div class="jo-co-note">DO NOT LEAVE ANYTHING BLANK.<br>IF NOT APPLICABLE, WRITE "N/A"</div>
+      </div>
+      <div>
+        <div class="jo-title">MAINTENANCE JOB ORDER FORM</div>
+        <div class="jo-plant">${j.equip}</div>
+      </div>
+      <div class="jo-right">
+        <div class="jo-docno">Doc. No. FUSION-MAINT-JO-001<br>Revision No. 01</div>
+        <div style="margin-top:6px"><div class="fs7 tm" style="text-align:right">Job Order #</div><div class="jo-num-box">${j.id}</div></div>
+      </div>
+    </div>
+    <div class="ph">Part I: Requestor Details</div>
+    <div class="vgrid">
+      <div class="vf"><div class="vf-lbl">Requestor</div><div class="vf-val">${j.req}</div></div>
+      <div class="vf"><div class="vf-lbl">Equipment / Tag</div><div class="vf-val fw7">${j.equip}</div></div>
+      <div class="vf"><div class="vf-lbl">Plant / Section</div><div class="vf-val">${j.sec||'—'}</div></div>
+      <div class="vf"><div class="vf-lbl">Date Created</div><div class="vf-val">${j.date}</div></div>
+      <div class="vf" style="grid-column:span 4"><div class="vf-lbl">Description of Defect</div><div class="vf-val">${j.defect}</div></div>
+      <div class="vf"><div class="vf-lbl">Maintenance Incharge</div><div class="vf-val"><span class="tag">${j.dept}</span></div></div>
+      <div class="vf"><div class="vf-lbl">Priority</div><div class="vf-val fw7" style="color:${PC(j.pn)};font-size:1.1rem">PRIORITY ${j.pn}</div></div>
+      <div class="vf"><div class="vf-lbl">Status</div><div class="vf-val">${stBadge(j.st)}</div></div>
+      <div class="vf"><div class="vf-lbl">Assigned To</div><div class="vf-val">${j.assignedTo||'<span class="tm">Unassigned</span>'}</div></div>
+    </div>
+    ${j.personnel?.length?`
+    <div class="ph ph2">Part II: Maintenance Personnel</div>
+    <div class="vgrid">
+      ${j.personnel.map((p,i)=>`<div class="vf"><div class="vf-lbl">Personnel ${i+1}</div><div class="vf-val">${p}</div></div>`).join('')}
+      ${j.rootCause?`<div class="vf" style="grid-column:span 4"><div class="vf-lbl">Root Cause</div><div class="vf-val">${j.rootCause}</div></div>`:''}
+      ${j.taskDone?`<div class="vf" style="grid-column:span 4"><div class="vf-lbl">Task Performed</div><div class="vf-val">${j.taskDone}</div></div>`:''}
+    </div>`:''}
+    ${j.photos?.length?`
+    <div class="ph ph3">📷 Job Site Photos (${j.photos.length})</div>
+    <div class="pg-wrap">
+      ${j.photos.map(p=>`<div class="pg-thumb"><img src="${p}" onclick="showPhoto('${p}')"/></div>`).join('')}
+    </div>`:''}
+    ${j.materials?.length?`
+    <div class="ph ph4">Materials Used</div>
+    <table class="mat-tbl" style="margin:6px 0">
+      <thead><tr><th>#</th><th>Item Description</th><th>QTY</th></tr></thead>
+      <tbody>${j.materials.map((m,i)=>`<tr><td style="padding:5px 8px;text-align:center">${i+1}</td><td style="padding:5px 8px">${m.item}</td><td style="padding:5px 8px;text-align:center">${m.qty}</td></tr>`).join('')}</tbody>
+    </table>`:''}
+    ${j.closedAt?`<div class="ph ph2">Closed At: ${j.closedAt}</div>`:''}
+  </div>`;
+}
+
+function renderJOForm(el){
+  const nextNo = 'JO-'+String(JOBS.length+1).padStart(5,'0');
+  matRows = 3;
+  el.innerHTML=`
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+    <button class="btn btn-sm" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="joView='list';renderJobOrders()">← Back to List</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="printCurrentForm()">🖨️ Print Form</button>
+      <button class="btn btn-purple btn-sm" onclick="openCam('form')">📷 Add Photo</button>
+    </div>
+  </div>
+  <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px">
+    <div class="jo-hdr">
+      <div>
+        <div class="jo-co">FUSION IMS</div>
+        <div class="jo-co-sub">Industrial Management System</div>
+        <div class="jo-co-note">DO NOT LEAVE ANYTHING BLANK.<br>IF NOT APPLICABLE, WRITE "N/A"</div>
+      </div>
+      <div>
+        <div class="jo-title">MAINTENANCE JOB ORDER FORM</div>
+        <div class="jo-plant" id="jo-plant-lbl">— PLANT / SECTION —</div>
+      </div>
+      <div class="jo-right">
+        <div class="jo-docno">Doc. No. FUSION-MAINT-JO-001<br>Revision No. 01<br>${new Date().toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'})}</div>
+        <div style="margin-top:6px"><div class="fs7 tm" style="text-align:right">Job Order #</div><div class="jo-num-box">${nextNo}</div></div>
+      </div>
+    </div>
+
+    <div class="ph">Part I: To Be Fill Out by Requestor
+      <label style="font-size:.6rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px">
+        <input type="checkbox" id="jo-backjob"/> Back Job
+      </label>
+    </div>
+    <span class="pb">REQUESTOR</span>
+    <div class="form-row col-4" style="margin-bottom:10px">
+      <div class="form-group"><label class="form-label">Requestor's Name</label><input class="form-input" id="jo-req" value="${currentUser.name}"/></div>
+      <div class="form-group"><label class="form-label">Equipment Description *</label><input class="form-input" id="jo-equip" placeholder="e.g. DeepWell Pump" oninput="document.getElementById('jo-plant-lbl').textContent=this.value||'— PLANT / SECTION —'"/></div>
+      <div class="form-group"><label class="form-label">Plant / Section</label><input class="form-input" id="jo-sec" placeholder="e.g. Utility Process"/></div>
+      <div class="form-group"><label class="form-label">Equipment No. / Tag</label><input class="form-input" id="jo-tag" placeholder="e.g. G-PP-930"/></div>
+    </div>
+    <div class="form-row col-4" style="margin-bottom:10px">
+      <div class="form-group"><label class="form-label">Maintenance Incharge *</label>
+        <select class="form-input" id="jo-dept">${DEPTS.map(d=>`<option>${d}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Plant Shutdown Required?</label>
+        <div class="radio-group"><label class="radio-opt"><input type="radio" name="jo-sd" value="YES"> YES</label><label class="radio-opt"><input type="radio" name="jo-sd" value="NO" checked> NO</label></div>
+      </div>
+      <div class="form-group"><label class="form-label">Approved by</label><input class="form-input" id="jo-approver" placeholder="Approver name"/></div>
+      <div class="form-group"><label class="form-label">Priority Number</label>
+        <select class="form-input" id="jo-prio" onchange="updatePrioNote(this.value)">
+          <option value="1">1 — 1 Day (Critical/Emergency)</option>
+          <option value="2">2 — Up to 1 Week</option>
+          <option value="3">3 — Up to 1 Month</option>
+          <option value="4">4 — More than 1 Month</option>
+        </select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Description of Defect *</label><textarea class="form-input" id="jo-defect" rows="2" placeholder="Describe the problem or defect in detail..."></textarea></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <div class="radio-group">
+        <label class="radio-opt"><input type="radio" name="jo-cat" value="Repair/Replace/Servicing" checked> Repair / Replace / Servicing</label>
+        <label class="radio-opt"><input type="radio" name="jo-cat" value="Modification"> Modification</label>
+        <label class="radio-opt"><input type="radio" name="jo-cat" value="New Installation"> New Installation</label>
+      </div></div>
+    <div class="prio-note" id="jo-pnote" style="color:#ff3d5a">⚠️ PRIORITY 1 — Complete within 1 Day. Immediate health/safety/environment risk, quality loss, critical equipment down.</div>
+
+    <div class="ph ph2">Part II: To Be Filled Out by Maintenance Personnel</div>
+    <div class="form-row col-2" style="margin-bottom:10px">
+      <div>
+        <div class="form-label" style="margin-bottom:6px">Personnel Performing the Work</div>
+        <div class="form-row col-2">
+          <div class="form-group"><label class="form-label">1)</label><input class="form-input" id="jo-p1" placeholder="Technician 1"/></div>
+          <div class="form-group"><label class="form-label">3)</label><input class="form-input" id="jo-p3" placeholder="Technician 3"/></div>
+          <div class="form-group"><label class="form-label">2)</label><input class="form-input" id="jo-p2" placeholder="Technician 2"/></div>
+          <div class="form-group"><label class="form-label">4)</label><input class="form-input" id="jo-p4" placeholder="Technician 4"/></div>
+        </div>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:6px">Materials / Spare Parts Used</div>
+        <table class="mat-tbl">
+          <thead><tr><th style="width:36px">#</th><th>Material / Part Description</th><th style="width:50px">QTY</th></tr></thead>
+          <tbody id="mat-body">
+            <tr><td style="text-align:center;padding:3px">1</td><td><input class="mini-inp" placeholder="Part description"/></td><td><input class="mini-inp" type="number" placeholder="0"/></td></tr>
+            <tr><td style="text-align:center;padding:3px">2</td><td><input class="mini-inp" placeholder="Part description"/></td><td><input class="mini-inp" type="number" placeholder="0"/></td></tr>
+            <tr><td style="text-align:center;padding:3px">3</td><td><input class="mini-inp" placeholder="Part description"/></td><td><input class="mini-inp" type="number" placeholder="0"/></td></tr>
+          </tbody>
+        </table>
+        <button onclick="addMatRow()" style="margin-top:4px;background:var(--bg3);border:1px solid var(--bd);color:var(--text2);padding:3px 9px;border-radius:4px;cursor:pointer;font-size:.65rem">+ Add Row</button>
+      </div>
+    </div>
+    <div class="form-row col-4" style="margin-bottom:10px">
+      <div class="form-group"><label class="form-label">Hours Completed</label><input class="form-input" id="jo-hrs" type="number" step="0.5" placeholder="0.0"/></div>
+      <div class="form-group"><label class="form-label">Date Started</label><input class="form-input" id="jo-dstart" type="datetime-local"/></div>
+      <div class="form-group"><label class="form-label">Date Completed</label><input class="form-input" id="jo-dend" type="datetime-local"/></div>
+      <div class="form-group"><label class="form-label">Downtime (minutes)</label><input class="form-input" id="jo-dt" type="number" value="0"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Task Performed</label><textarea class="form-input" id="jo-task" rows="2" placeholder="Describe all tasks performed..."></textarea></div>
+    <div class="form-group"><label class="form-label">Root Cause</label><textarea class="form-input" id="jo-root" rows="2" placeholder="Identified root cause of the problem..."></textarea></div>
+
+    <div class="ph ph3">📷 Photo Documentation (Before / During / After)</div>
+    <div class="pg-wrap" id="form-photos">
+      <div class="pg-add" onclick="openCam('form')"><span>📷</span>Camera</div>
+      <div class="pg-add" onclick="document.getElementById('photo-file-input').click()"><span>🖼️</span>Gallery</div>
+    </div>
+
+    <div class="form-row col-2" style="margin-top:12px">
+      <div>
+        <div class="ph" style="margin-top:0">Part III: Requestor's Acceptance Checklist</div>
+        <table class="chk-tbl">
+          <thead><tr><th>Item</th><th style="width:40px">YES</th><th style="width:40px">NO</th></tr></thead>
+          <tbody>
+            <tr><td>1. Task Completed?</td><td style="text-align:center"><input type="radio" name="ck1" value="YES"/></td><td style="text-align:center"><input type="radio" name="ck1" value="NO" checked/></td></tr>
+            <tr><td>2. Quality of work satisfactory?</td><td style="text-align:center"><input type="radio" name="ck2" value="YES"/></td><td style="text-align:center"><input type="radio" name="ck2" value="NO" checked/></td></tr>
+            <tr><td>3. Parts re-installed, equipment clean?</td><td style="text-align:center"><input type="radio" name="ck3" value="YES"/></td><td style="text-align:center"><input type="radio" name="ck3" value="NO" checked/></td></tr>
+            <tr><td>4. Tools removed, area clean?</td><td style="text-align:center"><input type="radio" name="ck4" value="YES"/></td><td style="text-align:center"><input type="radio" name="ck4" value="NO" checked/></td></tr>
+            <tr><td>5. Direct product contact?</td><td style="text-align:center"><input type="radio" name="ck5" value="YES"/></td><td style="text-align:center"><input type="radio" name="ck5" value="NO" checked/></td></tr>
+          </tbody>
+        </table>
+        <div class="form-group" style="margin-top:8px"><label class="form-label">Acceptance Remarks</label><textarea class="form-input" id="jo-accept-rem" rows="2"></textarea></div>
+        <div class="form-group"><label class="form-label">Inspected by (Requestor)</label><input class="form-input" id="jo-accept-by" placeholder="Inspector name"/></div>
+      </div>
+      <div>
+        <div class="ph ph3" style="margin-top:0">Part V: QA/QC Acceptance</div>
+        <table class="chk-tbl">
+          <thead><tr><th>Item</th><th style="width:35px">YES</th><th style="width:35px">NO</th><th style="width:35px">NA</th></tr></thead>
+          <tbody>
+            <tr><td>1. Area clean, no oil spill?</td><td style="text-align:center"><input type="radio" name="qa1"/></td><td style="text-align:center"><input type="radio" name="qa1"/></td><td style="text-align:center"><input type="radio" name="qa1" checked/></td></tr>
+            <tr><td>2. ATP validation required?</td><td style="text-align:center"><input type="radio" name="qa2"/></td><td style="text-align:center"><input type="radio" name="qa2"/></td><td style="text-align:center"><input type="radio" name="qa2" checked/></td></tr>
+            <tr><td>3. Product segregated and labeled?</td><td style="text-align:center"><input type="radio" name="qa3"/></td><td style="text-align:center"><input type="radio" name="qa3"/></td><td style="text-align:center"><input type="radio" name="qa3" checked/></td></tr>
+          </tbody>
+        </table>
+        <table class="mat-tbl" style="margin:6px 0"><thead><tr><th>Parameter</th><th>Standard</th><th>Result</th></tr></thead>
+          <tbody><tr><td style="padding:5px 8px">ATP</td><td style="text-align:center;padding:5px 8px">0 – 149</td><td><input class="mini-inp" id="jo-atp" placeholder="Result"/></td></tr></tbody></table>
+        <div class="form-group"><label class="form-label">QA Remarks</label><textarea class="form-input" id="jo-qa-rem" rows="2"></textarea></div>
+        <div class="form-group"><label class="form-label">QA Inspector</label><input class="form-input" id="jo-qa-by" placeholder="QA/QC inspector name"/></div>
+      </div>
+    </div>
+
+    <div class="ph ph2">Part IV: FSMS Team</div>
+    <div class="form-row col-2" style="margin-bottom:10px">
+      <div>
+        <table class="chk-tbl">
+          <thead><tr><th>Item</th><th style="width:35px">YES</th><th style="width:35px">NO</th><th style="width:35px">NA</th></tr></thead>
+          <tbody>
+            <tr><td>1. Is welding required?</td><td style="text-align:center"><input type="radio" name="fs1"/></td><td style="text-align:center"><input type="radio" name="fs1"/></td><td style="text-align:center"><input type="radio" name="fs1" checked/></td></tr>
+            <tr><td>2. Weld free of slag, smooth finish?</td><td style="text-align:center"><input type="radio" name="fs2"/></td><td style="text-align:center"><input type="radio" name="fs2"/></td><td style="text-align:center"><input type="radio" name="fs2" checked/></td></tr>
+            <tr><td>3. Product affected by activity?</td><td style="text-align:center"><input type="radio" name="fs3"/></td><td style="text-align:center"><input type="radio" name="fs3"/></td><td style="text-align:center"><input type="radio" name="fs3" checked/></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="form-group"><label class="form-label">FSMS Remarks</label><textarea class="form-input" id="jo-fsms-rem" rows="2"></textarea></div>
+        <div class="form-group"><label class="form-label">FSMS Approved by</label><input class="form-input" id="jo-fsms-by" placeholder="FSMS Team Leader"/></div>
+      </div>
+    </div>
+
+    <div class="ph ph4">Priority Reference Table</div>
+    <table class="prio-ref">
+      <thead><tr><th>P#</th><th>Target</th><th>Description</th><th>P#</th><th>Target</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td style="color:#ff3d5a;font-weight:900;text-align:center;font-size:1rem">1</td><td style="font-weight:700;text-align:center;white-space:nowrap">1 Day</td><td>Immediate Health/Food Safety/Environment risk, quality loss, or critical equipment down</td>
+            <td style="color:#00d4ff;font-weight:900;text-align:center;font-size:1rem">3</td><td style="font-weight:700;text-align:center;white-space:nowrap">1 Month</td><td>Critical equipment running on spare or needs correction</td></tr>
+        <tr><td style="color:#ffb800;font-weight:900;text-align:center;font-size:1rem">2</td><td style="font-weight:700;text-align:center;white-space:nowrap">1 Week</td><td>Critical equipment at reduced speed, manual mode, or manageable safety risk</td>
+            <td style="color:#a78bfa;font-weight:900;text-align:center;font-size:1rem">4</td><td style="font-weight:700;text-align:center;white-space:nowrap">&gt;1 Month</td><td>Improvement works or project works</td></tr>
+      </tbody>
+    </table>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--bd)">
+      <button class="btn btn-solid" onclick="submitJO()">📝 Submit Job Order</button>
+      <button class="btn btn-primary" onclick="printCurrentForm()">🖨️ Print Form</button>
+      <button class="btn btn-purple" onclick="openCam('form')">📷 Add Photo</button>
+      <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="joView='list';renderJobOrders()">Cancel</button>
+    </div>
+  </div>`;
+  photoContainer = 'form-photos';
+}
+
+function updatePrioNote(v){
+  const m={1:['#ff3d5a','⚠️ PRIORITY 1 — Complete within 1 Day. Immediate health/safety risk, environment damage, quality loss, or critical equipment down.'],
+            2:['#ffb800','🔶 PRIORITY 2 — Complete within 1 Week. Critical equipment at reduced speed or manageable safety risk.'],
+            3:['#00d4ff','🔷 PRIORITY 3 — Complete within 1 Month. Running on spare or scheduled correction needed.'],
+            4:['#a78bfa','🔵 PRIORITY 4 — Project work. More than 1 month — improvement or modification works.']};
+  const el=document.getElementById('jo-pnote');if(el){el.style.color=m[v][0];el.textContent=m[v][1];}
+}
+
+function addMatRow(){
+  matRows++;
+  const tb=document.getElementById('mat-body');if(!tb)return;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="text-align:center;padding:3px">${matRows}</td><td><input class="mini-inp" placeholder="Part description"/></td><td><input class="mini-inp" type="number" placeholder="0"/></td>`;
+  tb.appendChild(tr);
+}
+
+function submitJO(){
+  const eq=(document.getElementById('jo-equip')?.value||'').trim();
+  const def=(document.getElementById('jo-defect')?.value||'').trim();
+  if(!eq){toast('⚠️ Equipment Description is required!','var(--warn)');document.getElementById('jo-equip')?.focus();return;}
+  if(!def){toast('⚠️ Description of Defect is required!','var(--warn)');document.getElementById('jo-defect')?.focus();return;}
+  const pn=parseInt(document.getElementById('jo-prio')?.value)||1;
+  const dept=document.getElementById('jo-dept')?.value||'Maintenance';
+  const photos=Array.from(document.querySelectorAll('#form-photos img')).map(i=>i.src);
+  const personnel=[document.getElementById('jo-p1')?.value,document.getElementById('jo-p2')?.value,document.getElementById('jo-p3')?.value,document.getElementById('jo-p4')?.value].filter(Boolean);
+  const rows=Array.from(document.querySelectorAll('#mat-body tr'));
+  const materials=rows.map(r=>{const ins=r.querySelectorAll('input');return ins[0]?.value?{item:ins[0].value,qty:ins[1]?.value||1}:null;}).filter(Boolean);
+  const nj={
+    id:'JO-'+String(JOBS.length+1).padStart(5,'0'),equip:eq,defect:def,
+    sec:document.getElementById('jo-sec')?.value||'—',dept,pn,st:'open',
+    req:currentUser.name,reqId:currentUser.id,
+    date:new Date().toISOString().slice(0,10),photos,personnel,materials,sel:false,
+    task:document.getElementById('jo-task')?.value||'',rootCause:document.getElementById('jo-root')?.value||''
+  };
+  JOBS.unshift(nj);
+  NOTIFICATIONS.unshift({id:Date.now(),type:'info',msg:`${nj.id} created — ${dept} dept notified.`,time:'Just now',read:false});
+  toast(`✅ ${nj.id} submitted! ${dept} department notified.`,'var(--green)');
+  joView='list'; renderJobOrders();
+}
+
+function acceptJO(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  j.st='progress';j.assignedTo=currentUser.name;j.assignedId=currentUser.id;j.acceptedAt=new Date().toLocaleString('en-PH');
+  toast('✅ Job accepted! Status updated to IN PROGRESS.','var(--green)');
+  viewJO(id);
+}
+
+function closeJO(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  j.st='done';j.closedAt=new Date().toLocaleString('en-PH');
+  toast('🔒 '+id+' closed and archived!','var(--accent)');
+  renderJobOrders();
+}
+
+function addPhotoToJO(id){
+  photoContainer=id;
+  openCam('job');
+}
+
+// ── PRINT / EXPORT JO ──────────────────────────────────────────────
+function buildPrintHTML(jobs){
+  const rows=jobs.map(j=>`<tr>
+    <td style="font-family:monospace;font-weight:700">${j.id}</td>
+    <td style="font-weight:700">${j.equip}</td>
+    <td>${j.defect}</td><td>${j.sec||'—'}</td><td>${j.dept}</td>
+    <td style="text-align:center;font-weight:900;font-size:14px;color:${j.pn===1?'red':j.pn===2?'orange':j.pn===3?'blue':'purple'}">${j.pn}</td>
+    <td>${SL[j.st]}</td><td>${j.req}</td><td>${j.date}</td>
+    <td style="text-align:center">${j.photos?.length?j.photos.length+'📷':'—'}</td>
+  </tr>`).join('');
+  return`<!DOCTYPE html><html><head><title>FUSION IMS — Job Orders</title>
+  <style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:10px;padding:12px;color:#000}
+  .hdr{display:flex;justify-content:space-between;border-bottom:3px solid #002b5b;padding-bottom:8px;margin-bottom:10px}
+  .logo{font-size:18px;font-weight:900;color:#002b5b;letter-spacing:3px}.title{font-size:13px;font-weight:900;text-align:center}
+  table{width:100%;border-collapse:collapse}th{background:#002b5b;color:#fff;padding:5px 7px;border:1px solid #ccc;font-size:9px}
+  td{border:1px solid #ddd;padding:4px 7px}tr:nth-child(even){background:#f0f4ff}
+  .stats{display:flex;gap:10px;margin-bottom:10px}
+  .sc{border:1.5px solid #002b5b;padding:5px 12px;border-radius:4px;text-align:center}
+  .sn{font-size:16px;font-weight:900;color:#002b5b}.sl{font-size:8px;color:#666}
+  @media print{button{display:none}}</style></head>
+  <body>
+  <div class="hdr">
+    <div><div class="logo">FUSION IMS</div><div style="font-size:9px;color:#666">Industrial Management System</div></div>
+    <div class="title">MAINTENANCE JOB ORDERS REPORT<br><span style="font-size:9px;color:#666">Printed: ${new Date().toLocaleString('en-PH')} | Total: ${jobs.length} records</span></div>
+  </div>
+  <div class="stats">
+    <div class="sc"><div class="sn">${jobs.length}</div><div class="sl">Total</div></div>
+    <div class="sc"><div class="sn" style="color:orange">${jobs.filter(j=>j.st==='open').length}</div><div class="sl">Open</div></div>
+    <div class="sc"><div class="sn" style="color:blue">${jobs.filter(j=>j.st==='progress').length}</div><div class="sl">In Progress</div></div>
+    <div class="sc"><div class="sn" style="color:green">${jobs.filter(j=>j.st==='done').length}</div><div class="sl">Done</div></div>
+    <div class="sc"><div class="sn" style="color:red">${jobs.filter(j=>j.pn===1).length}</div><div class="sl">Priority 1</div></div>
+  </div>
+  <table><thead><tr><th>JO #</th><th>Equipment</th><th>Defect</th><th>Section</th><th>Dept</th><th>P#</th><th>Status</th><th>Requestor</th><th>Date</th><th>Photos</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <button onclick="window.print()" style="margin-top:12px;padding:8px 20px;background:#002b5b;color:#fff;border:none;cursor:pointer;border-radius:4px">🖨️ Print / Save PDF</button>
+  </body></html>`;
+}
+function printAllJOs(){const w=window.open('','_blank','width=1050,height=700');w.document.write(buildPrintHTML(JOBS));w.document.close();setTimeout(()=>w.print(),600);}
+function printOneJO(id){const j=JOBS.find(x=>x.id===id);if(j){const w=window.open('','_blank','width=1050,height=700');w.document.write(buildPrintHTML([j]));w.document.close();setTimeout(()=>w.print(),600);}}
+function printSelJOs(){const s=JOBS.filter(j=>j.sel);if(!s.length){toast('⚠️ No JOs selected.','var(--warn)');return;}const w=window.open('','_blank','width=1050,height=700');w.document.write(buildPrintHTML(s));w.document.close();setTimeout(()=>w.print(),600);}
+function printCurrentForm(){toast('🖨️ Printing current form...','var(--accent)');setTimeout(()=>window.print(),300);}
+
+function joToRow(j){return{'JO Number':j.id,'Equipment Description':j.equip,'Description of Defect':j.defect,'Plant / Section':j.sec||'—','Maintenance Incharge':j.dept,'Priority Number':j.pn,'Status':SL[j.st],'Requestor Name':j.req,'Date Created':j.date,'Photos':j.photos?.length||0,'Date Closed':j.closedAt||'—','Root Cause':j.rootCause||'—','Task Performed':j.taskDone||'—'};}
+function makeJOWorkbook(jobs){
+  const ws=XLSX.utils.json_to_sheet(jobs.map(joToRow));
+  ws['!cols']=[14,30,40,22,20,10,14,20,14,8,20,30,30].map(w=>({wch:w}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,'Job Orders',ws);
+  const sum=XLSX.utils.json_to_sheet([
+    {Metric:'Total JOs',Value:JOBS.length},{Metric:'Open',Value:JOBS.filter(j=>j.st==='open').length},
+    {Metric:'In Progress',Value:JOBS.filter(j=>j.st==='progress').length},{Metric:'Done',Value:JOBS.filter(j=>j.st==='done').length},
+    {Metric:'Priority 1',Value:JOBS.filter(j=>j.pn===1).length},{Metric:'Export Date',Value:new Date().toLocaleString('en-PH')}
+  ]);
+  XLSX.utils.book_append_sheet(wb,'Summary',sum);
+  return wb;
+}
+function exportJOExcel(){XLSX.writeFile(makeJOWorkbook(JOBS),'FUSION_JO_Export_'+new Date().toISOString().slice(0,10)+'.xlsx');toast('📥 Job Orders exported to Excel!','var(--green)');}
+function exportOneJO(id){const j=JOBS.find(x=>x.id===id);if(!j)return;XLSX.writeFile(makeJOWorkbook([j]),'FUSION_'+j.id+'.xlsx');toast('📥 '+j.id+' exported!','var(--green)');}
+function exportSelJOs(){const s=JOBS.filter(j=>j.sel);if(!s.length){toast('⚠️ No JOs selected.','var(--warn)');return;}XLSX.writeFile(makeJOWorkbook(s),'FUSION_JO_Selected.xlsx');toast('📥 '+s.length+' selected JOs exported!','var(--green)');}
+
+// ── IMPORT EXCEL ───────────────────────────────────────────────────
+function dropXL(e){e.preventDefault();document.getElementById('drop-zone').style.background='rgba(255,184,0,.03)';processXL(e.dataTransfer.files[0]);}
+function readXL(e){processXL(e.target.files[0]);}
+function processXL(file){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+      if(!rows.length){toast('⚠️ No data found.','var(--warn)');return;}
+      importData=rows;
+      const cols=Object.keys(rows[0]);
+      document.getElementById('import-preview').innerHTML=`
+        <div style="color:var(--green);font-size:.75rem;font-weight:700;margin-bottom:8px">✅ Found ${rows.length} row(s) in "${file.name}"</div>
+        <div style="overflow:auto;max-height:200px;border:1px solid var(--bd);border-radius:6px">
+          <table style="width:100%;border-collapse:collapse;font-size:.68rem">
+            <thead><tr>${cols.map(c=>`<th style="background:var(--bg3);padding:4px 8px;border-bottom:1px solid var(--bd);color:var(--text2)">${c}</th>`).join('')}</tr></thead>
+            <tbody>${rows.slice(0,4).map(row=>`<tr>${cols.map(c=>`<td style="padding:4px 8px;border-bottom:1px solid rgba(19,32,64,.5)">${String(row[c]||'').slice(0,30)}</td>`).join('')}</tr>`).join('')}</tbody>
+          </table>
+          ${rows.length>4?`<div style="padding:4px 8px;font-size:.65rem;color:var(--text2)">... +${rows.length-4} more rows</div>`:''}
+        </div>`;
+      document.getElementById('do-import-btn').style.display='flex';
+    }catch(err){toast('❌ Cannot read file: '+err.message,'var(--danger)');}
+  };
+  r.readAsArrayBuffer(file);
+}
+function doImport(){
+  let added=0;
+  importData.forEach(row=>{
+    const eq=String(row['Equipment Description']||row['Equipment']||'').trim();
+    if(!eq)return;
+    JOBS.unshift({id:'JO-'+String(JOBS.length+1).padStart(5,'0'),equip:eq,
+      defect:String(row['Description of Defect']||row['Defect']||'—'),
+      sec:String(row['Plant / Section']||'—'),
+      dept:String(row['Maintenance Incharge']||row['Department']||'Maintenance'),
+      pn:parseInt(row['Priority Number']||2)||2,st:'open',
+      req:String(row['Requestor Name']||currentUser.name),
+      date:new Date().toISOString().slice(0,10),photos:[],personnel:[],materials:[],sel:false});
+    added++;
+  });
+  closeModal('import-modal');renderJobOrders();
+  toast(`✅ Imported ${added} job orders!`,'var(--green)');
+}
+function dlTemplate(){
+  const ws=XLSX.utils.json_to_sheet([{'Equipment Description':'Centrifugal Pump P-101','Plant / Section':'Production Line 1','Description of Defect':'Bearing overheating','Maintenance Incharge':'Mechanical','Priority Number':2,'Category':'Repair/Replace/Servicing','Requestor Name':currentUser.name}]);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'Job Orders',ws);
+  XLSX.writeFile(wb,'FUSION_JO_Template.xlsx');toast('📥 Template downloaded!','var(--warn)');
+}
+
+// ── ASSETS ────────────────────────────────────────────────────────
+function renderAssets(){
+  const el=document.getElementById('pg-assets');
+  const can=currentUser;
+  const isAdminOrStock=can.privs?.all||can.role==='stockroom';
+  el.innerHTML=`
+  <div class="action-bar">
+    <span class="abar-lbl">Assets:</span>
+    ${can.privs?.all?`<button class="btn btn-solid btn-sm" onclick="openAddAsset()">➕ Add Asset</button>`:''}
+    ${isAdminOrStock?`<button class="btn btn-warn btn-sm" onclick="openTransferAsset()">🔄 Transfer Asset</button>`:''}
+    <button class="btn btn-success btn-sm" onclick="exportAssets()">📥 Export</button>
+    <button class="btn btn-primary btn-sm" onclick="printAssets()">🖨️ Print</button>
+    <input class="search-box" placeholder="🔍 Search assets..." id="asset-search" oninput="filterAssets()" style="margin-left:auto"/>
+  </div>
+  <div class="tbl-wrap">
+    <table class="ftbl" id="asset-table">
+      <thead><tr><th>Asset ID</th><th>Name</th><th>Category</th><th>Brand/Model</th><th>Serial</th><th>Department</th><th>Assigned To</th><th>Status</th><th>Location</th><th>Value (₱)</th><th>Actions</th></tr></thead>
+      <tbody id="asset-tbody">${renderAssetRows(ASSETS)}</tbody>
+    </table>
+  </div>`;
+}
+function renderAssetRows(assets){
+  return assets.map(a=>`<tr>
+    <td class="mono fs7" style="color:var(--accent)">${a.id}</td>
+    <td class="fw7 fs7">${a.name}</td>
+    <td><span class="tag">${a.cat}</span></td>
+    <td class="fs7">${a.brand} ${a.model}</td>
+    <td class="mono fs7 tm">${a.serial}</td>
+    <td class="fs7"><span class="tag">${a.dept}</span></td>
+    <td class="fs7">${a.assignedTo||'<span class="tm">Unassigned</span>'}</td>
+    <td><span class="badge ${a.status==='active'?'badge-done':a.status==='in-stock'?'badge-progress':'badge-danger'}">${a.status}</span></td>
+    <td class="fs7 tm">${a.loc}</td>
+    <td class="fs7">₱${Number(a.value).toLocaleString()}</td>
+    <td>
+      <div style="display:flex;gap:3px">
+        ${currentUser.privs?.all?`<button class="btn btn-primary btn-xs" onclick="editAsset('${a.id}')">✏️</button>`:''}
+        <button class="btn btn-warn btn-xs" onclick="viewAssetHistory('${a.id}')">📋</button>
+        ${currentUser.privs?.all?`<button class="btn btn-danger btn-xs" onclick="deleteAsset('${a.id}')">🗑️</button>`:''}
+      </div>
+    </td>
+  </tr>`).join('');
+}
+function filterAssets(){const q=(document.getElementById('asset-search')?.value||'').toLowerCase();document.getElementById('asset-tbody').innerHTML=renderAssetRows(ASSETS.filter(a=>[a.id,a.name,a.cat,a.brand,a.dept,a.assignedTo||''].join(' ').toLowerCase().includes(q)));}
+function exportAssets(){const ws=XLSX.utils.json_to_sheet(ASSETS.map(a=>({'Asset ID':a.id,'Name':a.name,'Category':a.cat,'Brand':a.brand,'Model':a.model,'Serial':a.serial,'Department':a.dept,'Assigned To':a.assignedTo||'—','Status':a.status,'Location':a.loc,'Value (₱)':a.value})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'Assets',ws);XLSX.writeFile(wb,'FUSION_Assets.xlsx');toast('📥 Assets exported!','var(--green)');}
+function printAssets(){const w=window.open('','_blank','width=1050,height=700');w.document.write(`<html><body style="font-family:Arial;font-size:10px;padding:12px"><h2 style="color:#002b5b">FUSION IMS — Asset Register</h2><table style="width:100%;border-collapse:collapse"><thead><tr>${['Asset ID','Name','Cat','Brand','Model','Dept','Assigned','Status','Loc','Value'].map(h=>`<th style="background:#002b5b;color:#fff;padding:4px 7px;border:1px solid #ccc">${h}</th>`).join('')}</tr></thead><tbody>${ASSETS.map(a=>`<tr>${[a.id,a.name,a.cat,a.brand,a.model,a.dept,a.assignedTo||'—',a.status,a.loc,'₱'+Number(a.value).toLocaleString()].map(v=>`<td style="border:1px solid #ddd;padding:4px 7px">${v}</td>`).join('')}</tr>`).join('')}</tbody></table><button onclick="window.print()" style="margin-top:12px;padding:8px 20px;background:#002b5b;color:#fff;border:none;cursor:pointer">Print</button></body></html>`);w.document.close();setTimeout(()=>w.print(),500);}
+function openAddAsset(){editingAsset=null;showAssetModal();}
+function editAsset(id){editingAsset=ASSETS.find(a=>a.id===id);showAssetModal();}
+function showAssetModal(){
+  const a=editingAsset;
+  document.getElementById('asset-modal-title').textContent=a?'✏️ Edit Asset':'➕ Add Asset';
+  document.getElementById('asset-modal-body').innerHTML=`
+    <div class="form-row col-2">
+      <div class="form-group"><label class="form-label">Asset Name *</label><input class="form-input" id="am-name" value="${a?.name||''}"/></div>
+      <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="am-cat">${['Instrumentation','Electrical','PLC','Mechanical','Welding Equipment','Safety Equipment','Tools','Other'].map(c=>`<option ${a?.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Brand</label><input class="form-input" id="am-brand" value="${a?.brand||''}"/></div>
+      <div class="form-group"><label class="form-label">Model</label><input class="form-input" id="am-model" value="${a?.model||''}"/></div>
+      <div class="form-group"><label class="form-label">Serial Number</label><input class="form-input" id="am-serial" value="${a?.serial||''}"/></div>
+      <div class="form-group"><label class="form-label">Department</label><select class="form-input" id="am-dept">${DEPTS.map(d=>`<option ${a?.dept===d?'selected':''}>${d}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Assigned To</label><select class="form-input" id="am-user"><option value="">Unassigned</option>${USERS.filter(u=>u.status==='active').map(u=>`<option value="${u.name}" ${a?.assignedTo===u.name?'selected':''}>${u.name} (${ROLE_DEFS[u.role]?.label||u.role})</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="am-loc" value="${a?.loc||''}"/></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-input" id="am-status">${['active','in-stock','under-maintenance','defective','retired'].map(s=>`<option ${a?.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Value (₱)</label><input class="form-input" id="am-val" type="number" value="${a?.value||0}"/></div>
+    </div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-solid" onclick="saveAsset()">💾 Save Asset</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  openModal('asset-modal');
+}
+function saveAsset(){
+  const name=(document.getElementById('am-name')?.value||'').trim();
+  if(!name){toast('⚠️ Asset name required.','var(--warn)');return;}
+  const data={name,cat:document.getElementById('am-cat')?.value,brand:document.getElementById('am-brand')?.value,model:document.getElementById('am-model')?.value,serial:document.getElementById('am-serial')?.value,dept:document.getElementById('am-dept')?.value,assignedTo:document.getElementById('am-user')?.value,loc:document.getElementById('am-loc')?.value,status:document.getElementById('am-status')?.value,value:parseFloat(document.getElementById('am-val')?.value)||0};
+  if(editingAsset){Object.assign(editingAsset,data);toast('✅ Asset updated!','var(--green)');}
+  else{const nid='AST-'+String(ASSETS.length+1).padStart(3,'0');ASSETS.push({id:nid,code:'AUTO-'+nid,...data,date:new Date().toISOString().slice(0,10),history:[]});toast('✅ Asset added!','var(--green)');}
+  closeModal('asset-modal');renderAssets();
+}
+function deleteAsset(id){showConfirm('Delete this asset permanently?',()=>{ASSETS=ASSETS.filter(a=>a.id!==id);renderAssets();toast('🗑️ Asset deleted.','var(--danger)');});}
+function viewAssetHistory(id){const a=ASSETS.find(x=>x.id===id);toast(`📋 ${a?.name}: Transfer history — ${a?.history?.length||0} records.`,'var(--accent)');}
+function openTransferAsset(){toast('🔄 Asset Transfer — Select asset and destination department.','var(--warn)');}
+
+// ── STOCKROOM ──────────────────────────────────────────────────────
+function renderStockroom(){
+  const el=document.getElementById('pg-stockroom');
+  el.innerHTML=`
+  <div class="action-bar">
+    <span class="abar-lbl">Stockroom:</span>
+    <button class="btn btn-solid btn-sm" onclick="openAddItem()">➕ Add Item</button>
+    <button class="btn btn-success btn-sm" onclick="exportStock()">📥 Export</button>
+    <button class="btn btn-primary btn-sm" onclick="printStock()">🖨️ Print</button>
+    <button class="btn btn-purple btn-sm" onclick="openCam('receipt')">📷 Scan Receipt</button>
+    <input class="search-box" placeholder="🔍 Search items..." id="stk-search" oninput="filterStock()" style="margin-left:auto"/>
+  </div>
+  <div class="stat-row" style="margin-bottom:14px">
+    <div class="stat-card"><div class="sc-num" style="color:var(--accent)">${INVENTORY.length}</div><div class="sc-lbl">Total Items</div><div class="sc-ico">📦</div></div>
+    <div class="stat-card"><div class="sc-num" style="color:var(--danger)">${INVENTORY.filter(i=>i.qty<=i.reorder).length}</div><div class="sc-lbl">Below Reorder Level</div><div class="sc-ico">⚠️</div></div>
+    <div class="stat-card"><div class="sc-num" style="color:var(--warn)">₱${INVENTORY.reduce((s,i)=>s+i.qty*i.price,0).toLocaleString()}</div><div class="sc-lbl">Total Stock Value</div><div class="sc-ico">💰</div></div>
+  </div>
+  <div class="tbl-wrap">
+    <table class="ftbl">
+      <thead><tr><th>Item ID</th><th>Name</th><th>Category</th><th>Brand/Model</th><th>Qty</th><th>Reorder</th><th>Unit Price</th><th>Total Value</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="stk-tbody">${renderStockRows(INVENTORY)}</tbody>
+    </table>
+  </div>`;
+}
+function renderStockRows(inv){
+  return inv.map(i=>`<tr class="${i.qty<=i.reorder?'on':''}">
+    <td class="mono fs7" style="color:var(--accent)">${i.id}</td>
+    <td class="fw7 fs7">${i.name}</td>
+    <td><span class="tag">${i.cat}</span></td>
+    <td class="fs7">${i.brand} ${i.model}</td>
+    <td class="fw7" style="text-align:center;color:${i.qty<=i.reorder?'var(--danger)':'var(--green)'}">${i.qty}</td>
+    <td class="fs7 tm" style="text-align:center">${i.reorder}</td>
+    <td class="fs7">₱${i.price.toLocaleString()}</td>
+    <td class="fs7 fw7">₱${(i.qty*i.price).toLocaleString()}</td>
+    <td class="fs7 tm">${i.loc}</td>
+    <td>${i.qty<=i.reorder?`<span class="badge badge-danger">LOW STOCK</span>`:`<span class="badge badge-done">OK</span>`}</td>
+    <td>
+      <div style="display:flex;gap:3px">
+        <button class="btn btn-success btn-xs" onclick="adjustStock('${i.id}',1)">+</button>
+        <button class="btn btn-danger btn-xs" onclick="adjustStock('${i.id}',-1)">-</button>
+        <button class="btn btn-primary btn-xs" onclick="editItem('${i.id}')">✏️</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+function filterStock(){const q=(document.getElementById('stk-search')?.value||'').toLowerCase();document.getElementById('stk-tbody').innerHTML=renderStockRows(INVENTORY.filter(i=>[i.id,i.name,i.cat,i.brand].join(' ').toLowerCase().includes(q)));}
+function adjustStock(id,delta){const i=INVENTORY.find(x=>x.id===id);if(!i)return;i.qty=Math.max(0,i.qty+delta);renderStockroom();toast(`${delta>0?'📥 Received':'📤 Issued'}: ${i.name} — New qty: ${i.qty}`,'var(--accent)');}
+function openAddItem(){toast('➕ Add stock item form (in full deployment).','var(--accent)');}
+function editItem(id){const i=INVENTORY.find(x=>x.id===id);toast(`✏️ Edit: ${i?.name}...`,'var(--accent)');}
+function exportStock(){const ws=XLSX.utils.json_to_sheet(INVENTORY.map(i=>({'Item ID':i.id,'Name':i.name,'Category':i.cat,'Brand':i.brand,'Model':i.model,'Quantity':i.qty,'Reorder Level':i.reorder,'Unit (₱)':i.price,'Total (₱)':i.qty*i.price,'Location':i.loc})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'Inventory',ws);XLSX.writeFile(wb,'FUSION_Inventory.xlsx');toast('📥 Inventory exported!','var(--green)');}
+function printStock(){toast('🖨️ Printing inventory report...','var(--accent)');setTimeout(()=>window.print(),300);}
+
+// ── KPI ────────────────────────────────────────────────────────────
+function renderKPI(){
+  const el=document.getElementById('pg-kpi');
+  const avgEff=Math.round(PROD_LOGS.reduce((s,p)=>s+(p.actual/p.target*100),0)/PROD_LOGS.length);
+  const totalDT=PROD_LOGS.reduce((s,p)=>s+p.downtime,0);
+  const joDone=JOBS.filter(j=>j.st==='done').length;
+  const maintEff=Math.round(joDone/JOBS.length*100);
+
+  el.innerHTML=`
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <button class="btn btn-success btn-sm" onclick="exportKPI()">📥 Export to Excel</button>
+    <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Print Report</button>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      ${['Daily','Weekly','Monthly','Quarterly','Yearly'].map(p=>`<button class="fb ${p==='Monthly'?'on':''}">${p}</button>`).join('')}
+    </div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-card"><div class="sc-num" style="color:var(--green)">${avgEff}%</div><div class="sc-lbl">Avg Production Efficiency</div><div class="sc-ico">📊</div></div>
+    <div class="stat-card"><div class="sc-num" style="color:var(--accent)">${maintEff}%</div><div class="sc-lbl">Maintenance Efficiency</div><div class="sc-ico">🔧</div></div>
+    <div class="stat-card"><div class="sc-num" style="color:var(--warn)">${Math.round(totalDT/60)}h</div><div class="sc-lbl">Total Downtime</div><div class="sc-ico">⏱️</div></div>
+    <div class="stat-card"><div class="sc-num" style="color:var(--purple)">${JOBS.filter(j=>j.pn===1).length}</div><div class="sc-lbl">P1 Critical Jobs</div><div class="sc-ico">⚠️</div></div>
+  </div>
+  <div class="grid-2" style="margin-bottom:14px">
+    <div class="chart-card"><div class="chart-title">Production Efficiency (%)</div><div class="chart-wrap"><canvas id="kpi-prod-chart"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Downtime (minutes)</div><div class="chart-wrap"><canvas id="kpi-dt-chart"></canvas></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="chart-card"><div class="chart-title">Job Orders by Status</div><div class="chart-wrap"><canvas id="kpi-jo-chart"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Jobs by Department</div><div class="chart-wrap"><canvas id="kpi-dept-chart"></canvas></div></div>
+  </div>`;
+
+  setTimeout(()=>{
+    const chartDefs=[
+      ['kpi-prod-chart','line',{labels:PROD_LOGS.map(p=>p.date.slice(5)).reverse(),datasets:[{label:'Efficiency %',data:PROD_LOGS.map(p=>Math.round(p.actual/p.target*100)).reverse(),borderColor:'#00ff9d',backgroundColor:'rgba(0,255,157,.1)',tension:.4,fill:true}]}],
+      ['kpi-dt-chart','bar',{labels:PROD_LOGS.map(p=>p.date.slice(5)).reverse(),datasets:[{label:'Downtime (min)',data:PROD_LOGS.map(p=>p.downtime).reverse(),backgroundColor:'rgba(255,184,0,.5)',borderColor:'#ffb800',borderWidth:1.5,borderRadius:4}]}],
+      ['kpi-jo-chart','doughnut',{labels:['Open','In Progress','Done'],datasets:[{data:[JOBS.filter(j=>j.st==='open').length,JOBS.filter(j=>j.st==='progress').length,JOBS.filter(j=>j.st==='done').length],backgroundColor:['rgba(255,184,0,.6)','rgba(0,212,255,.6)','rgba(0,255,157,.5)'],borderColor:['#ffb800','#00d4ff','#00ff9d'],borderWidth:1.5}]}],
+      ['kpi-dept-chart','bar',{labels:[...new Set(JOBS.map(j=>j.dept))],datasets:[{label:'Jobs',data:[...new Set(JOBS.map(j=>j.dept))].map(d=>JOBS.filter(j=>j.dept===d).length),backgroundColor:'rgba(0,212,255,.4)',borderColor:'#00d4ff',borderWidth:1.5,borderRadius:4}]}],
+    ];
+    chartDefs.forEach(([id,type,data])=>{
+      const ctx=document.getElementById(id);if(!ctx)return;
+      if(chartInstances[id])chartInstances[id].destroy();
+      chartInstances[id]=new Chart(ctx,{type,data,options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#5a82a8',font:{size:10}}}},scales:type!=='doughnut'?{x:{ticks:{color:'#5a82a8',font:{size:10}},grid:{color:'rgba(30,53,96,.4)'}},y:{ticks:{color:'#5a82a8',font:{size:10}},grid:{color:'rgba(30,53,96,.4)'},beginAtZero:true}}:{}}});
+    });
+  },100);
+}
+function exportKPI(){
+  const ws=XLSX.utils.json_to_sheet(PROD_LOGS.map(p=>({'Date':p.date,'Shift':p.shift,'Target':p.target,'Actual':p.actual,'Efficiency %':Math.round(p.actual/p.target*100),'Downtime (min)':p.downtime,'Operator':p.operator,'Notes':p.notes})));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'KPI Report',ws);
+  const jos=XLSX.utils.json_to_sheet(JOBS.map(j=>({'JO #':j.id,'Equipment':j.equip,'Dept':j.dept,'Priority':j.pn,'Status':SL[j.st],'Date':j.date})));
+  XLSX.utils.book_append_sheet(wb,'Job Orders',jos);
+  XLSX.writeFile(wb,'FUSION_KPI_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  toast('📥 KPI Report exported!','var(--green)');
+}
+
+// ── PRODUCTION ──────────────────────────────────────────────────────
+function renderProduction(){
+  const el=document.getElementById('pg-production');
+  const today=PROD_LOGS[0];
+  el.innerHTML=`
+  <div class="action-bar">
+    <span class="abar-lbl">Production:</span>
+    <button class="btn btn-solid btn-sm" onclick="logProduction()">📝 Log Production</button>
+    <button class="btn btn-success btn-sm" onclick="exportProd()">📥 Export</button>
+    <button class="btn btn-danger btn-sm" onclick="reportShutdown()">🚨 Report Shutdown</button>
+  </div>
+  ${today?`
+  <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:14px">
+    <div style="font-family:var(--font-hdr);font-size:.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:10px">TODAY'S STATUS — ${today.date}</div>
+    <div class="stat-row" style="margin:0">
+      <div class="stat-card"><div class="sc-num" style="color:var(--green)">${today.actual}</div><div class="sc-lbl">Actual Production</div></div>
+      <div class="stat-card"><div class="sc-num" style="color:var(--accent)">${today.target}</div><div class="sc-lbl">Target</div></div>
+      <div class="stat-card"><div class="sc-num" style="color:${today.actual/today.target>=.95?'var(--green)':'var(--warn)'}">
+        ${Math.round(today.actual/today.target*100)}%</div><div class="sc-lbl">Efficiency</div></div>
+      <div class="stat-card"><div class="sc-num" style="color:${today.downtime>60?'var(--danger)':'var(--green)'}">${today.downtime}m</div><div class="sc-lbl">Downtime</div></div>
+      <div class="stat-card"><div class="sc-num" style="color:var(--green)">${today.status.toUpperCase()}</div><div class="sc-lbl">Status</div></div>
+    </div>
+    <div style="margin-top:10px;font-size:.78rem;color:var(--text2)">📋 ${today.notes}</div>
+  </div>`:''}
+  <div class="sec-hdr"><div class="sec-title">Production Log History</div></div>
+  <div class="tbl-wrap">
+    <table class="ftbl">
+      <thead><tr><th>Log ID</th><th>Date</th><th>Shift</th><th>Target</th><th>Actual</th><th>Efficiency</th><th>Downtime</th><th>Operator</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        ${PROD_LOGS.map(p=>`<tr>
+          <td class="mono fs7 tm">${p.id}</td>
+          <td class="fs7">${p.date}</td>
+          <td><span class="tag">${p.shift}</span></td>
+          <td class="text-center">${p.target}</td>
+          <td class="fw7 text-center">${p.actual}</td>
+          <td><span class="fw7" style="color:${p.actual/p.target>=.95?'var(--green)':'var(--warn)'}">${Math.round(p.actual/p.target*100)}%</span></td>
+          <td class="fs7 ${p.downtime>60?'fw7':'tm'}" style="color:${p.downtime>60?'var(--danger)':'inherit'}">${p.downtime}m</td>
+          <td class="fs7">${p.operator}</td>
+          <td>${stBadge(p.status==='running'?'progress':p.status==='completed'?'done':'open')}</td>
+          <td class="fs7 tm" style="max-width:200px">${p.notes}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+function logProduction(){toast('📝 Production logging form (in full deployment).','var(--accent)');}
+function exportProd(){const ws=XLSX.utils.json_to_sheet(PROD_LOGS.map(p=>({'ID':p.id,'Date':p.date,'Shift':p.shift,'Target':p.target,'Actual':p.actual,'Efficiency %':Math.round(p.actual/p.target*100),'Downtime (min)':p.downtime,'Operator':p.operator,'Status':p.status,'Notes':p.notes})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'Production Logs',ws);XLSX.writeFile(wb,'FUSION_Production.xlsx');toast('📥 Production logs exported!','var(--green)');}
+function reportShutdown(){toast('🚨 Shutdown reported! Manager notified in real-time.','var(--danger)');}
+
+// ── AI ASSISTANT ───────────────────────────────────────────────────
+let aiHistory=[];
+function renderAI(){
+  const el=document.getElementById('pg-ai');
+  el.innerHTML=`
+  <div class="ai-chat">
+    <div class="ai-messages" id="ai-msgs">
+      <div class="ai-msg bot">
+        <div class="ai-name">🤖 FUSION AI Assistant</div>
+        Hello! I'm your industrial AI assistant. I can help with:<br>
+        • PLC troubleshooting (Siemens, Rockwell, Mitsubishi, Omron, Delta, etc.)<br>
+        • Instrument calibration (pressure, flow, level, pH, conductivity)<br>
+        • VFD and motor troubleshooting<br>
+        • NC2, NC3, NC4 national certification questions<br>
+        • OSHA/IOSH safety standards<br>
+        • Process systems (RO, glucose, palm oil, corn mill, oil & gas)<br>
+        <br>Type your question below!
+      </div>
+    </div>
+    <div class="ai-input-row">
+      <input class="ai-inp form-input" id="ai-input" placeholder="Ask anything about instrumentation, PLC, electrical, safety..." onkeydown="if(event.key==='Enter')askAI()"/>
+      <button class="btn btn-solid" onclick="askAI()" style="padding:10px 20px">Send ▶</button>
+      <button class="btn btn-sm" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="clearAI()">Clear</button>
+    </div>
+    <div class="filter-bar" style="margin-top:8px">
+      ${['VFD fault','PLC troubleshoot','Calibration','NC2 certification','OSHA safety','Bearing vibration'].map(q=>`<button class="fb" onclick="document.getElementById('ai-input').value='${q}';askAI()">${q}</button>`).join('')}
+    </div>
+  </div>`;
+  if(aiHistory.length>0){
+    aiHistory.forEach(h=>addAIMessage(h.role,h.msg,true));
+  }
+}
+function askAI(){
+  const inp=document.getElementById('ai-input');
+  if(!inp)return;
+  const q=inp.value.trim();
+  if(!q)return;
+  inp.value='';
+  addAIMessage('user',q);
+  aiHistory.push({role:'user',msg:q});
+  setTimeout(()=>{
+    const ans=getAIAnswer(q);
+    addAIMessage('bot',ans);
+    aiHistory.push({role:'bot',msg:ans});
+  },600);
+}
+function getAIAnswer(q){
+  const ql=q.toLowerCase();
+  for(const kb of AI_KB){
+    if(kb.kw.some(kw=>ql.includes(kw))) return kb.ans;
+  }
+  if(ql.includes('hello')||ql.includes('hi')) return 'Hello! How can I help you today with your industrial automation questions?';
+  if(ql.includes('pump')) return 'For pump issues, check: (1) Suction/discharge pressure, (2) Motor current vs FLA rating, (3) Mechanical seal condition, (4) Bearing temperature, (5) Shaft alignment. Common faults: cavitation (noise + vibration), seal leak, overheating, and impeller wear.';
+  if(ql.includes('solenoid')) return 'Solenoid valve troubleshooting: (1) Check coil resistance (typically 10-30Ω for 24VDC), (2) Verify supply voltage, (3) Check for mechanical obstruction or contamination, (4) Test manually with override button, (5) Check plunger and spring for corrosion or damage.';
+  return `I found your query: "${q}". Based on industrial best practices:\n\nPlease provide more specific details about the equipment brand, model, and the exact symptom you are experiencing. I can then give more targeted troubleshooting steps.\n\nFor immediate assistance, consult the equipment manual or contact the manufacturer's technical support. Always ensure safety first — Lock Out/Tag Out before any maintenance.`;
+}
+function addAIMessage(role,msg,skipScroll=false){
+  const msgs=document.getElementById('ai-msgs');if(!msgs)return;
+  const d=document.createElement('div');
+  d.className=`ai-msg ${role}`;
+  d.innerHTML=role==='bot'?`<div class="ai-name">🤖 FUSION AI</div>${msg.replace(/\n/g,'<br>')}`:msg;
+  msgs.appendChild(d);
+  if(!skipScroll) msgs.scrollTop=msgs.scrollHeight;
+}
+function clearAI(){aiHistory=[];document.getElementById('ai-msgs').innerHTML=`<div class="ai-msg bot"><div class="ai-name">🤖 FUSION AI Assistant</div>Chat cleared. How can I help you?</div>`;}
+
+// ── PLC / INSTRUMENTS ──────────────────────────────────────────────
+function renderPLC(){
+  const el=document.getElementById('pg-plc');
+  const brands=[
+    {cat:'Western PLC/DCS',color:'var(--accent)',items:['Siemens SIMATIC S7-1500, S7-1200, S7-300, LOGO!','Rockwell Allen-Bradley ControlLogix, CompactLogix','Schneider Modicon M580, M340, Premium','ABB AC500, AC800M, Symphony Plus','Emerson PACSystems, DeltaV, Ovation','Honeywell ControlEdge, Experion PKS','Beckhoff TwinCAT PC-based Control']},
+    {cat:'Japanese PLC/DCS',color:'var(--green)',items:['Mitsubishi MELSEC iQ-R, iQ-F, Q Series','Yokogawa FA-M3, CENTUM VP DCS','Omron Sysmac NJ/NX, CJ2 Series','Keyence KV-8000, KV-X Series','Hitachi EHV+ Series, HIACS DCS']},
+    {cat:'Korean & Chinese PLC',color:'var(--warn)',items:['LS Electric XGT, XGB, Master-K, XGR','Delta Electronics AH500, AS Series, DVP','Inovance H5U, AM600 Series','SUPCON Webfield ECS-700 DCS','HollySys LK, LE Series, HOLLiAS MACS']},
+    {cat:'Field Instruments',color:'var(--purple)',items:['Pressure Transmitters — Siemens, Yokogawa, E+H','Flow Meters — Magnetic, Coriolis, Vortex, Turbine','Level Transmitters — DP, Radar, Ultrasonic, Float','pH/ORP/Conductivity/TDS/Brix Analyzers','Temperature — RTD, Thermocouple, Transmitters']},
+    {cat:'Industrial Systems',color:'var(--pink)',items:['Reverse Osmosis Systems — Design, Troubleshooting','Glucose Plant Process & Production','Palm Oil Processing Systems','Corn Mill & Flour Plant Process','Oil & Gas Systems — Upstream/Downstream']},
+  ];
+  el.innerHTML=`
+  <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap">
+    <input class="search-box" placeholder="🔍 Search knowledge base..." id="plc-search" oninput="filterPLC()"/>
+    <button class="btn btn-primary btn-sm" onclick="navigate('ai')">🤖 Ask AI</button>
+  </div>
+  <div id="plc-list">
+    ${brands.map(b=>`
+    <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-family:var(--font-hdr);font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${b.color};margin-bottom:10px;border-bottom:1px solid var(--bd);padding-bottom:6px">${b.cat}</div>
+      <div class="grid-2">
+        ${b.items.map(item=>`
+          <div class="kb-card" style="padding:10px 12px;margin:0" onclick="askAbout('${item.split(' ')[0]}')">
+            <div class="kb-title" style="font-size:.8rem">${item.split('—')[0].trim()}</div>
+            ${item.includes('—')?`<div class="kb-desc">${item.split('—')[1].trim()}</div>`:''}
+          </div>`).join('')}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+function filterPLC(){const q=(document.getElementById('plc-search')?.value||'').toLowerCase();document.querySelectorAll('#plc-list .kb-card').forEach(c=>{c.style.display=!q||c.textContent.toLowerCase().includes(q)?'':'none';});}
+function askAbout(topic){navigate('ai');setTimeout(()=>{document.getElementById('ai-input').value=`Tell me about ${topic} programming and troubleshooting`;askAI();},300);}
+
+// ── HR ─────────────────────────────────────────────────────────────
+function renderHR(){
+  const el=document.getElementById('pg-hr');
+  const perfs=USERS.filter(u=>u.role==='technician'||u.role==='operator').map(u=>({...u,jobs:JOBS.filter(j=>j.assignedId===u.id).length,done:JOBS.filter(j=>j.assignedId===u.id&&j.st==='done').length}));
+  el.innerHTML=`
+  <div class="action-bar">
+    <span class="abar-lbl">HR:</span>
+    <button class="btn btn-success btn-sm" onclick="exportHR()">📥 Export</button>
+    <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Print</button>
+  </div>
+  <div class="sec-hdr" style="margin-top:4px"><div class="sec-title">Personnel Performance</div></div>
+  <div class="tbl-wrap" style="margin-bottom:14px">
+    <table class="ftbl">
+      <thead><tr><th>Employee</th><th>Role</th><th>Department</th><th>Jobs Assigned</th><th>Jobs Completed</th><th>Completion Rate</th><th>Status</th></tr></thead>
+      <tbody>
+        ${perfs.map(u=>`<tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="av ${ROLE_DEFS[u.role]?.avClass||''}" style="width:26px;height:26px;font-size:.65rem">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+              <div><div class="fs7 fw7">${u.name}</div><div style="font-size:.6rem;color:var(--text2)">${u.empId}</div></div>
+            </div>
+          </td>
+          <td><span style="color:${ROLE_DEFS[u.role]?.color||'var(--text2)'}">● ${ROLE_DEFS[u.role]?.label||u.role}</span></td>
+          <td><span class="tag">${u.dept}</span></td>
+          <td style="text-align:center">${u.jobs}</td>
+          <td style="text-align:center" class="fw7" style="color:var(--green)">${u.done}</td>
+          <td>
+            ${u.jobs>0?`
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="prog-bar" style="flex:1"><div class="prog-fill" style="width:${Math.round(u.done/u.jobs*100)}%;background:${u.done/u.jobs>=.8?'var(--green)':'var(--warn)'}"></div></div>
+              <span class="fs7 fw7">${Math.round(u.done/u.jobs*100)}%</span>
+            </div>`:'<span class="tm fs7">No jobs</span>'}
+          </td>
+          <td>${stBadge(u.status==='active'?'done':'danger')}</td>
+        </tr>`).join('')||`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text2)">No technician/operator data</td></tr>`}
+      </tbody>
+    </table>
+  </div>
+  <div class="sec-hdr"><div class="sec-title">All Personnel</div></div>
+  <div class="tbl-wrap">
+    <table class="ftbl">
+      <thead><tr><th>Employee</th><th>Employee ID</th><th>Role</th><th>Department</th><th>Email</th><th>Phone</th><th>Joined</th><th>Status</th></tr></thead>
+      <tbody>
+        ${USERS.map(u=>`<tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="av ${ROLE_DEFS[u.role]?.avClass||''}" style="width:26px;height:26px;font-size:.65rem">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+              <div class="fs7 fw7">${u.name}</div>
+            </div>
+          </td>
+          <td class="mono fs7 tm">${u.empId}</td>
+          <td><span style="font-size:.62rem;color:${ROLE_DEFS[u.role]?.color||'var(--text2)'}">● ${ROLE_DEFS[u.role]?.label||u.role}</span></td>
+          <td><span class="tag">${u.dept}</span></td>
+          <td class="fs7 tm">${u.email}</td>
+          <td class="fs7 tm">${u.phone}</td>
+          <td class="fs7 tm">${u.joined}</td>
+          <td>${u.status==='active'?`<span class="badge badge-done">Active</span>`:`<span class="badge badge-danger">Inactive</span>`}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+function exportHR(){const ws=XLSX.utils.json_to_sheet(USERS.map(u=>({'Name':u.name,'Employee ID':u.empId,'Role':ROLE_DEFS[u.role]?.label||u.role,'Department':u.dept,'Email':u.email,'Phone':u.phone,'Status':u.status,'Date Joined':u.joined})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'Personnel',ws);XLSX.writeFile(wb,'FUSION_HR_Personnel.xlsx');toast('📥 HR data exported!','var(--green)');}
+
+// ── ADMIN ──────────────────────────────────────────────────────────
+function renderAdmin(){
+  const u=currentUser;
+  if(u.role!=='administrator'&&!u.privs?.all){
+    document.getElementById('pg-admin').innerHTML=`<div style="text-align:center;padding:40px;color:var(--text2)"><div style="font-size:3rem;margin-bottom:12px">🔒</div><div style="font-family:var(--font-hdr);font-size:1.2rem">Administrator Access Only</div><div style="font-size:.82rem;margin-top:6px">You do not have permission to access this page.</div></div>`;
+    return;
+  }
+  const el=document.getElementById('pg-admin');
+  el.innerHTML=`
+  <!-- ADMIN TABS -->
+  <div class="tabs" style="display:flex;gap:0;border-bottom:2px solid var(--bd);margin-bottom:16px">
+    ${[['users','👥 User Management'],['roles','🛡️ Roles & Privileges'],['system','⚙️ System Settings'],['logs','📋 Audit Logs']].map(([id,lbl],i)=>`
+      <div class="tab-btn" onclick="showAdminTab('${id}')" id="atab-${id}" style="padding:9px 18px;cursor:pointer;font-family:var(--font-hdr);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;${i===0?'color:var(--accent);border-bottom-color:var(--accent)':''}">${lbl}</div>`).join('')}
+  </div>
+
+  <!-- USER MANAGEMENT -->
+  <div id="atab-users-content">
+    <div class="action-bar">
+      <span class="abar-lbl">Users:</span>
+      <button class="btn btn-solid btn-sm" onclick="openAddUser()">➕ Add New User</button>
+      <button class="btn btn-success btn-sm" onclick="exportUsers()">📥 Export Users</button>
+      <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Print</button>
+      <input class="search-box" placeholder="🔍 Search users..." id="usr-search" oninput="filterUsers()" style="margin-left:auto"/>
+    </div>
+    <div class="stat-row" style="margin-bottom:14px">
+      <div class="stat-card"><div class="sc-num" style="color:var(--accent)">${USERS.length}</div><div class="sc-lbl">Total Users</div><div class="sc-ico">👥</div></div>
+      <div class="stat-card"><div class="sc-num" style="color:var(--green)">${USERS.filter(u=>u.status==='active').length}</div><div class="sc-lbl">Active</div><div class="sc-ico">✅</div></div>
+      <div class="stat-card"><div class="sc-num" style="color:var(--danger)">${USERS.filter(u=>u.status!=='active').length}</div><div class="sc-lbl">Inactive</div><div class="sc-ico">🚫</div></div>
+      <div class="stat-card"><div class="sc-num" style="color:var(--purple)">${Object.keys(ROLE_DEFS).length}</div><div class="sc-lbl">Roles Defined</div><div class="sc-ico">🛡️</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="ftbl">
+        <thead><tr><th>User</th><th>Employee ID</th><th>Role</th><th>Department</th><th>Email</th><th>Phone</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="usr-tbody">${renderUserRows(USERS)}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ROLES & PRIVILEGES -->
+  <div id="atab-roles-content" style="display:none">
+    <div style="margin-bottom:14px;font-size:.82rem;color:var(--text2);line-height:1.6">Role-based access control defines what each user type can see and do in FUSION IMS.</div>
+    <div class="tbl-wrap">
+      <table class="ftbl" style="min-width:800px">
+        <thead><tr>
+          <th>Module / Permission</th>
+          ${Object.entries(ROLE_DEFS).map(([r,d])=>`<th style="text-align:center;color:${d.color}">${d.label}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+          ${[
+            ['──── PAGES ────',''],
+            ['Dashboard','pages'],
+            ['Job Orders','pages'],
+            ['Assets','pages'],
+            ['Stockroom','pages'],
+            ['KPI & Reports','pages'],
+            ['Production','pages'],
+            ['AI Assistant','pages'],
+            ['PLC & Instruments','pages'],
+            ['HR & Personnel','pages'],
+            ['Admin Control','pages'],
+            ['──── ACTIONS ────',''],
+            ['Create Job Order','privs'],
+            ['Close Job Order','privs'],
+            ['Approve Job Order','privs'],
+            ['Transfer Assets','privs'],
+            ['Receive Inventory','privs'],
+            ['Issue Inventory','privs'],
+            ['View KPI','privs'],
+            ['Export Data','privs'],
+            ['Manage Users','privs'],
+          ].map(([perm,type])=>{
+            if(perm.startsWith('───')){return`<tr><td colspan="100%" class="priv-section">${perm}</td></tr>`;}
+            const permKey=perm.toLowerCase().replace(/[^a-z]/g,'_').replace(/_+/g,'_');
+            return`<tr>
+              <td class="fw7 fs7">${perm}</td>
+              ${Object.entries(ROLE_DEFS).map(([role,rd])=>{
+                const has=rd.privs?.includes('all')||rd.pages?.includes(permKey.replace('_job_order','joborders').split('_')[0])||rd.privs?.some(p=>p.includes(permKey.slice(0,4)))||role==='administrator';
+                return`<td style="text-align:center">${has?`<span style="color:var(--green);font-size:1rem">✓</span>`:`<span style="color:var(--text3);font-size:.8rem">—</span>`}</td>`;
+              }).join('')}
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SYSTEM SETTINGS -->
+  <div id="atab-system-content" style="display:none">
+    <div class="grid-2">
+      <div>
+        <div class="sec-hdr"><div class="sec-title">System Configuration</div></div>
+        <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px">
+          ${[['System Name','FUSION IMS v2.1'],['Organization','DAESANG RICOR Corporation'],['Default Timezone','Asia/Manila (PHT)'],['Document No. Prefix','FUSION-MAINT-JO'],['Next JO Number','JO-'+String(JOBS.length+1).padStart(5,'0')],['Database','PostgreSQL (Local + Cloud)'],['Backup Schedule','Daily 23:00 PHT'],['Cloud Sync','Enabled — Google Cloud']].map(([k,v])=>`
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)">
+            <span class="fs7 fw7">${k}</span><span class="fs7 tm">${v}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div class="sec-hdr"><div class="sec-title">System Actions</div></div>
+        <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-success" onclick="toast('✅ Database backed up successfully!','var(--green)')">💾 Backup Database Now</button>
+          <button class="btn btn-primary" onclick="toast('🔄 Cloud sync initiated...','var(--accent)')">☁️ Sync to Cloud</button>
+          <button class="btn btn-warn" onclick="toast('📥 Exporting full database...','var(--warn)')">📥 Export Full Database</button>
+          <button class="btn btn-purple" onclick="toast('🔧 System diagnostics running...','var(--purple)')">🔧 Run Diagnostics</button>
+          <button class="btn btn-danger" onclick="showConfirm('Clear all demo data?',()=>toast('🗑️ Data cleared','var(--danger)'))">🗑️ Clear Demo Data</button>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-top:10px">
+          <div class="form-label" style="margin-bottom:8px">System Health</div>
+          ${[['Database','Online','var(--green)'],['API Server','Online','var(--green)'],['Cloud Sync','Active','var(--green)'],['AI Engine','Online','var(--green)'],['Camera OCR','Ready','var(--accent)']].map(([s,v,c])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)">
+            <span class="fs7">${s}</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:.65rem;font-weight:700;color:${c}">
+              <span style="width:6px;height:6px;border-radius:50%;background:${c};display:inline-block"></span>${v}
+            </span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIT LOGS -->
+  <div id="atab-logs-content" style="display:none">
+    <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px">
+      <div class="sec-hdr"><div class="sec-title">System Audit Log</div><button class="btn btn-success btn-sm" onclick="exportAuditLog()">📥 Export</button></div>
+      ${[
+        {time:'2026-02-28 09:15',user:'System Admin',action:'User Login',detail:'Administrator logged in',type:'info'},
+        {time:'2026-02-28 09:05',user:'Jomarh Mangila',action:'Create Job Order',detail:'JO-00006 — Cooling Tower Fan CT-3',type:'success'},
+        {time:'2026-02-27 16:30',user:'Juan Cruz',action:'Close Job Order',detail:'JO-00004 — ABB ACS580 VFD resolved',type:'success'},
+        {time:'2026-02-27 14:00',user:'Ben Torres',action:'Stock Received',detail:'6308 Bearing x 5 units',type:'info'},
+        {time:'2026-02-27 10:00',user:'System Admin',action:'Add User',detail:'New user Arnold Padernal added',type:'warn'},
+        {time:'2026-02-26 17:00',user:'System Admin',action:'Database Backup',detail:'Auto backup completed — 94MB',type:'info'},
+      ].map(log=>`
+        <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--bd);align-items:flex-start">
+          <div style="font-size:.8rem">${log.type==='success'?'✅':log.type==='warn'?'⚠️':log.type==='danger'?'❌':'ℹ️'}</div>
+          <div style="flex:1">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span class="fs7 fw7">${log.action}</span>
+              <span class="fs7 tm">—</span>
+              <span class="fs7">${log.detail}</span>
+            </div>
+            <div style="font-size:.62rem;color:var(--text3);margin-top:2px">${log.time} | ${log.user}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function showAdminTab(tab){
+  ['users','roles','system','logs'].forEach(t=>{
+    const btn=document.getElementById(`atab-${t}`);
+    const ct=document.getElementById(`atab-${t}-content`);
+    if(btn&&ct){
+      const on=t===tab;
+      btn.style.color=on?'var(--accent)':'var(--text2)';
+      btn.style.borderBottomColor=on?'var(--accent)':'transparent';
+      ct.style.display=on?'':'none';
+    }
+  });
+}
+
+function renderUserRows(users){
+  return users.map(u=>`<tr id="urow-${u.id}">
+    <td>
+      <div style="display:flex;align-items:center;gap:9px">
+        <div class="av ${ROLE_DEFS[u.role]?.avClass||''}" style="width:30px;height:30px;font-size:.72rem">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+        <div><div class="fs7 fw7">${u.name}</div><div style="font-size:.6rem;color:var(--text2)">${u.email}</div></div>
+      </div>
+    </td>
+    <td class="mono fs7 tm">${u.empId}</td>
+    <td><span style="font-size:.65rem;color:${ROLE_DEFS[u.role]?.color||'var(--text2)'}">● ${ROLE_DEFS[u.role]?.label||u.role}</span></td>
+    <td><span class="tag">${u.dept}</span></td>
+    <td class="fs7 tm">${u.email}</td>
+    <td class="fs7 tm">${u.phone}</td>
+    <td class="fs7 tm">${u.joined}</td>
+    <td>
+      <button onclick="toggleUserStatus(${u.id})" style="background:none;border:none;cursor:pointer;padding:2px">
+        ${u.status==='active'?`<span class="badge badge-done">Active</span>`:`<span class="badge badge-danger">Inactive</span>`}
+      </button>
+    </td>
+    <td>
+      <div style="display:flex;gap:3px">
+        <button class="btn btn-primary btn-xs" onclick="openEditUser(${u.id})">✏️ Edit</button>
+        <button class="btn btn-warn btn-xs" onclick="openResetPassword(${u.id})">🔑 Reset PW</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteUser(${u.id})" ${u.id===currentUser.id?'disabled style="opacity:.4"':''}>🗑️</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+function filterUsers(){const q=(document.getElementById('usr-search')?.value||'').toLowerCase();const fil=USERS.filter(u=>[u.name,u.empId,u.role,u.dept,u.email].join(' ').toLowerCase().includes(q));document.getElementById('usr-tbody').innerHTML=renderUserRows(fil);}
+function exportUsers(){const ws=XLSX.utils.json_to_sheet(USERS.map(u=>({'Name':u.name,'Employee ID':u.empId,'Role':ROLE_DEFS[u.role]?.label||u.role,'Department':u.dept,'Email':u.email,'Phone':u.phone,'Status':u.status,'Joined':u.joined})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'Users',ws);XLSX.writeFile(wb,'FUSION_Users.xlsx');toast('📥 Users exported!','var(--green)');}
+function exportAuditLog(){toast('📥 Audit log exported!','var(--green)');}
+
+// ── ADMIN USER MANAGEMENT ──────────────────────────────────────────
+function openAddUser(){
+  editingUser=null;
+  document.getElementById('user-modal-title').textContent='👤 Add New User';
+  renderUserForm();
+  openModal('user-modal');
+}
+function openEditUser(id){
+  editingUser=USERS.find(u=>u.id===id);
+  document.getElementById('user-modal-title').textContent='✏️ Edit User — '+editingUser.name;
+  renderUserForm();
+  openModal('user-modal');
+}
+
+function renderUserForm(){
+  const u=editingUser;
+  const allPrivKeys=['jo_view','jo_create','jo_close','jo_assign','jo_accept','jo_comment','jo_approve','jo_approve_qa','asset_view','asset_transfer','asset_edit','stock_view','stock_receive','stock_issue','stock_approve','prod_view','prod_log','kpi_view','kpi_export','ai_access','plc_view','hr_view','hr_edit','admin_access'];
+  const privLabels={'jo_view':'View Job Orders','jo_create':'Create Job Orders','jo_close':'Close Job Orders','jo_assign':'Assign Technician','jo_accept':'Accept Job Orders','jo_comment':'Comment on Jobs','jo_approve':'Approve Job Orders','jo_approve_qa':'QA Approve Jobs','asset_view':'View Assets','asset_transfer':'Transfer Assets','asset_edit':'Edit Assets','stock_view':'View Inventory','stock_receive':'Receive Stock','stock_issue':'Issue/Withdraw Stock','stock_approve':'Approve Purchases','prod_view':'View Production','prod_log':'Log Production','kpi_view':'View KPI/Reports','kpi_export':'Export KPI Data','ai_access':'Access AI Assistant','plc_view':'View PLC Knowledge','hr_view':'View HR Data','hr_edit':'Edit HR Data','admin_access':'Admin Control Access'};
+  const privGroups=[['Job Orders',['jo_view','jo_create','jo_close','jo_assign','jo_accept','jo_comment','jo_approve','jo_approve_qa']],['Assets',['asset_view','asset_transfer','asset_edit']],['Stockroom',['stock_view','stock_receive','stock_issue','stock_approve']],['Production & KPI',['prod_view','prod_log','kpi_view','kpi_export']],['Knowledge & Other',['ai_access','plc_view','hr_view','hr_edit','admin_access']]];
+
+  document.getElementById('user-modal-body').innerHTML=`
+  <div class="form-row col-2" style="margin-bottom:12px">
+    <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="um-name" value="${u?.name||''}" placeholder="Juan Dela Cruz"/></div>
+    <div class="form-group"><label class="form-label">Employee ID *</label><input class="form-input" id="um-empid" value="${u?.empId||''}" placeholder="TEC-001"/></div>
+    <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" id="um-email" type="email" value="${u?.email||''}" placeholder="juan@fusion.ims"/></div>
+    <div class="form-group"><label class="form-label">Phone Number</label><input class="form-input" id="um-phone" type="tel" value="${u?.phone||''}" placeholder="09171234567"/></div>
+    <div class="form-group"><label class="form-label">Role / Position *</label>
+      <select class="form-input" id="um-role" onchange="onRoleChange(this.value)">
+        ${Object.entries(ROLE_DEFS).map(([r,d])=>`<option value="${r}" ${u?.role===r?'selected':''}>${d.label}</option>`).join('')}
+      </select></div>
+    <div class="form-group"><label class="form-label">Department *</label>
+      <select class="form-input" id="um-dept">
+        ${DEPTS.map(d=>`<option ${u?.dept===d?'selected':''}>${d}</option>`).join('')}
+      </select></div>
+    <div class="form-group"><label class="form-label">${u?'New Password (leave blank to keep current)':'Password *'}</label>
+      <input class="form-input" id="um-pass" type="password" placeholder="${u?'Leave blank to keep current':'Set password'}"/></div>
+    <div class="form-group"><label class="form-label">Confirm Password</label>
+      <input class="form-input" id="um-pass2" type="password" placeholder="Confirm password"/></div>
+    <div class="form-group"><label class="form-label">Account Status</label>
+      <select class="form-input" id="um-status">
+        <option value="active" ${u?.status==='active'?'selected':''}>Active</option>
+        <option value="inactive" ${u?.status==='inactive'?'selected':''}>Inactive</option>
+        <option value="suspended" ${u?.status==='suspended'?'selected':''}>Suspended</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Date Joined</label>
+      <input class="form-input" id="um-joined" type="date" value="${u?.joined||new Date().toISOString().slice(0,10)}"/></div>
+  </div>
+
+  <div style="border:1px solid var(--bd);border-radius:8px;overflow:hidden">
+    <div style="background:var(--bg3);padding:10px 14px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center">
+      <div style="font-family:var(--font-hdr);font-size:.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2)">🛡️ Privileges & Permissions</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-success btn-xs" onclick="setAllPrivs(true)">Select All</button>
+        <button class="btn btn-danger btn-xs" onclick="setAllPrivs(false)">Clear All</button>
+        <button class="btn btn-primary btn-xs" onclick="applyRoleDefaults()">Apply Role Defaults</button>
+      </div>
+    </div>
+    <div style="padding:12px 14px">
+      ${privGroups.map(([grp,keys])=>`
+        <div style="margin-bottom:12px">
+          <div style="font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--bd)">${grp}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+            ${keys.map(k=>`
+              <label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:5px 8px;background:var(--bg3);border-radius:5px;border:1px solid var(--bd);transition:all .15s" class="priv-chk-lbl">
+                <input type="checkbox" id="prv-${k}" class="priv-chk" data-key="${k}" ${(u?.privs?.all||u?.privs?.[k])?'checked':''} style="accent-color:var(--accent)"/>
+                <span style="font-size:.72rem">${privLabels[k]||k}</span>
+              </label>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+
+  document.getElementById('user-modal-foot').innerHTML=`
+    <button class="btn btn-solid" onclick="saveUser()">💾 ${editingUser?'Update User':'Add User'}</button>
+    <button class="btn btn-purple" onclick="openResetPassword(${u?.id||0})">🔑 Reset Password</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('user-modal')">Cancel</button>`;
+}
+
+function onRoleChange(role){
+  const rd=ROLE_DEFS[role];
+  if(!rd)return;
+  toast(`Role changed to ${rd.label}. Click "Apply Role Defaults" to set typical permissions.`,'var(--accent)');
+}
+function setAllPrivs(val){document.querySelectorAll('.priv-chk').forEach(c=>c.checked=val);}
+function applyRoleDefaults(){
+  const role=document.getElementById('um-role')?.value;
+  const rd=ROLE_DEFS[role];if(!rd)return;
+  setAllPrivs(false);
+  if(rd.privs?.includes('all')){setAllPrivs(true);return;}
+  rd.privs?.forEach(p=>{
+    const key=p.replace('.','_');
+    const el=document.getElementById('prv-'+key);
+    if(el)el.checked=true;
+  });
+  toast('✅ Role defaults applied!','var(--green)');
+}
+
+function saveUser(){
+  const name=(document.getElementById('um-name')?.value||'').trim();
+  const empId=(document.getElementById('um-empid')?.value||'').trim();
+  const role=document.getElementById('um-role')?.value;
+  const pass=document.getElementById('um-pass')?.value||'';
+  const pass2=document.getElementById('um-pass2')?.value||'';
+  if(!name){toast('⚠️ Full name is required.','var(--warn)');return;}
+  if(!empId){toast('⚠️ Employee ID is required.','var(--warn)');return;}
+  if(!editingUser&&!pass){toast('⚠️ Password is required for new users.','var(--warn)');return;}
+  if(pass&&pass!==pass2){toast('❌ Passwords do not match!','var(--danger)');return;}
+  if(pass&&pass.length<6){toast('⚠️ Password must be at least 6 characters.','var(--warn)');return;}
+  if(!editingUser&&USERS.find(u=>u.empId.toLowerCase()===empId.toLowerCase())){toast('❌ Employee ID already exists!','var(--danger)');return;}
+
+  const privs={};
+  document.querySelectorAll('.priv-chk:checked').forEach(c=>{privs[c.dataset.key]=true;});
+
+  const data={
+    name,empId,email:document.getElementById('um-email')?.value||'',
+    phone:document.getElementById('um-phone')?.value||'',
+    role,dept:document.getElementById('um-dept')?.value||DEPTS[0],
+    status:document.getElementById('um-status')?.value||'active',
+    joined:document.getElementById('um-joined')?.value||new Date().toISOString().slice(0,10),
+    privs,
+  };
+  if(pass) data.password=pass;
+
+  if(editingUser){
+    Object.assign(editingUser,data);
+    toast('✅ User updated successfully!','var(--green)');
+  } else {
+    const newId=Math.max(...USERS.map(u=>u.id))+1;
+    USERS.push({id:newId,...data,password:pass});
+    toast('✅ User added: '+name,'var(--green)');
+  }
+  closeModal('user-modal');
+  renderAdmin();
+}
+
+function openResetPassword(id){
+  const u=USERS.find(x=>x.id===id);if(!u)return;
+  document.getElementById('confirm-title').textContent='🔑 Reset Password — '+u.name;
+  document.getElementById('confirm-msg').innerHTML=`
+    <div class="form-group"><label class="form-label">New Password</label><input class="form-input" id="reset-pw" type="password" placeholder="New password (min 6 chars)"/></div>
+    <div class="form-group"><label class="form-label">Confirm Password</label><input class="form-input" id="reset-pw2" type="password" placeholder="Confirm new password"/></div>`;
+  document.getElementById('confirm-yes').textContent='🔑 Reset Password';
+  document.getElementById('confirm-yes').onclick=()=>{
+    const pw=document.getElementById('reset-pw')?.value;
+    const pw2=document.getElementById('reset-pw2')?.value;
+    if(!pw||pw.length<6){toast('⚠️ Password must be at least 6 characters.','var(--warn)');return;}
+    if(pw!==pw2){toast('❌ Passwords do not match!','var(--danger)');return;}
+    u.password=pw;
+    closeModal('confirm-modal');
+    toast('✅ Password reset for '+u.name,'var(--green)');
+  };
+  openModal('confirm-modal');
+}
+
+function toggleUserStatus(id){
+  const u=USERS.find(x=>x.id===id);if(!u)return;
+  if(id===currentUser.id){toast('⚠️ Cannot change your own account status.','var(--warn)');return;}
+  showConfirm(`${u.status==='active'?'Deactivate':'Activate'} user: ${u.name}?`,()=>{
+    u.status=u.status==='active'?'inactive':'active';
+    renderAdmin();
+    toast(`✅ User ${u.name} ${u.status==='active'?'activated':'deactivated'}.`,'var(--green)');
+  });
+}
+
+function deleteUser(id){
+  const u=USERS.find(x=>x.id===id);if(!u)return;
+  if(id===currentUser.id){toast('⚠️ Cannot delete your own account.','var(--warn)');return;}
+  showConfirm(`Permanently delete user: ${u.name}?\nThis cannot be undone.`,()=>{
+    USERS=USERS.filter(x=>x.id!==id);
+    renderAdmin();
+    toast('🗑️ User deleted: '+u.name,'var(--danger)');
+  });
+}
+
+// ── CAMERA ────────────────────────────────────────────────────────
+function openCam(target){
+  camTarget=target;capturedPhoto=null;
+  document.getElementById('cam-modal').classList.add('show');
+  document.getElementById('cam-prev').innerHTML='';
+  document.getElementById('cam-save-btn').style.display='none';
+  document.getElementById('cam-ret-btn').style.display='none';
+  document.getElementById('cam-cap-btn').style.display='flex';
+  const vid=document.getElementById('cam-vid');vid.style.display='block';
+  document.getElementById('cam-status').textContent='Starting camera...';
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
+    .then(s=>{camStream=s;vid.srcObject=s;document.getElementById('cam-status').textContent='✅ Camera ready — point and capture.';})
+    .catch(e=>{
+      vid.style.display='none';
+      document.getElementById('cam-cap-btn').style.display='none';
+      document.getElementById('cam-status').textContent='⚠️ Camera unavailable — upload photo instead.';
+      document.getElementById('cam-prev').innerHTML=`
+        <div style="border:2px dashed var(--purple);border-radius:8px;padding:20px;text-align:center;color:var(--purple)">
+          <div style="font-size:2rem;margin-bottom:8px">🖼️</div>
+          <label style="background:rgba(167,139,250,.12);border:1.5px solid var(--purple);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:700">
+            📁 Choose Photo <input type="file" accept="image/*" style="display:none" onchange="loadCamFile(event)"/>
+          </label>
+        </div>`;
+    });
+}
+function loadCamFile(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{capturedPhoto=ev.target.result;document.getElementById('cam-prev').innerHTML=`<img src="${capturedPhoto}" style="width:100%;border-radius:8px;max-height:240px;object-fit:contain"/>`;document.getElementById('cam-save-btn').style.display='flex';document.getElementById('cam-status').textContent='Photo loaded — click Save.';};r.readAsDataURL(f);}
+function capPhoto(){const vid=document.getElementById('cam-vid'),cvs=document.getElementById('cam-cvs');cvs.width=vid.videoWidth||640;cvs.height=vid.videoHeight||480;cvs.getContext('2d').drawImage(vid,0,0);capturedPhoto=cvs.toDataURL('image/jpeg',.82);document.getElementById('cam-prev').innerHTML=`<img src="${capturedPhoto}" style="width:100%;border-radius:8px;max-height:240px;object-fit:contain"/>`;vid.style.display='none';document.getElementById('cam-cap-btn').style.display='none';document.getElementById('cam-save-btn').style.display='flex';document.getElementById('cam-ret-btn').style.display='flex';document.getElementById('cam-status').textContent='✅ Captured — click Save to attach.';}
+function retakePhoto(){document.getElementById('cam-prev').innerHTML='';document.getElementById('cam-vid').style.display='block';document.getElementById('cam-cap-btn').style.display='flex';document.getElementById('cam-save-btn').style.display='none';document.getElementById('cam-ret-btn').style.display='none';capturedPhoto=null;}
+function savePhoto(){
+  if(!capturedPhoto){closeCam();return;}
+  if(camTarget==='form'){addPhotoThumb(capturedPhoto,'form-photos');}
+  else if(camTarget==='list'||camTarget==='receipt'){toast('📷 Photo captured — attach to a job order from the list.','var(--purple)');}
+  else{const j=JOBS.find(x=>x.id===camTarget);if(j){if(!j.photos)j.photos=[];j.photos.push(capturedPhoto);renderJobOrders();}}
+  closeCam();toast('📷 Photo attached!','var(--purple)');
+}
+function closeCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}document.getElementById('cam-modal').classList.remove('show');}
+function addPhotoThumb(src,cid){const c=document.getElementById(cid);if(!c)return;const d=document.createElement('div');d.className='pg-thumb';d.innerHTML=`<img src="${src}" onclick="showPhoto('${src}')"/><button class="pg-del" onclick="this.parentElement.remove()">✕</button>`;c.appendChild(d);}
+function addPhotosFromFile(e){if(!photoContainer)return;Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>addPhotoThumb(ev.target.result,photoContainer);r.readAsDataURL(f);});}
+function showPhoto(src){const v=document.getElementById('photo-viewer');const img=document.getElementById('pv-img');const dl=document.getElementById('pv-dl');img.src=src;dl.href=src;dl.download='fusion_photo.jpg';v.style.display='flex';}
+
+// ── MODALS ────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id)?.classList.add('show');}
+function closeModal(id){document.getElementById(id)?.classList.remove('show');}
+function showConfirm(msg,cb){
+  document.getElementById('confirm-title').textContent='Confirm Action';
+  document.getElementById('confirm-msg').textContent=msg;
+  document.getElementById('confirm-yes').textContent='Yes, Proceed';
+  document.getElementById('confirm-yes').onclick=()=>{cb();closeModal('confirm-modal');};
+  openModal('confirm-modal');
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────
+function showNotifs(){
+  const p=document.getElementById('notif-popup');
+  if(p.style.display==='block'){p.style.display='none';return;}
+  p.style.display='block';
+  document.getElementById('notif-list').innerHTML=NOTIFICATIONS.map(n=>`
+    <div style="padding:10px 12px;border-radius:7px;margin-bottom:4px;background:${n.read?'transparent':'rgba(0,212,255,.04)'};border:1px solid ${n.read?'transparent':'rgba(0,212,255,.1)'}">
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <span>${n.type==='danger'?'🔴':n.type==='warn'?'🟡':n.type==='success'?'🟢':'🔵'}</span>
+        <div>
+          <div style="font-size:.75rem;line-height:1.4">${n.msg}</div>
+          <div style="font-size:.6rem;color:var(--text3);margin-top:2px">${n.time}</div>
+        </div>
+      </div>
+    </div>`).join('');
+  NOTIFICATIONS.forEach(n=>n.read=true);
+  document.getElementById('notif-btn').removeAttribute('data-count');
+}
+document.addEventListener('click',e=>{if(!document.getElementById('notif-popup')?.contains(e.target)&&e.target.id!=='notif-btn'){const p=document.getElementById('notif-popup');if(p)p.style.display='none';}});
+
+// ── MISC EXPORTS ──────────────────────────────────────────────────
+function exportCurrentPage(){
+  const exp={dashboard:()=>toast('📊 Export Dashboard data.','var(--accent)'),joborders:exportJOExcel,assets:exportAssets,stockroom:exportStock,kpi:exportKPI,production:exportProd,hr:exportHR,admin:exportUsers};
+  (exp[currentPage]||(() => toast('📥 Export not available for this page.', 'var(--warn)')))();
+}
+
+function showUserMenu(){navigate('profile');}
+function renderProfile(){
+  const u=currentUser;const rd=ROLE_DEFS[u.role];
+  const el=document.getElementById('pg-profile');
+  el.innerHTML=`
+  <div style="max-width:600px">
+    <div style="background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:24px;display:flex;gap:16px;align-items:center;margin-bottom:16px">
+      <div class="av ${rd.avClass}" style="width:64px;height:64px;font-size:1.6rem">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div>
+        <div style="font-family:var(--font-hdr);font-size:1.4rem;font-weight:700">${u.name}</div>
+        <div style="color:${rd.color};font-size:.78rem;margin-top:2px">● ${rd.label}</div>
+        <div class="tm fs7" style="margin-top:3px">${u.empId} · ${u.dept}</div>
+      </div>
+    </div>
+    <div style="background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:20px">
+      <div class="sec-title" style="margin-bottom:12px">Profile Details</div>
+      ${[['Employee ID',u.empId],['Email',u.email],['Phone',u.phone],['Department',u.dept],['Role',rd.label],['Date Joined',u.joined],['Status',u.status]].map(([k,v])=>`
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)">
+        <span class="fs7 fw7 tm">${k}</span><span class="fs7">${v}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function toast(msg,color){
+  color=color||'var(--green)';
+  const t=document.getElementById('TOAST');
+  t.style.color=color;t.style.borderColor=color;
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),3800);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+window.onload=()=>initLoginRoles();
+</script>
+</body>
+</html>
