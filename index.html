@@ -147,6 +147,11 @@ input[type=radio],input[type=checkbox]{accent-color:var(--accent);cursor:pointer
 .badge-open{color:#ffb800;background:rgba(255,184,0,.1);border-color:rgba(255,184,0,.3)}
 .badge-progress{color:#00d4ff;background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.25)}
 .badge-done{color:#00ff9d;background:rgba(0,255,157,.08);border-color:rgba(0,255,157,.2)}
+.badge-accent{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3);color:var(--accent)}
+.badge-purple{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:#a78bfa}
+.badge-pink{background:rgba(244,114,182,.1);border-color:rgba(244,114,182,.3);color:#f472b6}
+.badge-green{background:rgba(0,255,157,.1);border-color:rgba(0,255,157,.3);color:var(--green)}
+.badge-warn{background:rgba(255,184,0,.1);border-color:rgba(255,184,0,.3);color:var(--warn)}
 .badge-danger{color:#ff3d5a;background:rgba(255,61,90,.1);border-color:rgba(255,61,90,.3)}
 .tag{background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);border-radius:5px;padding:1px 7px;font-size:.62rem;color:var(--accent)}
 .tag-green{background:rgba(0,255,157,.08);border:1px solid rgba(0,255,157,.2);color:var(--green)}
@@ -409,6 +414,8 @@ input[type=radio],input[type=checkbox]{accent-color:var(--accent);cursor:pointer
       <div class="pg" id="pg-hr"></div>
       <div class="pg" id="pg-admin"></div>
       <div class="pg" id="pg-profile"></div>
+      <div class="pg" id="pg-approvals"></div>
+      <div class="pg" id="pg-shifts"></div>
     </div>
   </div>
 </div>
@@ -549,59 +556,117 @@ input[type=radio],input[type=checkbox]{accent-color:var(--accent);cursor:pointer
 
 // ── ROLE DEFINITIONS ──────────────────────────────────────────────
 const ROLE_DEFS = {
+  // ── ADMINISTRATION GROUP ──────────────────────────────────────────
   administrator: {label:'Administrator',color:'#ff3d5a',avClass:'av-admin',
-    pages:['dashboard','joborders','assets','stockroom','kpi','production','ai','plc','hr','admin'],
-    privs:['all']},
-  manager: {label:'Manager',color:'#a78bfa',avClass:'av-manager',
-    pages:['dashboard','joborders','assets','kpi','production','ai','plc'],
-    privs:['jo.view','jo.approve','jo.close','asset.view','kpi.view','kpi.export','prod.view','ai.access']},
-  supervisor: {label:'Supervisor',color:'#ffb800',avClass:'av-supervisor',
-    pages:['dashboard','joborders','assets','kpi','production','ai','plc'],
-    privs:['jo.view','jo.create','jo.close','jo.assign','asset.view','prod.view','ai.access']},
-  technician: {label:'Technician',color:'#00d4ff',avClass:'av-technician',
-    pages:['dashboard','joborders','ai','plc'],
-    privs:['jo.view','jo.accept','jo.comment','ai.access','plc.view']},
-  operator: {label:'Operator',color:'#00ff9d',avClass:'av-operator',
-    pages:['dashboard','joborders','production'],
-    privs:['jo.view','jo.create','prod.log','prod.view']},
-  qa: {label:'QA/QC',color:'#f472b6',avClass:'av-qa',
-    pages:['dashboard','joborders','assets'],
-    privs:['jo.view','jo.approve_qa','asset.view']},
-  stockroom: {label:'Stockroom',color:'#fb923c',avClass:'av-stockroom',
-    pages:['dashboard','stockroom','assets'],
-    privs:['stock.view','stock.receive','stock.issue','asset.view','asset.transfer']},
-  finance: {label:'Finance',color:'#34d399',avClass:'av-finance',
-    pages:['dashboard','stockroom','kpi'],
-    privs:['stock.view','stock.approve','kpi.view']},
+    group:'Administration',
+    pages:['dashboard','joborders','assets','stockroom','kpi','production','ai','plc','hr','admin','approvals','shifts'],
+    privs:{all:true,jo_view:true,jo_create:true,jo_close:true,jo_assign:true,jo_accept:true,jo_comment:true,jo_approve:true,
+           stock_view:true,stock_receive:true,stock_issue:true,stock_po:true,
+           asset_view:true,asset_transfer:true,kpi_view:true,kpi_export:true,
+           prod_view:true,prod_log:true,ai_access:true,hr_view:true,hr_edit:true}},
+
+  manager: {label:'Plant Manager',color:'#a78bfa',avClass:'av-manager',
+    group:'Administration',
+    pages:['dashboard','joborders','assets','kpi','production','ai','plc','hr','approvals','shifts'],
+    privs:{jo_view:true,jo_approve:true,jo_close:true,jo_assign:true,
+           asset_view:true,kpi_view:true,kpi_export:true,
+           prod_view:true,ai_access:true,shift_manage:true,approve_manager:true}},
+
+  fsms: {label:'FSMS Supervisor',color:'#06b6d4',avClass:'av-fsms',
+    group:'Administration',
+    pages:['dashboard','joborders','approvals','ai'],
+    privs:{jo_view:true,jo_approve:true,approve_fsms:true,ai_access:true}},
+
+  qa: {label:'QA Supervisor',color:'#f472b6',avClass:'av-qa',
+    group:'Administration',
+    pages:['dashboard','joborders','assets','approvals','ai'],
+    privs:{jo_view:true,jo_approve_qa:true,approve_qa:true,asset_view:true,ai_access:true}},
+
+  safety: {label:'Safety Officer',color:'#ef4444',avClass:'av-safety',
+    group:'Administration',
+    pages:['dashboard','joborders','ai'],
+    privs:{jo_view:true,jo_approve_safety:true,ai_access:true}},
+
   hr: {label:'HR',color:'#818cf8',avClass:'av-hr',
+    group:'Administration',
     pages:['dashboard','hr','kpi'],
-    privs:['hr.view','hr.edit','kpi.view']},
+    privs:{hr_view:true,hr_edit:true,kpi_view:true}},
+
+  // ── SUPERVISOR GROUP ──────────────────────────────────────────────
+  mech_supervisor: {label:'Mechanical Supervisor',color:'#f97316',avClass:'av-mechsup',
+    group:'Supervisor',
+    pages:['dashboard','joborders','assets','kpi','production','ai','plc','approvals','shifts'],
+    privs:{jo_view:true,jo_create:true,jo_close:true,jo_assign:true,jo_comment:true,
+           asset_view:true,prod_view:true,ai_access:true,shift_manage:true}},
+
+  supervisor: {label:'Supervisor',color:'#ffb800',avClass:'av-supervisor',
+    group:'Supervisor',
+    pages:['dashboard','joborders','assets','kpi','production','ai','plc','approvals'],
+    privs:{jo_view:true,jo_create:true,jo_close:true,jo_assign:true,jo_comment:true,
+           asset_view:true,prod_view:true,ai_access:true}},
+
+  // ── TECHNICIAN GROUP ──────────────────────────────────────────────
+  technician: {label:'Technician',color:'#00d4ff',avClass:'av-technician',
+    group:'Technician',
+    pages:['dashboard','joborders','ai','plc'],
+    privs:{jo_view:true,jo_accept:true,jo_comment:true,ai_access:true,plc_view:true}},
+
+  // ── OPERATIONS GROUP ─────────────────────────────────────────────
+  operator: {label:'Operator',color:'#00ff9d',avClass:'av-operator',
+    group:'Operations',
+    pages:['dashboard','joborders','production','approvals'],
+    privs:{jo_view:true,jo_create:true,prod_log:true,prod_view:true,approve_operator:true}},
+
+  stockroom: {label:'Stockroom',color:'#fb923c',avClass:'av-stockroom',
+    group:'Operations',
+    pages:['dashboard','stockroom','assets'],
+    privs:{stock_view:true,stock_receive:true,stock_issue:true,stock_po:true,asset_view:true,asset_transfer:true}},
+
+  finance: {label:'Finance',color:'#34d399',avClass:'av-finance',
+    group:'Operations',
+    pages:['dashboard','stockroom','kpi'],
+    privs:{stock_view:true,stock_approve:true,kpi_view:true}},
 };
 
+// ── TECHNICIAN SUBTYPES (for display/grouping) ─────────────────────
+const TECH_SUBTYPES = ['Instrumentation','Electrical','Millwright','Welder','Civil'];
+
 // ── DEPARTMENTS ────────────────────────────────────────────────────
-const DEPTS = ['Instrumentation','Electrical','Mechanical','Welder','Civil','QA/QC','Stockroom','Production','HR','Finance','IT/Admin'];
+const DEPTS = ['Instrumentation','Electrical','Mechanical','Millwright','Welder','Civil','QA/QC','Stockroom','Production','HR','Finance','IT/Admin','FSMS','Safety'];
 
 // ── USER DATA ──────────────────────────────────────────────────────
 let USERS = [
-  {id:1,empId:'ADM-001',name:'System Administrator',role:'administrator',dept:'IT/Admin',email:'admin@fusion.ims',phone:'09171234567',password:'admin123',status:'active',joined:'2024-01-01',
-   privs:{all:true}},
-  {id:2,empId:'MGR-001',name:'Ramon Del Rosario',role:'manager',dept:'Production',email:'rdelrosario@fusion.ims',phone:'09181234567',password:'pass123',status:'active',joined:'2024-01-15',
-   privs:{jo_view:true,jo_approve:true,jo_close:true,kpi_view:true,kpi_export:true,prod_view:true,ai_access:true}},
-  {id:3,empId:'SUP-001',name:'Jomarh Mangila',role:'supervisor',dept:'Instrumentation',email:'jmangila@fusion.ims',phone:'09191234567',password:'pass123',status:'active',joined:'2024-02-01',
-   privs:{jo_view:true,jo_create:true,jo_close:true,jo_assign:true,prod_view:true,ai_access:true}},
-  {id:4,empId:'SUP-002',name:'Jack Melad',role:'supervisor',dept:'Electrical',email:'jmelad@fusion.ims',phone:'09201234567',password:'pass123',status:'active',joined:'2024-02-01',
-   privs:{jo_view:true,jo_create:true,jo_close:true,jo_assign:true,prod_view:true,ai_access:true}},
-  {id:5,empId:'TEC-001',name:'Arnold Padernal',role:'technician',dept:'Instrumentation',email:'apadernal@fusion.ims',phone:'09211234567',password:'pass123',status:'active',joined:'2024-03-01',
+  {id:1, empId:'ADM-001',name:'System Administrator',role:'administrator',subtype:'',dept:'IT/Admin',email:'admin@fusion.ims',phone:'09171234567',password:'admin123',status:'active',joined:'2024-01-01',
+   privs:{all:true,jo_view:true,jo_create:true,jo_close:true,jo_assign:true,jo_accept:true,jo_comment:true,jo_approve:true,stock_view:true,stock_receive:true,stock_issue:true,stock_po:true,asset_view:true,asset_transfer:true,kpi_view:true,kpi_export:true,prod_view:true,prod_log:true,ai_access:true,hr_view:true,hr_edit:true,shift_manage:true,approve_operator:true,approve_qa:true,approve_fsms:true,approve_manager:true}},
+  {id:2, empId:'MGR-001',name:'Ramon Del Rosario',role:'manager',subtype:'',dept:'Production',email:'rdelrosario@fusion.ims',phone:'09181234567',password:'pass123',status:'active',joined:'2024-01-15',
+   privs:{jo_view:true,jo_approve:true,jo_close:true,jo_assign:true,kpi_view:true,kpi_export:true,prod_view:true,ai_access:true,shift_manage:true,approve_manager:true}},
+  {id:3, empId:'MSV-001',name:'Jomarh Mangila',role:'mech_supervisor',subtype:'',dept:'Mechanical',email:'jmangila@fusion.ims',phone:'09191234567',password:'pass123',status:'active',joined:'2024-02-01',
+   privs:{jo_view:true,jo_create:true,jo_close:true,jo_assign:true,jo_comment:true,asset_view:true,prod_view:true,ai_access:true,shift_manage:true}},
+  {id:4, empId:'SUP-002',name:'Jack Melad',role:'supervisor',subtype:'Electrical',dept:'Electrical',email:'jmelad@fusion.ims',phone:'09201234567',password:'pass123',status:'active',joined:'2024-02-01',
+   privs:{jo_view:true,jo_create:true,jo_close:true,jo_assign:true,jo_comment:true,asset_view:true,prod_view:true,ai_access:true}},
+  {id:5, empId:'SUP-003',name:'Benny Acosta',role:'supervisor',subtype:'Instrumentation',dept:'Instrumentation',email:'bacosta@fusion.ims',phone:'09201234577',password:'pass123',status:'active',joined:'2024-02-10',
+   privs:{jo_view:true,jo_create:true,jo_close:true,jo_assign:true,jo_comment:true,asset_view:true,prod_view:true,ai_access:true}},
+  {id:6, empId:'TEC-001',name:'Arnold Padernal',role:'technician',subtype:'Instrumentation',dept:'Instrumentation',email:'apadernal@fusion.ims',phone:'09211234567',password:'pass123',status:'active',joined:'2024-03-01',
    privs:{jo_view:true,jo_accept:true,jo_comment:true,ai_access:true}},
-  {id:6,empId:'TEC-002',name:'Juan Cruz',role:'technician',dept:'Electrical',email:'jcruz@fusion.ims',phone:'09221234567',password:'pass123',status:'active',joined:'2024-03-15',
+  {id:7, empId:'TEC-002',name:'Juan Cruz',role:'technician',subtype:'Electrical',dept:'Electrical',email:'jcruz@fusion.ims',phone:'09221234567',password:'pass123',status:'active',joined:'2024-03-15',
    privs:{jo_view:true,jo_accept:true,jo_comment:true,ai_access:true}},
-  {id:7,empId:'OPR-001',name:'Maria Santos',role:'operator',dept:'Production',email:'msantos@fusion.ims',phone:'09231234567',password:'pass123',status:'active',joined:'2024-04-01',
-   privs:{jo_view:true,jo_create:true,prod_log:true,prod_view:true}},
-  {id:8,empId:'QA-001',name:'Rosa Flores',role:'qa',dept:'QA/QC',email:'rflores@fusion.ims',phone:'09241234567',password:'pass123',status:'active',joined:'2024-04-15',
-   privs:{jo_view:true,jo_approve_qa:true,asset_view:true}},
-  {id:9,empId:'STK-001',name:'Ben Torres',role:'stockroom',dept:'Stockroom',email:'btorres@fusion.ims',phone:'09251234567',password:'pass123',status:'active',joined:'2024-05-01',
-   privs:{stock_view:true,stock_receive:true,stock_issue:true,asset_view:true,asset_transfer:true}},
-  {id:10,empId:'HR-001',name:'Grace Aquino',role:'hr',dept:'HR',email:'gaquino@fusion.ims',phone:'09261234567',password:'pass123',status:'active',joined:'2024-05-15',
+  {id:8, empId:'TEC-003',name:'Pedro Reyes',role:'technician',subtype:'Millwright',dept:'Mechanical',email:'preyes@fusion.ims',phone:'09221234577',password:'pass123',status:'active',joined:'2024-03-20',
+   privs:{jo_view:true,jo_accept:true,jo_comment:true,ai_access:true}},
+  {id:9, empId:'TEC-004',name:'Ramon Bautista',role:'technician',subtype:'Welder',dept:'Mechanical',email:'rbautista@fusion.ims',phone:'09221234587',password:'pass123',status:'active',joined:'2024-04-01',
+   privs:{jo_view:true,jo_accept:true,jo_comment:true,ai_access:true}},
+  {id:10,empId:'TEC-005',name:'Carlo Mateo',role:'technician',subtype:'Civil',dept:'Civil',email:'cmateo@fusion.ims',phone:'09221234597',password:'pass123',status:'active',joined:'2024-04-05',
+   privs:{jo_view:true,jo_accept:true,jo_comment:true,ai_access:true}},
+  {id:11,empId:'OPR-001',name:'Maria Santos',role:'operator',subtype:'',dept:'Production',email:'msantos@fusion.ims',phone:'09231234567',password:'pass123',status:'active',joined:'2024-04-01',
+   privs:{jo_view:true,jo_create:true,prod_log:true,prod_view:true,approve_operator:true}},
+  {id:12,empId:'QAS-001',name:'Rosa Flores',role:'qa',subtype:'',dept:'QA/QC',email:'rflores@fusion.ims',phone:'09241234567',password:'pass123',status:'active',joined:'2024-04-15',
+   privs:{jo_view:true,jo_approve_qa:true,approve_qa:true,asset_view:true}},
+  {id:13,empId:'FSM-001',name:'Leo Caballes',role:'fsms',subtype:'',dept:'FSMS',email:'lcaballes@fusion.ims',phone:'09241234577',password:'pass123',status:'active',joined:'2024-04-20',
+   privs:{jo_view:true,jo_approve:true,approve_fsms:true,ai_access:true}},
+  {id:14,empId:'SFT-001',name:'Victor Salazar',role:'safety',subtype:'',dept:'Safety',email:'vsalazar@fusion.ims',phone:'09241234587',password:'pass123',status:'active',joined:'2024-05-01',
+   privs:{jo_view:true,jo_approve_safety:true,ai_access:true}},
+  {id:15,empId:'STK-001',name:'Ben Torres',role:'stockroom',subtype:'',dept:'Stockroom',email:'btorres@fusion.ims',phone:'09251234567',password:'pass123',status:'active',joined:'2024-05-01',
+   privs:{stock_view:true,stock_receive:true,stock_issue:true,stock_po:true,asset_view:true,asset_transfer:true}},
+  {id:16,empId:'HR-001',name:'Grace Aquino',role:'hr',subtype:'',dept:'HR',email:'gaquino@fusion.ims',phone:'09261234567',password:'pass123',status:'active',joined:'2024-05-15',
    privs:{hr_view:true,hr_edit:true,kpi_view:true}},
 ];
 
@@ -681,6 +746,73 @@ let NOTIFICATIONS = [
   {id:3,type:'info',msg:'JO-00003 accepted by Arnold Padernal',time:'1 hr ago',read:false},
   {id:4,type:'success',msg:'JO-00004 closed and archived successfully',time:'2 hr ago',read:true},
 ];
+
+// ── WITHDRAWAL SLIPS ───────────────────────────────────────────────
+let WITHDRAWAL_SLIPS = [
+  {id:'WS-8944',wsNo:'8944',date:'2026-02-27',dept:'Millwright',requestedBy:'Toralde i Ray',approvedBy:'Supervisor',checkedBy:'',
+   items:[
+     {no:1,item:'Rubber Bushing 14x21x21',qty:12,unit:'pcs',purpose:'Pump maintenance'},
+     {no:2,item:'Round Rugs',qty:2,unit:'pcs',purpose:''},
+     {no:3,item:'Blade Cutter',qty:1,unit:'pc',purpose:''},
+     {no:4,item:'S/S Washer 5/8',qty:10,unit:'pcs',purpose:''},
+   ],status:'approved',createdBy:'Ben Torres',ts:'2026-02-27 08:30'},
+];
+
+// ── MATERIAL REQUISITION SLIPS ─────────────────────────────────────
+let MATERIAL_REQUESTS = [
+  {id:'MRS-001',mrsNo:'MRS-001',date:'2026-02-28',requestedBy:'Arnold Padernal',forDept:'Instrumentation',dateReceived:'',approvedBy:'',
+   items:[
+     {no:1,item:'Pressure Transmitter 4-20mA',qty:1,unit:'pcs',dateNeeded:'2026-03-01',currentInventory:1,daysConsumption:30,remarks:'Urgent replacement'},
+     {no:2,item:'Cable Gland M20',qty:10,unit:'pcs',dateNeeded:'2026-03-03',currentInventory:45,daysConsumption:90,remarks:'Replenishment'},
+   ],status:'pending',createdBy:'Arnold Padernal',ts:'2026-02-28 09:00'},
+];
+
+// ── DELIVERY RECEIPTS ──────────────────────────────────────────────
+let DELIVERY_RECEIPTS = [
+  {id:'DR-001',drNo:'DR-001',date:'2026-02-25',supplier:'SKF Philippines',receivedBy:'Ben Torres',checkedBy:'',
+   items:[
+     {no:1,item:'6308 Deep Groove Ball Bearing',qty:5,unit:'pcs',unitPrice:850,total:4250},
+     {no:2,item:'Bearing Grease LGMT3',qty:3,unit:'cans',unitPrice:650,total:1950},
+   ],totalAmount:6200,status:'posted',poRef:'PO-001',ts:'2026-02-25 14:00'},
+];
+
+// ── PURCHASE ORDERS ────────────────────────────────────────────────
+let PURCHASE_ORDERS = [
+  {id:'PO-001',poNo:'PO-001',date:'2026-02-20',requestedBy:'Ben Torres',approvedBy:'Ramon Del Rosario',supplier:'SKF Philippines',
+   items:[{item:'6308 Deep Groove Ball Bearing',qty:5,unit:'pcs',unitPrice:850,total:4250},{item:'Bearing Grease LGMT3',qty:3,unit:'cans',unitPrice:650,total:1950}],
+   totalAmount:6200,status:'received',urgency:'normal',ts:'2026-02-20'},
+];
+
+// ── OCR SCAN RECORDS ───────────────────────────────────────────────
+let OCR_RECORDS = [];
+
+// ── SHIFT CONFIGURATION ────────────────────────────────────────────
+let SHIFT_CONFIG = {
+  mode: '2shift', // '2shift' or '3shift'
+  effectiveDate: '2026-02-28',
+  assignments: [
+    {userId:6,  shiftId:'day'},
+    {userId:7,  shiftId:'night'},
+    {userId:8,  shiftId:'day'},
+    {userId:9,  shiftId:'night'},
+    {userId:10, shiftId:'day'},
+  ]
+};
+
+// ── JO APPROVAL STAGES (added to JOBS) ────────────────────────────
+// j.approvals = {operator:null, qa:null, fsms:null, manager:null}
+// j.approvalStage = null | 'pending_operator' | 'pending_qa' | 'pending_fsms' | 'pending_manager' | 'fully_approved'
+// Initialize existing jobs
+// Initialize JO workflow fields
+JOBS.forEach(j=>{
+  if(!j.approvals) j.approvals={safety:null,supervisor:null,requestor:null,qa:null,fsms:null,manager:null};
+  if(!j.approvalStage) j.approvalStage=j.st==='done'?'pending_requestor':(j.st==='open'?'pending_supervisor':null);
+  if(!j.riskLevel) j.riskLevel='low';
+  if(!j.comments) j.comments=[];
+  if(!j.turnoverHistory) j.turnoverHistory=[];
+  if(!j.personnel) j.personnel=[];
+  if(!j.auditLog) j.auditLog=[];
+});
 
 // ── APP STATE ──────────────────────────────────────────────────────
 let currentUser = null;
@@ -778,6 +910,16 @@ function renderSidebar(){
     ]},
     {label:'Maintenance', items:[
       {id:'joborders',ico:'🔧',lbl:'Job Orders',badge:()=>JOBS.filter(j=>j.st==='open').length||null},
+      {id:'approvals',ico:'✅',lbl:'JO Approvals',badge:()=>{
+        const u=currentUser;
+        if(u.privs?.approve_safety) return JOBS.filter(j=>j.approvalStage==='pending_safety').length||null;
+        if(u.privs?.approve_supervisor) return JOBS.filter(j=>j.approvalStage==='pending_supervisor').length||null;
+        if(u.privs?.approve_requestor||u.privs?.approve_operator) return JOBS.filter(j=>j.approvalStage==='pending_requestor').length||null;
+        if(u.privs?.approve_qa) return JOBS.filter(j=>j.approvalStage==='pending_qa').length||null;
+        if(u.privs?.approve_fsms) return JOBS.filter(j=>j.approvalStage==='pending_fsms').length||null;
+        if(u.privs?.approve_manager) return JOBS.filter(j=>j.approvalStage==='pending_manager').length||null;
+        return null;
+      }},
       {id:'assets',ico:'📦',lbl:'Asset Management'},
     ]},
     {label:'Operations', items:[
@@ -789,9 +931,10 @@ function renderSidebar(){
       {id:'ai',ico:'🤖',lbl:'AI Assistant'},
       {id:'plc',ico:'📚',lbl:'PLC & Instruments'},
     ]},
-    {label:'Administration', items:[
+    {label:'Management', items:[
+      {id:'shifts',ico:'🕐',lbl:'Shift Management'},
       {id:'hr',ico:'👥',lbl:'HR & Personnel'},
-      {id:'admin',ico:'🛡️',lbl:'Admin Control',badge:()=>null},
+      {id:'admin',ico:'🛡️',lbl:'Admin Control'},
     ]},
   ];
 
@@ -822,7 +965,7 @@ function toggleSidebar(){
 function navigate(page){
   const u = currentUser;
   const rd = ROLE_DEFS[u.role];
-  if(!rd.pages.includes(page) && !rd.privs?.includes('all')) {
+  if(!rd.pages.includes(page) && !u.privs?.all) {
     toast('⚠️ You do not have access to this module.','var(--warn)'); return;
   }
   currentPage = page;
@@ -832,7 +975,7 @@ function navigate(page){
   const navEl = document.getElementById('nav-'+page);
   if(pgEl) pgEl.classList.add('on');
   if(navEl) navEl.classList.add('on');
-  const titles = {dashboard:'📊 Dashboard',joborders:'🔧 Job Orders',assets:'📦 Asset Management',stockroom:'🏭 Stockroom',kpi:'📈 KPI & Reports',production:'⚙️ Production',ai:'🤖 AI Assistant',plc:'📚 PLC & Instruments',hr:'👥 HR & Personnel',admin:'🛡️ Admin Control',profile:'👤 My Profile'};
+  const titles = {dashboard:'📊 Dashboard',joborders:'🔧 Job Orders',assets:'📦 Asset Management',stockroom:'🏭 Stockroom',kpi:'📈 KPI & Reports',production:'⚙️ Production',ai:'🤖 AI Assistant',plc:'📚 PLC & Instruments',hr:'👥 HR & Personnel',admin:'🛡️ Admin Control',profile:'👤 My Profile',approvals:'✅ JO Approvals',shifts:'🕐 Shift Management'};
   document.getElementById('tb-title').textContent = titles[page]||page;
   renderPage(page);
   renderSidebar();
@@ -850,6 +993,8 @@ function renderPage(page){
     plc: renderPLC,
     hr: renderHR,
     admin: renderAdmin,
+    approvals: renderApprovals,
+    shifts: renderShifts,
   };
   renderers[page]?.();
 }
@@ -861,130 +1006,167 @@ function updateClock(){
 
 // ── DASHBOARD ──────────────────────────────────────────────────────
 function renderDashboard(){
-  const el = document.getElementById('pg-dashboard');
-  const openJOs = JOBS.filter(j=>j.st==='open').length;
-  const inProgJOs = JOBS.filter(j=>j.st==='progress').length;
-  const p1JOs = JOBS.filter(j=>j.pn===1&&j.st!=='done').length;
-  const lowStock = INVENTORY.filter(i=>i.qty<=i.reorder).length;
-  const todayProd = PROD_LOGS[0];
-  const efficiency = todayProd ? Math.round((todayProd.actual/todayProd.target)*100) : 0;
+  const el=document.getElementById('pg-dashboard');
+  if(!el)return;
+  const u=currentUser;
+  const rd=ROLE_DEFS[u.role]||{label:u.role,color:'#fff',avClass:''};
+  const openJOs=JOBS.filter(j=>j.st==='open').length;
+  const inProgJOs=JOBS.filter(j=>j.st==='progress').length;
+  const p1JOs=JOBS.filter(j=>j.pn===1&&j.st!=='done'&&j.approvalStage!=='fully_approved').length;
+  const lowStock=INVENTORY.filter(i=>i.qty<=i.reorder).length;
+  const todayProd=PROD_LOGS[0]||null;
+  const efficiency=todayProd?Math.round((todayProd.actual/todayProd.target)*100):0;
+  const pendApprove=JOBS.filter(j=>j.approvalStage&&!['fully_approved','rejected',null].includes(j.approvalStage)).length;
+  const myNotifs=NOTIFICATIONS.filter(n=>!n.read&&(!n.targetUserId||n.targetUserId===u.id)).length;
+  const pipe={
+    open:openJOs,
+    pending_safety:JOBS.filter(j=>j.approvalStage==='pending_safety').length,
+    pending_supervisor:JOBS.filter(j=>j.approvalStage==='pending_supervisor').length,
+    progress:inProgJOs,
+    done:JOBS.filter(j=>j.st==='done'&&!j.approvalStage).length,
+    pending_requestor:JOBS.filter(j=>j.approvalStage==='pending_requestor').length,
+    pending_qa:JOBS.filter(j=>j.approvalStage==='pending_qa').length,
+    pending_fsms:JOBS.filter(j=>j.approvalStage==='pending_fsms').length,
+    pending_manager:JOBS.filter(j=>j.approvalStage==='pending_manager').length,
+    fully_approved:JOBS.filter(j=>j.approvalStage==='fully_approved').length,
+  };
+  const pipeSteps=[
+    {k:'open',ico:'🔧',lbl:'Open',sub:'New JO',color:'#ffb800'},
+    {k:'pending_safety',ico:'🦺',lbl:'Safety',sub:'High Risk',color:'#ff3d5a'},
+    {k:'pending_supervisor',ico:'👔',lbl:'Supervisor',sub:'Assign Tech',color:'#a78bfa'},
+    {k:'progress',ico:'⚙️',lbl:'In Progress',sub:'Tech Working',color:'#00d4ff'},
+    {k:'done',ico:'🔒',lbl:'Work Done',sub:'Tech Closed',color:'#ffb800'},
+    {k:'pending_requestor',ico:'🧑‍🏭',lbl:'Requestor',sub:'Acceptance',color:'#00d4ff'},
+    {k:'pending_qa',ico:'🔬',lbl:'QA / QC',sub:'Review',color:'#f472b6'},
+    {k:'pending_fsms',ico:'🏭',lbl:'FSMS',sub:'Approval',color:'#ffb800'},
+    {k:'pending_manager',ico:'👑',lbl:'Manager',sub:'Final OK',color:'#00ff9d'},
+    {k:'fully_approved',ico:'✅',lbl:'Closed',sub:'Complete',color:'#00ff9d'},
+  ];
+  const plantColor=todayProd?.status==='running'?'#00ff9d':todayProd?.status==='shutdown'?'#ff3d5a':'#00d4ff';
+  const plantLabel=todayProd?.status==='running'?'🟢 RUNNING':todayProd?.status==='shutdown'?'🔴 SHUTDOWN':'🔵 OPERATIONAL';
 
-  el.innerHTML = `
-  <div class="stat-row">
-    <div class="stat-card" onclick="navigate('joborders')" style="cursor:pointer;border-color:rgba(255,184,0,.3)">
-      <div class="sc-num" style="color:var(--warn)">${openJOs}</div>
-      <div class="sc-lbl">Open Job Orders</div>
-      <div class="sc-ico">🔧</div>
+  el.innerHTML=`
+  <div style="background:linear-gradient(135deg,rgba(0,43,91,.7),rgba(0,212,255,.06));border:1px solid rgba(0,212,255,.12);border-radius:12px;padding:14px 20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-family:var(--font-hdr);font-size:1.05rem;font-weight:700;letter-spacing:2px">Welcome, <span style="color:var(--accent)">${u.name.split(' ')[0]}</span></div>
+      <div style="font-size:.68rem;color:${rd.color};margin-top:2px;font-weight:600">${rd.label} &nbsp;·&nbsp; <span style="color:var(--text2)">${u.dept}</span></div>
     </div>
-    <div class="stat-card" onclick="navigate('joborders')" style="cursor:pointer;border-color:rgba(255,61,90,.3)">
-      <div class="sc-num" style="color:var(--danger)">${p1JOs}</div>
-      <div class="sc-lbl">Priority 1 Critical</div>
-      <div class="sc-ico">⚠️</div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="text-align:center"><div style="font-size:.58rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Plant Status</div><div style="font-weight:700;color:${plantColor};font-size:.95rem">${plantLabel}</div></div>
+      ${myNotifs>0?`<div style="background:rgba(255,184,0,.1);border:1px solid rgba(255,184,0,.3);border-radius:8px;padding:5px 12px;cursor:pointer" onclick="showNotifs()"><div style="font-size:.58rem;color:var(--text2)">Notifications</div><div style="font-weight:700;color:var(--warn)">${myNotifs} New 🔔</div></div>`:''}
+      ${pendApprove>0?`<div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:8px;padding:5px 12px;cursor:pointer" onclick="navigate('approvals')"><div style="font-size:.58rem;color:var(--text2)">Pending Approvals</div><div style="font-weight:700;color:var(--purple)">${pendApprove} JOs ▶</div></div>`:''}
     </div>
-    <div class="stat-card" style="border-color:rgba(0,212,255,.25)">
-      <div class="sc-num" style="color:var(--accent)">${inProgJOs}</div>
-      <div class="sc-lbl">In Progress</div>
-      <div class="sc-ico">⚙️</div>
-    </div>
-    <div class="stat-card" style="border-color:rgba(0,255,157,.25)">
-      <div class="sc-num" style="color:var(--green)">${efficiency}%</div>
-      <div class="sc-lbl">Today's Efficiency</div>
-      <div class="sc-ico">📈</div>
-    </div>
-    <div class="stat-card" onclick="navigate('stockroom')" style="cursor:pointer;border-color:rgba(255,61,90,.3)">
-      <div class="sc-num" style="color:${lowStock>0?'var(--danger)':'var(--green)'}">${lowStock}</div>
-      <div class="sc-lbl">Low Stock Alerts</div>
-      <div class="sc-ico">📦</div>
+  </div>
+
+  <div class="stat-row" style="margin-bottom:14px">
+    <div class="stat-card" style="cursor:pointer;border-color:rgba(255,184,0,.3)" onclick="navigate('joborders')"><div class="sc-num" style="color:var(--warn)">${openJOs}</div><div class="sc-lbl">Open JOs</div><div class="sc-ico">🔧</div></div>
+    <div class="stat-card" style="cursor:pointer;border-color:rgba(0,212,255,.3)" onclick="navigate('joborders')"><div class="sc-num" style="color:var(--accent)">${inProgJOs}</div><div class="sc-lbl">In Progress</div><div class="sc-ico">⚙️</div></div>
+    <div class="stat-card" style="cursor:pointer;border-color:rgba(255,61,90,.3)" onclick="navigate('joborders')"><div class="sc-num" style="color:var(--danger)">${p1JOs}</div><div class="sc-lbl">P1 Critical</div><div class="sc-ico">⚠️</div></div>
+    <div class="stat-card" style="border-color:rgba(0,255,157,.25)"><div class="sc-num" style="color:var(--green)">${efficiency}%</div><div class="sc-lbl">Today Efficiency</div><div class="sc-ico">📈</div></div>
+    <div class="stat-card" style="cursor:pointer;border-color:rgba(167,139,250,.3)" onclick="navigate('approvals')"><div class="sc-num" style="color:var(--purple)">${pendApprove}</div><div class="sc-lbl">For Approval</div><div class="sc-ico">✅</div></div>
+    <div class="stat-card" style="cursor:pointer;border-color:rgba(255,61,90,.3)" onclick="navigate('stockroom')"><div class="sc-num" style="color:${lowStock>0?'var(--danger)':'var(--green)'}">${lowStock}</div><div class="sc-lbl">Low Stock</div><div class="sc-ico">📦</div></div>
+  </div>
+
+  <div style="background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+    <div style="font-family:var(--font-hdr);font-size:.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:12px">📋 JOB ORDER LIVE PIPELINE</div>
+    <div style="display:flex;align-items:flex-start;gap:3px;overflow-x:auto;padding-bottom:4px">
+      ${pipeSteps.map((s,i,arr)=>{
+        const cnt=pipe[s.k]||0;
+        const active=cnt>0;
+        const goTo=['open','pending_safety','pending_supervisor','progress'].includes(s.k)?'joborders':'approvals';
+        return `<div style="display:flex;align-items:center;flex-shrink:0">
+          <div title="${s.sub}" style="text-align:center;min-width:68px;padding:8px 4px;border-radius:8px;border:1px solid ${active?s.color:'rgba(255,255,255,.07)'};background:${active?s.color+'22':'transparent'};cursor:${active?'pointer':'default'};transition:all .2s"
+               onclick="${active ? 'navigate(\"'+ goTo +'\")' : ''}">
+            <div style="font-size:1.15rem">${s.ico}</div>
+            <div style="font-size:.95rem;font-weight:700;color:${active?s.color:'#334'};margin-top:2px">${cnt}</div>
+            <div style="font-size:.55rem;font-weight:700;color:${active?s.color:'#445'};line-height:1.2;margin-top:1px">${s.lbl}</div>
+            <div style="font-size:.5rem;color:var(--text3);margin-top:1px">${s.sub}</div>
+          </div>
+          ${i<arr.length-1?'<div style="color:#334;font-size:.7rem;padding:0 1px;flex-shrink:0">→</div>':''}
+        </div>`;
+      }).join('')}
     </div>
   </div>
 
   <div class="grid-2" style="margin-bottom:14px">
     <div>
-      <div class="sec-hdr"><div class="sec-title">Recent Job Orders</div><button class="btn btn-primary btn-sm" onclick="navigate('joborders')">View All</button></div>
+      <div class="sec-hdr"><div class="sec-title">Recent Job Orders</div><button class="btn btn-primary btn-sm" onclick="navigate('joborders')">View All →</button></div>
       <div class="tbl-wrap">
         <table class="ftbl">
-          <thead><tr><th>JO #</th><th>Equipment</th><th>Dept</th><th>P#</th><th>Status</th></tr></thead>
+          <thead><tr><th>JO #</th><th>Equipment</th><th>Dept</th><th>P#</th><th>Stage</th></tr></thead>
           <tbody>
-            ${JOBS.slice(0,5).map(j=>`<tr style="cursor:pointer" onclick="navigate('joborders')">
-              <td class="mono fw7" style="color:var(--accent)">${j.id}</td>
-              <td><div class="fw7 fs7">${j.equip}</div></td>
+            ${JOBS.slice(0,6).map(j=>`<tr style="cursor:pointer" onclick="viewJO('${j.id}')">
+              <td class="mono fw7" style="color:var(--accent);white-space:nowrap">${j.id}</td>
+              <td><div class="fw7 fs7">${j.equip}</div><div class="tm" style="font-size:.6rem">${(j.defect||'').slice(0,45)}</div></td>
               <td><span class="tag">${j.dept}</span></td>
               <td><span style="color:${PC(j.pn)};font-weight:700">P${j.pn}</span></td>
-              <td>${stBadge(j.st)}</td>
+              <td>${stBadge(j.approvalStage||j.st)}</td>
             </tr>`).join('')}
           </tbody>
         </table>
       </div>
     </div>
     <div>
-      <div class="sec-hdr"><div class="sec-title">Production (Last 5 Days)</div></div>
-      <div class="chart-card">
-        <div class="chart-wrap"><canvas id="dash-prod-chart"></canvas></div>
-      </div>
+      <div class="sec-hdr"><div class="sec-title">Production — Last 5 Days</div><button class="btn btn-primary btn-sm" onclick="navigate('production')">Details →</button></div>
+      <div class="chart-card" style="min-height:180px"><div class="chart-wrap"><canvas id="dash-prod-chart"></canvas></div></div>
     </div>
   </div>
 
   <div class="grid-3">
     <div>
-      <div class="sec-hdr"><div class="sec-title">Low Stock Items</div></div>
-      ${INVENTORY.filter(i=>i.qty<=i.reorder).map(i=>`
-        <div class="kb-card" style="padding:10px 12px;margin-bottom:6px">
+      <div class="sec-hdr"><div class="sec-title">⚠️ Low Stock Alerts</div><button class="btn btn-sm btn-primary" onclick="navigate('stockroom')">→</button></div>
+      ${INVENTORY.filter(i=>i.qty<=i.reorder).slice(0,5).map(i=>`
+        <div style="background:rgba(255,61,90,.04);border:1px solid rgba(255,61,90,.15);border-radius:7px;padding:7px 10px;margin-bottom:4px">
           <div class="fw7 fs7">${i.name}</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-            <span class="tag-danger" style="font-size:.62rem;padding:1px 6px;border-radius:4px;background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.2);color:var(--danger)">QTY: ${i.qty} / Reorder: ${i.reorder}</span>
-            <span class="tag">${i.cat}</span>
-          </div>
-        </div>`).join('')||'<div class="tm fs7">✅ All stock levels OK</div>'}
+          <div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-size:.6rem;color:var(--danger)">Qty: ${i.qty} / Reorder: ${i.reorder}</span><span class="tag">${i.cat||''}</span></div>
+        </div>`).join('')||'<div style="padding:14px;text-align:center;color:var(--green);font-size:.75rem">✅ All stock levels OK</div>'}
     </div>
     <div>
-      <div class="sec-hdr"><div class="sec-title">Active Personnel</div></div>
-      ${USERS.filter(u=>u.status==='active').slice(0,5).map(u=>`
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)">
-          <div class="av ${ROLE_DEFS[u.role]?.avClass||''}" style="width:28px;height:28px;font-size:.7rem">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
-          <div>
-            <div class="fs7 fw7">${u.name}</div>
-            <div style="font-size:.62rem;color:${ROLE_DEFS[u.role]?.color||'var(--text2)'}">${ROLE_DEFS[u.role]?.label||u.role}</div>
-          </div>
-          <span class="tag" style="margin-left:auto;font-size:.58rem">${u.dept}</span>
+      <div class="sec-hdr"><div class="sec-title">👥 Active Personnel</div></div>
+      ${USERS.filter(u2=>u2.status==='active').slice(0,6).map(u2=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bd)">
+          <div class="av ${ROLE_DEFS[u2.role]?.avClass||''}" style="width:24px;height:24px;font-size:.58rem;flex-shrink:0">${u2.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+          <div style="min-width:0"><div class="fs7 fw7" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u2.name}</div><div style="font-size:.58rem;color:${ROLE_DEFS[u2.role]?.color||'#888'}">${ROLE_DEFS[u2.role]?.label||u2.role}</div></div>
+          <span class="tag" style="margin-left:auto;font-size:.53rem;white-space:nowrap">${u2.dept}</span>
         </div>`).join('')}
     </div>
     <div>
-      <div class="sec-hdr"><div class="sec-title">Notifications</div></div>
-      ${NOTIFICATIONS.slice(0,4).map(n=>`
-        <div style="padding:8px 0;border-bottom:1px solid var(--bd);display:flex;gap:8px">
-          <div style="font-size:.8rem">${n.type==='danger'?'🔴':n.type==='warn'?'🟡':n.type==='success'?'🟢':'🔵'}</div>
-          <div>
-            <div class="fs7" style="line-height:1.4">${n.msg}</div>
-            <div style="font-size:.6rem;color:var(--text3);margin-top:2px">${n.time}</div>
-          </div>
-        </div>`).join('')}
+      <div class="sec-hdr"><div class="sec-title">🔔 Notifications</div></div>
+      ${NOTIFICATIONS.filter(n=>!n.targetUserId||n.targetUserId===u.id).slice(0,5).map(n=>`
+        <div style="padding:6px 0;border-bottom:1px solid var(--bd);display:flex;gap:7px">
+          <div style="font-size:.8rem;flex-shrink:0">${n.type==='danger'?'🔴':n.type==='warn'?'🟡':n.type==='success'?'🟢':'🔵'}</div>
+          <div><div class="fs7" style="line-height:1.4">${n.msg}</div><div style="font-size:.57rem;color:var(--text3);margin-top:1px">${n.time}</div></div>
+        </div>`).join('')||'<div style="padding:16px;text-align:center;color:var(--text2);font-size:.75rem">No notifications</div>'}
     </div>
   </div>`;
 
-  // Chart
   setTimeout(()=>{
-    const ctx = document.getElementById('dash-prod-chart');
-    if(!ctx) return;
-    if(chartInstances['dash-prod']) chartInstances['dash-prod'].destroy();
-    chartInstances['dash-prod'] = new Chart(ctx,{
-      type:'bar',
-      data:{
-        labels:PROD_LOGS.map(p=>p.date.slice(5)).reverse(),
-        datasets:[
-          {label:'Target',data:PROD_LOGS.map(p=>p.target).reverse(),backgroundColor:'rgba(0,212,255,.2)',borderColor:'var(--accent)',borderWidth:1.5,borderRadius:4},
-          {label:'Actual',data:PROD_LOGS.map(p=>p.actual).reverse(),backgroundColor:'rgba(0,255,157,.25)',borderColor:'var(--green)',borderWidth:1.5,borderRadius:4},
-        ]
-      },
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#5a82a8',font:{size:10}}}},scales:{x:{ticks:{color:'#5a82a8',font:{size:10}},grid:{color:'rgba(30,53,96,.5)'}},y:{ticks:{color:'#5a82a8',font:{size:10}},grid:{color:'rgba(30,53,96,.5)'},beginAtZero:true,max:110}}}
-    });
-  },100);
+    try{
+      const ctx=document.getElementById('dash-prod-chart');
+      if(!ctx)return;
+      if(chartInstances['dash-prod'])chartInstances['dash-prod'].destroy();
+      chartInstances['dash-prod']=new Chart(ctx,{
+        type:'bar',
+        data:{labels:PROD_LOGS.slice(0,5).map(p=>p.date.slice(5)).reverse(),datasets:[
+          {label:'Target',data:PROD_LOGS.slice(0,5).map(p=>p.target).reverse(),backgroundColor:'rgba(0,212,255,.15)',borderColor:'#00d4ff',borderWidth:1.5,borderRadius:4},
+          {label:'Actual',data:PROD_LOGS.slice(0,5).map(p=>p.actual).reverse(),backgroundColor:'rgba(0,255,157,.2)',borderColor:'#00ff9d',borderWidth:1.5,borderRadius:4},
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#5a82a8',font:{size:10}}}},scales:{x:{ticks:{color:'#5a82a8',font:{size:10}},grid:{color:'rgba(30,53,96,.5)'}},y:{ticks:{color:'#5a82a8',font:{size:10}},grid:{color:'rgba(30,53,96,.5)'},beginAtZero:true,max:110}}}
+      });
+    }catch(e){console.warn('Chart:',e);}
+  },150);
 }
 
 // ── JOB ORDERS ─────────────────────────────────────────────────────
 let joFilter = 'all', joSearch = '';
 const PC = (pn)=>({1:'#ff3d5a',2:'#ffb800',3:'#00d4ff',4:'#a78bfa'}[pn]||'#fff');
-const SL = {open:'OPEN',progress:'IN PROGRESS',done:'DONE'};
-function stBadge(st){const m={open:'badge-open',progress:'badge-progress',done:'badge-done'};return `<span class="badge ${m[st]||''}">${SL[st]||st}</span>`;}
+const PC=pn=>pn===1?'var(--danger)':pn===2?'#ff8c00':pn===3?'#4a9fff':'#a78bfa';
+const SL = {open:'OPEN',pending_safety:'SAFETY REVIEW',pending_supervisor:'SUPERVISOR REVIEW',pending_assignment:'AWAITING TECH',progress:'IN PROGRESS',done:'WORK DONE',pending_requestor:'REQUESTOR ACCEPTANCE',pending_qa:'QA/QC REVIEW',pending_fsms:'FSMS REVIEW',pending_manager:'MGR FINAL APPROVAL',fully_approved:'JOB CLOSED',rejected:'REJECTED'};
+function stBadge(st){
+  const m={open:'badge-open',pending_safety:'badge-danger',pending_supervisor:'badge-purple',pending_assignment:'badge-accent',progress:'badge-progress',done:'badge-warn',pending_requestor:'badge-accent',pending_qa:'badge-pink',pending_fsms:'badge-warn',pending_manager:'badge-green',fully_approved:'badge-done',rejected:'badge-danger'};
+  const icons={open:'🔧',pending_safety:'🦺',pending_supervisor:'👔',pending_assignment:'📋',progress:'⚙️',done:'🔒',pending_requestor:'🧑‍🏭',pending_qa:'🔬',pending_fsms:'🏭',pending_manager:'👑',fully_approved:'✅',rejected:'❌'};
+  return `<span class="badge ${m[st]||'badge-open'}">${icons[st]||''} ${SL[st]||st}</span>`;
+}
 
 function renderJobOrders(){
   const el = document.getElementById('pg-joborders');
@@ -1034,7 +1216,7 @@ function renderJobOrders(){
                 <td class="tm fs7">${j.sec||'—'}</td>
                 <td><span class="tag">${j.dept}</span></td>
                 <td><span class="fw7" style="color:${PC(j.pn)};font-size:1.1rem">P${j.pn}</span></td>
-                <td>${stBadge(j.st)}</td>
+                <td>${stBadge(j.approvalStage||j.st)}</td>
                 <td class="tm fs7">${j.req}</td>
                 <td class="fs7">
                   ${j.assignedTo
@@ -1110,14 +1292,15 @@ function viewJO(id){
   // Build activity feed items from comments + turnover history merged & sorted
   const allActivity = [
     // JO created event
-    {ts:j.date+' 00:00', type:'created', user:j.req, text:`Job Order created for ${j.equip}. Assigned to ${j.dept} department.`},
+    {ts:j.date+' 00:00', type:'created', user:j.req, text:`Job Order created for ${j.equip}. Assigned to ${j.dept} department. Risk: ${j.riskLevel==='high'?'⚠️ HIGH':'✅ LOW'}`},
     ...(j.acceptedAt ? [{ts:j.acceptedAt,type:'accepted',user:j.assignedTo||'Technician',text:`Job accepted and started. Status changed to IN PROGRESS.`}] : []),
     ...(j.comments||[]).map(c=>({...c,type:c.type||'comment'})),
     ...(j.turnoverHistory||[]).map(t=>({ts:t.ts,type:'turnover',user:t.fromUser,text:`Shift turnover to ${t.toUser}. Shift: ${t.shift}. Note: ${t.note}`,turnover:t})),
+    ...(j.auditLog||[]).map(a=>({ts:a.at,type:'audit',user:a.by,text:a.action})),
     ...(j.closedAt ? [{ts:j.closedAt,type:'closed',user:can.name,text:`Job Order closed and archived.`}] : []),
   ].sort((a,b)=>a.ts.localeCompare(b.ts));
 
-  const actIcons = {created:{ico:'📋',bg:'rgba(0,212,255,.15)',bd:'rgba(0,212,255,.4)'},accepted:{ico:'✅',bg:'rgba(0,255,157,.15)',bd:'rgba(0,255,157,.4)'},progress:{ico:'🔧',bg:'rgba(167,139,250,.15)',bd:'rgba(167,139,250,.4)'},update:{ico:'📝',bg:'rgba(0,212,255,.1)',bd:'var(--bd)'},comment:{ico:'💬',bg:'rgba(0,212,255,.1)',bd:'var(--bd)'},resolved:{ico:'✔️',bg:'rgba(0,255,157,.15)',bd:'rgba(0,255,157,.3)'},turnover:{ico:'🔄',bg:'rgba(255,184,0,.15)',bd:'rgba(255,184,0,.4)'},closed:{ico:'🔒',bg:'rgba(255,61,90,.1)',bd:'rgba(255,61,90,.3)'}};
+  const actIcons = {created:{ico:'📋',bg:'rgba(0,212,255,.15)',bd:'rgba(0,212,255,.4)'},accepted:{ico:'✅',bg:'rgba(0,255,157,.15)',bd:'rgba(0,255,157,.4)'},progress:{ico:'🔧',bg:'rgba(167,139,250,.15)',bd:'rgba(167,139,250,.4)'},update:{ico:'📝',bg:'rgba(0,212,255,.1)',bd:'var(--bd)'},comment:{ico:'💬',bg:'rgba(0,212,255,.1)',bd:'var(--bd)'},resolved:{ico:'✔️',bg:'rgba(0,255,157,.15)',bd:'rgba(0,255,157,.3)'},turnover:{ico:'🔄',bg:'rgba(255,184,0,.15)',bd:'rgba(255,184,0,.4)'},closed:{ico:'🔒',bg:'rgba(255,61,90,.1)',bd:'rgba(255,61,90,.3)'},audit:{ico:'📋',bg:'rgba(90,130,168,.12)',bd:'rgba(90,130,168,.3)'}};
 
   el.innerHTML=`
   <!-- TOP ACTION BAR -->
@@ -1182,10 +1365,56 @@ function viewJO(id){
           <div class="vf" style="grid-column:span 4"><div class="vf-lbl">Description of Defect</div><div class="vf-val fw7" style="color:var(--warn)">${j.defect}</div></div>
           <div class="vf"><div class="vf-lbl">Dept Incharge</div><div class="vf-val"><span class="tag">${j.dept}</span></div></div>
           <div class="vf"><div class="vf-lbl">Priority</div><div class="vf-val fw7" style="color:${PC(j.pn)};font-size:1.1rem">P${j.pn}</div></div>
-          <div class="vf"><div class="vf-lbl">Status</div><div class="vf-val">${stBadge(j.st)}</div></div>
+          <div class="vf"><div class="vf-lbl">Status</div><div class="vf-val">${stBadge(j.approvalStage||j.st)}</div></div>
+          <div class="vf"><div class="vf-lbl">Risk Level</div><div class="vf-val">
+            <span style="font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:5px;
+              background:${(j.riskLevel||'low')==='high'?'rgba(255,61,90,.12)':'rgba(0,255,157,.08)'};
+              color:${(j.riskLevel||'low')==='high'?'var(--danger)':'var(--green)'};
+              border:1px solid ${(j.riskLevel||'low')==='high'?'rgba(255,61,90,.3)':'rgba(0,255,157,.2)'}">
+              ${(j.riskLevel||'low')==='high'?'⚠️ HIGH RISK':'✅ LOW / NO RISK'}
+            </span>
+          </div></div>
           <div class="vf"><div class="vf-lbl">Assigned To</div><div class="vf-val">${j.assignedTo||'<span style="color:var(--warn)">Unassigned</span>'}</div></div>
           ${j.acceptedAt?`<div class="vf" style="grid-column:span 2"><div class="vf-lbl">Accepted At</div><div class="vf-val">${j.acceptedAt}</div></div>`:''}
           ${j.closedAt?`<div class="vf" style="grid-column:span 2"><div class="vf-lbl">Closed At</div><div class="vf-val" style="color:var(--green)">${j.closedAt}</div></div>`:''}
+        </div>
+
+        <!-- APPROVAL CHAIN PROGRESS -->
+        <div style="background:rgba(0,0,0,.15);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-top:10px;margin-bottom:6px">
+          <div style="font-family:var(--font-hdr);font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:12px">📋 Approval Chain Progress</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            ${(()=>{
+              const stages=[
+                {skip:j.riskLevel!=='high',key:'safety',   ico:'🦺',lbl:'Safety Officer',color:'#ff3d5a'},
+                {skip:false,              key:'supervisor', ico:'👔',lbl:'Supervisor',     color:'#a78bfa'},
+                {skip:false,             key:'requestor',  ico:'🧑‍🏭',lbl:'Requestor',    color:'#00bfff'},
+                {skip:false,             key:'qa',         ico:'🔬',lbl:'QA / QC',         color:'#f472b6'},
+                {skip:false,             key:'fsms',       ico:'🏭',lbl:'FSMS',             color:'#ffb800'},
+                {skip:false,             key:'manager',    ico:'👑',lbl:'Plant Manager',   color:'#00ff9d'},
+              ];
+              const pendingStage = j.approvalStage||'';
+              return stages.filter(s=>!s.skip).map((s,i,arr)=>{
+                const done  = j.approvals?.[s.key]?.approved===true;
+                const rejected = j.approvals?.[s.key]?.approved===false;
+                const active = pendingStage==='pending_'+s.key || (s.key==='supervisor'&&pendingStage==='pending_supervisor');
+                const appr  = j.approvals?.[s.key];
+                return \`
+                  \${i>0?'<span style="color:var(--text3);font-size:1rem">→</span>':''}
+                  <div style="text-align:center;min-width:72px">
+                    <div style="border-radius:8px;padding:6px 8px;border:2px solid \${rejected?'#ff3d5a':done?s.color:active?s.color:'rgba(255,255,255,.08)'};
+                      background:\${rejected?'rgba(255,61,90,.08)':done?'rgba('+parseInt(s.color.slice(1,3),16)+','+parseInt(s.color.slice(3,5),16)+','+parseInt(s.color.slice(5,7),16)+',.08)':active?'rgba('+parseInt(s.color.slice(1,3),16)+','+parseInt(s.color.slice(3,5),16)+','+parseInt(s.color.slice(5,7),16)+',.05)':'transparent'};
+                      opacity:\${done||active?1:0.45}">
+                      <div style="font-size:1.1rem">\${rejected?'❌':done?'✅':active?s.ico+'⏳':s.ico}</div>
+                      <div style="font-size:.6rem;font-weight:700;color:\${rejected?'#ff3d5a':done?s.color:active?s.color:'var(--text3)'};margin-top:3px">\${s.lbl}</div>
+                      <div style="font-size:.55rem;color:var(--text3);margin-top:1px">\${done?appr.by:active?'PENDING':'Waiting'}</div>
+                    </div>
+                  </div>
+                \`;
+              }).join('');
+            })()}
+            \${j.approvalStage==='fully_approved'?'<span style="color:var(--text3);font-size:1rem">→</span><div style="text-align:center;min-width:72px"><div style="border-radius:8px;padding:6px 8px;border:2px solid var(--green);background:rgba(0,43,91,.8)"><div style="font-size:1.1rem">🎉</div><div style="font-size:.6rem;font-weight:700;color:var(--green);margin-top:3px">JOB CLOSED</div><div style="font-size:.55rem;color:var(--text3);margin-top:1px">Complete</div></div></div>':''}
+          </div>
+          \${j.rejectReason?'<div style="margin-top:10px;padding:8px 12px;background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.3);border-radius:6px;font-size:.72rem;color:var(--danger)">❌ Rejection Reason: '+j.rejectReason+'</div>':''}
         </div>
 
         <!-- ALL CREDITED PERSONNEL -->
@@ -1317,6 +1546,12 @@ function renderJOForm(el){
         <select class="form-input" id="jo-dept">${DEPTS.map(d=>`<option>${d}</option>`).join('')}</select></div>
       <div class="form-group"><label class="form-label">Plant Shutdown Required?</label>
         <div class="radio-group"><label class="radio-opt"><input type="radio" name="jo-sd" value="YES"> YES</label><label class="radio-opt"><input type="radio" name="jo-sd" value="NO" checked> NO</label></div>
+      </div>
+      <div class="form-group"><label class="form-label" style="color:var(--danger)">⚠️ Risk Level *</label>
+        <div class="radio-group">
+          <label class="radio-opt" style="color:var(--danger);font-weight:600"><input type="radio" name="jo-risk" value="high" id="jo-risk-high"> 🔴 HIGH RISK — Safety Officer required</label>
+          <label class="radio-opt" style="color:var(--green);font-weight:600"><input type="radio" name="jo-risk" value="low" checked id="jo-risk-low"> 🟢 LOW / NO RISK</label>
+        </div>
       </div>
       <div class="form-group"><label class="form-label">Approved by</label><input class="form-input" id="jo-approver" placeholder="Approver name"/></div>
       <div class="form-group"><label class="form-label">Priority Number</label>
@@ -1474,47 +1709,79 @@ function submitJO(){
   const personnel=[document.getElementById('jo-p1')?.value,document.getElementById('jo-p2')?.value,document.getElementById('jo-p3')?.value,document.getElementById('jo-p4')?.value].filter(Boolean);
   const rows=Array.from(document.querySelectorAll('#mat-body tr'));
   const materials=rows.map(r=>{const ins=r.querySelectorAll('input');return ins[0]?.value?{item:ins[0].value,qty:ins[1]?.value||1}:null;}).filter(Boolean);
+  // Read risk level
+  const riskEl = document.querySelector('input[name="jo-risk"]:checked');
+  const riskLevel = riskEl ? riskEl.value : 'low';
+  const isHighRisk = riskLevel === 'high';
+
+  // Determine initial approval stage based on risk
+  // HIGH RISK → pending_safety first
+  // LOW/NO RISK → pending_supervisor (Safety Officer not needed)
+  const initStage = isHighRisk ? 'pending_safety' : 'pending_supervisor';
+
   const nj={
     id:'JO-'+String(JOBS.length+1).padStart(5,'0'),equip:eq,defect:def,
     sec:document.getElementById('jo-sec')?.value||'—',dept,pn,st:'open',
+    riskLevel, // 'high' or 'low'
+    approvalStage: initStage, // immediately enters approval at creation
+    approvals:{safety:null,supervisor:null,requestor:null,qa:null,fsms:null,manager:null},
     req:currentUser.name,reqId:currentUser.id,
     date:new Date().toISOString().slice(0,10),
-    photos,personnel,materials,
+    photos:[],personnel:[],materials:[],
     comments:[],turnoverHistory:[],sel:false,
-    task:document.getElementById('jo-task')?.value||'',
-    rootCause:document.getElementById('jo-root')?.value||''
+    task:'', rootCause:'',
+    auditLog:[{by:currentUser.name,at:new Date().toLocaleString('en-PH'),action:'JO Created. Risk: '+(isHighRisk?'HIGH':'LOW')}]
   };
   JOBS.unshift(nj);
 
-  // Push notifications to ALL technicians/supervisors in that department
-  const deptUsers = USERS.filter(u=>u.dept===dept && u.status==='active' && u.id!==currentUser.id);
-  const pLabel = pn===1?'🔴 PRIORITY 1':'🟡 PRIORITY '+pn;
-  deptUsers.forEach(u=>{
-    pushNotif('warn', `${pLabel} — New JO: ${nj.id} | ${eq} | ${def.slice(0,50)}`, u.id);
-  });
-  // Also notify all supervisors/managers
-  USERS.filter(u=>['supervisor','manager','administrator'].includes(u.role)&&u.status==='active'&&u.id!==currentUser.id&&u.dept!==dept).forEach(u=>{
-    pushNotif('info', `New JO ${nj.id} submitted by ${currentUser.name} → ${dept}`, u.id);
+  // STEP 1: Notify correct first approver
+  if(isHighRisk){
+    // Notify Safety Officers
+    USERS.filter(u=>u.privs?.approve_safety&&u.status==='active').forEach(u=>{
+      pushNotif('danger',`🦺 HIGH RISK JO ${nj.id} — Requires your Safety Officer approval. Equipment: ${eq}`,u.id);
+    });
+  } else {
+    // Notify Supervisors of that department
+    USERS.filter(u=>(u.privs?.approve_supervisor||u.role==='supervisor'||u.role==='mech_supervisor')&&u.dept===dept&&u.status==='active').forEach(u=>{
+      pushNotif('warn',`👔 New JO ${nj.id} awaiting your Supervisor approval. Equipment: ${eq}`,u.id);
+    });
+    // Also notify all supervisors (other depts)
+    USERS.filter(u=>(u.privs?.approve_supervisor)&&u.dept!==dept&&u.status==='active').forEach(u=>{
+      pushNotif('info',`New JO ${nj.id} submitted by ${currentUser.name} → ${dept}`,u.id);
+    });
+  }
+  // Always notify HR and Manager on new JO (per diagram)
+  USERS.filter(u=>['manager','administrator','hr'].includes(u.role)&&u.status==='active').forEach(u=>{
+    pushNotif('info',`📋 New JO ${nj.id} created by ${currentUser.name}. Dept: ${dept}. Risk: ${isHighRisk?'⚠️ HIGH':'✅ LOW'}`,u.id);
   });
 
-  toast(`✅ ${nj.id} submitted! ${deptUsers.length} ${dept} personnel notified.`,'var(--green)');
+  const riskMsg = isHighRisk ? '⚠️ HIGH RISK — Safety Officer notified first.' : '✅ Low Risk — Supervisor notified.';
+  toast(`✅ ${nj.id} submitted! ${riskMsg}`,'var(--green)');
   joView='list'; renderJobOrders();
 }
 
 function acceptJO(id){
   const j=JOBS.find(x=>x.id===id);if(!j)return;
   j.st='progress';
+  j.approvalStage='progress'; // in progress state
   j.assignedTo=currentUser.name;
   j.assignedId=currentUser.id;
   j.acceptedAt=new Date().toLocaleString('en-PH');
   if(!j.personnel) j.personnel=[];
   if(!j.personnel.includes(currentUser.name)) j.personnel.push(currentUser.name);
-  // Push notification to supervisor/requestor
-  pushNotif('success', `${id} accepted by ${currentUser.name}. Status: IN PROGRESS.`, j.reqId);
-  USERS.filter(u=>u.role==='supervisor'&&u.dept===j.dept&&u.id!==currentUser.id).forEach(u=>{
-    pushNotif('success', `${id} accepted by ${currentUser.name}`, u.id);
+  if(!j.auditLog) j.auditLog=[];
+  j.auditLog.push({by:currentUser.name,at:j.acceptedAt,action:`⚙️ Job accepted and IN PROGRESS. Technician: ${currentUser.name}`});
+  // Notify requestor
+  pushNotif('success', `⚙️ ${id} IN PROGRESS — ${currentUser.name} has accepted and started the job.`, j.reqId);
+  // Notify HR and Manager (per workflow diagram)
+  USERS.filter(u=>['manager','administrator','hr'].includes(u.role)&&u.status==='active').forEach(u=>{
+    pushNotif('info', `⚙️ ${id} started by ${currentUser.name}. Dept: ${j.dept}.`, u.id);
   });
-  toast('✅ Job accepted! You are now the primary technician.','var(--green)');
+  // Notify supervisor
+  USERS.filter(u=>(u.privs?.approve_supervisor||u.role==='supervisor')&&u.dept===j.dept&&u.id!==currentUser.id).forEach(u=>{
+    pushNotif('success', `⚙️ ${id} accepted by ${currentUser.name} and now IN PROGRESS.`, u.id);
+  });
+  toast('✅ Job accepted! You are now the primary technician. Work in progress.','var(--green)');
   viewJO(id);
 }
 
@@ -1530,14 +1797,31 @@ function closeJO(id){
   j.closedBy=currentUser.name;
   j.finalPersonnel=creditNames;
 
-  // Push notification to everyone credited + requestor
+  // ── Trigger post-completion approval chain ──
+  // Per workflow: Technician closes → Requestor Acceptance → QA → FSMS → Manager
+  if(!j.approvals) j.approvals={safety:null,supervisor:null,requestor:null,qa:null,fsms:null,manager:null};
+  j.approvalStage='pending_requestor';
+  
+  // Add audit log
+  if(!j.auditLog) j.auditLog=[];
+  j.auditLog.push({by:currentUser.name,at:new Date().toLocaleString('en-PH'),action:'Job Closed. Sent for Requestor Acceptance.'});
+
+  // Notify REQUESTOR (the person who created the JO) - per diagram
+  const reqUser = USERS.find(u=>u.id===j.reqId);
+  if(reqUser) pushNotif('warn',`🧑‍🏭 ${id} completed! Please review and accept the work. Equipment: ${j.equip}`,reqUser.id);
+
+  // Notify HR and Manager (per diagram - automated notifications)
+  USERS.filter(u=>['manager','administrator','hr'].includes(u.role)&&u.status==='active').forEach(u=>{
+    pushNotif('info',`📋 ${id} work done by ${currentUser.name}. Awaiting Requestor acceptance.`,u.id);
+  });
+
+  // Notify all additional credited personnel
   creditNames.forEach(name=>{
     const u=USERS.find(x=>x.name===name);
-    if(u && u.id!==currentUser.id) pushNotif('success',`${id} closed! You are credited for this job.`,u.id);
+    if(u && u.id!==currentUser.id) pushNotif('success',`🏆 ${id} closed! You are credited for this job.`,u.id);
   });
-  pushNotif('success', `${id} closed by ${currentUser.name}. All credits recorded.`, j.reqId);
 
-  toast(`🔒 ${id} closed! ${creditNames.length} personnel credited.`,'var(--green)');
+  toast(`🔒 ${id} closed! Work done. Requestor ${reqUser?.name||'requestor'} notified for acceptance.`,'var(--green)');
   joView='list'; renderJobOrders();
 }
 
@@ -1604,6 +1888,14 @@ function doAssignTechnician(id){
   j.assignedTo=u.name;
   j.assignedId=u.id;
   if(j.st==='open') j.st='open'; // stays open until tech accepts
+  // Clear pending_assignment stage — tech now needs to accept
+  if(j.approvalStage==='pending_assignment') j.approvalStage='assigned';
+  if(!j.auditLog) j.auditLog=[];
+  j.auditLog.push({by:currentUser.name,at:new Date().toLocaleString('en-PH'),action:`👤 Assigned to ${u.name}. Notified HR & Manager.`});
+  // Notify HR & Manager per workflow diagram
+  USERS.filter(usr=>['manager','administrator','hr'].includes(usr.role)&&usr.status==='active').forEach(usr=>{
+    pushNotif('info',`📋 ${j.id} assigned to ${u.name} (${j.dept}) by ${currentUser.name}.`,usr.id);
+  });
 
   // Push notification to assigned technician
   pushNotif('warn', `📋 You have been assigned to ${id} — ${j.equip} | ${shift}${note?' | Note: '+note:''}`, u.id);
@@ -1673,13 +1965,30 @@ function saveComment(id){
   if(!j.comments) j.comments=[];
   j.comments.push({id:'c'+Date.now(),user:currentUser.name,userId:currentUser.id,type,text,assistants,photos,ts});
 
-  // Credit assistants into personnel list
+  // Credit assistants into personnel list  
+  const newlyCredited = [];
   assistants.forEach(a=>{
     if(a && !j.personnel?.includes(a)){
       if(!j.personnel) j.personnel=[];
       j.personnel.push(a);
+      newlyCredited.push(a);
     }
   });
+  // Notify HR & Plant Manager when additional personnel are credited (per diagram)
+  if(newlyCredited.length>0){
+    const creditMsg=`👷 ${newlyCredited.join(', ')} credited on ${id} by ${currentUser.name}.`;
+    USERS.filter(u=>['manager','administrator','hr'].includes(u.role)&&u.status==='active').forEach(u=>{
+      pushNotif('info',creditMsg,u.id);
+    });
+    // Add to audit log
+    if(!j.auditLog) j.auditLog=[];
+    j.auditLog.push({by:currentUser.name,at:ts,action:`👷 Additional personnel credited: ${newlyCredited.join(', ')}`});
+    // Notify the credited users themselves
+    newlyCredited.forEach(name=>{
+      const cu=USERS.find(u=>u.name===name);
+      if(cu) pushNotif('success',`🏆 You have been credited on ${id} (${j.equip}) by ${currentUser.name}.`,cu.id);
+    });
+  }
 
   // Push notifications
   // Notify supervisor
@@ -2019,25 +2328,75 @@ function viewAssetHistory(id){const a=ASSETS.find(x=>x.id===id);toast(`📋 ${a?
 function openTransferAsset(){toast('🔄 Asset Transfer — Select asset and destination department.','var(--warn)');}
 
 // ── STOCKROOM ──────────────────────────────────────────────────────
+// ── STOCKROOM ──────────────────────────────────────────────────────
+let stkTab = 'inventory';
 function renderStockroom(){
   const el=document.getElementById('pg-stockroom');
+  const lowCount = INVENTORY.filter(i=>i.qty<=i.reorder).length;
+  const poCount  = PURCHASE_ORDERS.filter(p=>p.status==='pending').length;
+  el.innerHTML=`
+  <!-- TAB BAR -->
+  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;background:var(--bg3);padding:5px;border-radius:10px;border:1px solid var(--bd)">
+    ${[
+      {id:'inventory',ico:'📦',lbl:'Inventory'},
+      {id:'withdrawal',ico:'📤',lbl:'Withdrawal Slip'},
+      {id:'mrs',ico:'📋',lbl:'Material Request'},
+      {id:'delivery',ico:'📥',lbl:'Delivery Receipt'},
+      {id:'po',ico:'🛒',lbl:`Purchase Orders${poCount?` <span style="background:var(--danger);color:#fff;border-radius:8px;padding:1px 5px;font-size:.6rem">${poCount}</span>`:''}`,badge:poCount},
+      {id:'ocr',ico:'🤖',lbl:'AI OCR Scan'},
+    ].map(t=>`
+      <button onclick="stkTab='${t.id}';renderStockroom()" style="flex:1;min-width:100px;padding:8px 12px;border-radius:7px;border:none;cursor:pointer;font-size:.72rem;font-weight:700;font-family:var(--font-hdr);letter-spacing:1px;text-transform:uppercase;transition:all .15s;
+        background:${stkTab===t.id?'var(--accent2)':'transparent'};color:${stkTab===t.id?'#fff':'var(--text2)'}">
+        ${t.ico} ${t.lbl}
+      </button>`).join('')}
+  </div>
+  <div id="stk-tab-content"></div>`;
+  renderStkTab();
+}
+
+function renderStkTab(){
+  const el=document.getElementById('stk-tab-content');
+  if(!el)return;
+  if(stkTab==='inventory')    renderStkInventory(el);
+  else if(stkTab==='withdrawal') renderStkWithdrawal(el);
+  else if(stkTab==='mrs')     renderStkMRS(el);
+  else if(stkTab==='delivery') renderStkDelivery(el);
+  else if(stkTab==='po')      renderStkPO(el);
+  else if(stkTab==='ocr')     renderStkOCR(el);
+}
+
+// ── TAB 1: INVENTORY ──────────────────────────────────────────────
+function renderStkInventory(el){
+  const lowItems = INVENTORY.filter(i=>i.qty<=i.reorder);
   el.innerHTML=`
   <div class="action-bar">
-    <span class="abar-lbl">Stockroom:</span>
+    <span class="abar-lbl">Inventory:</span>
     <button class="btn btn-solid btn-sm" onclick="openAddItem()">➕ Add Item</button>
     <button class="btn btn-success btn-sm" onclick="exportStock()">📥 Export</button>
     <button class="btn btn-primary btn-sm" onclick="printStock()">🖨️ Print</button>
-    <button class="btn btn-purple btn-sm" onclick="openCam('receipt')">📷 Scan Receipt</button>
+    ${lowItems.length?`<button class="btn btn-warn btn-sm" onclick="autoGenPO()">🛒 Auto-Generate PO (${lowItems.length} low)</button>`:''}
     <input class="search-box" placeholder="🔍 Search items..." id="stk-search" oninput="filterStock()" style="margin-left:auto"/>
   </div>
   <div class="stat-row" style="margin-bottom:14px">
     <div class="stat-card"><div class="sc-num" style="color:var(--accent)">${INVENTORY.length}</div><div class="sc-lbl">Total Items</div><div class="sc-ico">📦</div></div>
-    <div class="stat-card"><div class="sc-num" style="color:var(--danger)">${INVENTORY.filter(i=>i.qty<=i.reorder).length}</div><div class="sc-lbl">Below Reorder Level</div><div class="sc-ico">⚠️</div></div>
+    <div class="stat-card"><div class="sc-num" style="color:var(--danger)">${lowItems.length}</div><div class="sc-lbl">Low Stock / Reorder</div><div class="sc-ico">⚠️</div></div>
     <div class="stat-card"><div class="sc-num" style="color:var(--warn)">₱${INVENTORY.reduce((s,i)=>s+i.qty*i.price,0).toLocaleString()}</div><div class="sc-lbl">Total Stock Value</div><div class="sc-ico">💰</div></div>
+    <div class="stat-card"><div class="sc-num" style="color:var(--green)">${WITHDRAWAL_SLIPS.length}</div><div class="sc-lbl">Withdrawal Records</div><div class="sc-ico">📤</div></div>
   </div>
+  ${lowItems.length?`
+  <div style="background:rgba(255,61,90,.05);border:1px solid rgba(255,61,90,.3);border-radius:8px;padding:12px 16px;margin-bottom:12px">
+    <div style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--danger);margin-bottom:8px">⚠️ LOW STOCK ALERT — ${lowItems.length} items need reorder</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      ${lowItems.map(i=>`<div style="background:var(--bg3);border:1px solid rgba(255,61,90,.3);border-radius:6px;padding:5px 10px;font-size:.7rem">
+        <span class="fw7" style="color:var(--danger)">${i.name}</span>
+        <span class="tm"> — Qty: ${i.qty} / Reorder: ${i.reorder}</span>
+        <button onclick="openGenPO('${i.id}')" style="margin-left:6px;background:var(--warn);border:none;color:#000;border-radius:4px;padding:1px 6px;font-size:.6rem;font-weight:700;cursor:pointer">🛒 PO</button>
+      </div>`).join('')}
+    </div>
+  </div>`:''}
   <div class="tbl-wrap">
     <table class="ftbl">
-      <thead><tr><th>Item ID</th><th>Name</th><th>Category</th><th>Brand/Model</th><th>Qty</th><th>Reorder</th><th>Unit Price</th><th>Total Value</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Item ID</th><th>Name</th><th>Category</th><th>Brand/Model</th><th>Qty</th><th>Reorder</th><th>Unit</th><th>Unit Price</th><th>Total Value</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody id="stk-tbody">${renderStockRows(INVENTORY)}</tbody>
     </table>
   </div>`;
@@ -2050,25 +2409,904 @@ function renderStockRows(inv){
     <td class="fs7">${i.brand} ${i.model}</td>
     <td class="fw7" style="text-align:center;color:${i.qty<=i.reorder?'var(--danger)':'var(--green)'}">${i.qty}</td>
     <td class="fs7 tm" style="text-align:center">${i.reorder}</td>
+    <td class="fs7 tm" style="text-align:center">${i.unit||'pcs'}</td>
     <td class="fs7">₱${i.price.toLocaleString()}</td>
     <td class="fs7 fw7">₱${(i.qty*i.price).toLocaleString()}</td>
     <td class="fs7 tm">${i.loc}</td>
     <td>${i.qty<=i.reorder?`<span class="badge badge-danger">LOW STOCK</span>`:`<span class="badge badge-done">OK</span>`}</td>
     <td>
-      <div style="display:flex;gap:3px">
-        <button class="btn btn-success btn-xs" onclick="adjustStock('${i.id}',1)">+</button>
-        <button class="btn btn-danger btn-xs" onclick="adjustStock('${i.id}',-1)">-</button>
+      <div style="display:flex;gap:3px;flex-wrap:wrap">
+        <button class="btn btn-success btn-xs" onclick="openReceive('${i.id}')">📥+</button>
+        <button class="btn btn-danger btn-xs" onclick="openIssue('${i.id}')">📤-</button>
         <button class="btn btn-primary btn-xs" onclick="editItem('${i.id}')">✏️</button>
+        ${i.qty<=i.reorder?`<button class="btn btn-warn btn-xs" onclick="openGenPO('${i.id}')">🛒</button>`:''}
       </div>
     </td>
   </tr>`).join('');
 }
-function filterStock(){const q=(document.getElementById('stk-search')?.value||'').toLowerCase();document.getElementById('stk-tbody').innerHTML=renderStockRows(INVENTORY.filter(i=>[i.id,i.name,i.cat,i.brand].join(' ').toLowerCase().includes(q)));}
-function adjustStock(id,delta){const i=INVENTORY.find(x=>x.id===id);if(!i)return;i.qty=Math.max(0,i.qty+delta);renderStockroom();toast(`${delta>0?'📥 Received':'📤 Issued'}: ${i.name} — New qty: ${i.qty}`,'var(--accent)');}
-function openAddItem(){toast('➕ Add stock item form (in full deployment).','var(--accent)');}
-function editItem(id){const i=INVENTORY.find(x=>x.id===id);toast(`✏️ Edit: ${i?.name}...`,'var(--accent)');}
-function exportStock(){const ws=XLSX.utils.json_to_sheet(INVENTORY.map(i=>({'Item ID':i.id,'Name':i.name,'Category':i.cat,'Brand':i.brand,'Model':i.model,'Quantity':i.qty,'Reorder Level':i.reorder,'Unit (₱)':i.price,'Total (₱)':i.qty*i.price,'Location':i.loc})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'Inventory',ws);XLSX.writeFile(wb,'FUSION_Inventory.xlsx');toast('📥 Inventory exported!','var(--green)');}
-function printStock(){toast('🖨️ Printing inventory report...','var(--accent)');setTimeout(()=>window.print(),300);}
+function filterStock(){const q=(document.getElementById('stk-search')?.value||'').toLowerCase();const tb=document.getElementById('stk-tbody');if(tb)tb.innerHTML=renderStockRows(INVENTORY.filter(i=>[i.id,i.name,i.cat,i.brand].join(' ').toLowerCase().includes(q)));}
+
+function openReceive(id){
+  const i=INVENTORY.find(x=>x.id===id);if(!i)return;
+  document.getElementById('asset-modal-title').textContent=`📥 Receive Stock — ${i.name}`;
+  document.getElementById('asset-modal-body').innerHTML=`
+    <div style="background:var(--bg3);border-radius:7px;padding:10px 12px;margin-bottom:12px;font-size:.78rem">
+      <div class="fw7">${i.name}</div><div class="tm">${i.brand} ${i.model} · Location: ${i.loc}</div>
+      <div style="margin-top:4px">Current Stock: <span class="fw7" style="color:var(--warn)">${i.qty} ${i.unit||'pcs'}</span></div>
+    </div>
+    <div class="form-row col-2">
+      <div class="form-group"><label class="form-label">Quantity Received *</label><input class="form-input" id="rcv-qty" type="number" min="1" value="1"/></div>
+      <div class="form-group"><label class="form-label">Reference (DR/PO No.)</label><input class="form-input" id="rcv-ref" placeholder="e.g. DR-001"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Supplier</label><input class="form-input" id="rcv-sup" placeholder="Supplier name"/></div>
+    <div class="form-group"><label class="form-label">Remarks</label><input class="form-input" id="rcv-rem" placeholder="Optional notes"/></div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-success" onclick="doReceive('${id}')">📥 Confirm Receipt</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  openModal('asset-modal');
+}
+function doReceive(id){
+  const i=INVENTORY.find(x=>x.id===id);if(!i)return;
+  const qty=parseInt(document.getElementById('rcv-qty')?.value)||0;
+  if(qty<1){toast('⚠️ Quantity must be at least 1','var(--warn)');return;}
+  i.qty+=qty;
+  toast(`📥 ${i.name} received +${qty}. New stock: ${i.qty} ${i.unit||'pcs'}`,'var(--green)');
+  closeModal('asset-modal'); renderStockroom();
+}
+function openIssue(id){
+  const i=INVENTORY.find(x=>x.id===id);if(!i)return;
+  document.getElementById('asset-modal-title').textContent=`📤 Issue Stock — ${i.name}`;
+  document.getElementById('asset-modal-body').innerHTML=`
+    <div style="background:var(--bg3);border-radius:7px;padding:10px 12px;margin-bottom:12px;font-size:.78rem">
+      <div class="fw7">${i.name}</div>
+      <div style="margin-top:4px">Available: <span class="fw7" style="color:${i.qty<=i.reorder?'var(--danger)':'var(--green)'}">${i.qty} ${i.unit||'pcs'}</span></div>
+    </div>
+    <div class="form-row col-2">
+      <div class="form-group"><label class="form-label">Quantity to Issue *</label><input class="form-input" id="iss-qty" type="number" min="1" max="${i.qty}" value="1"/></div>
+      <div class="form-group"><label class="form-label">Department</label><select class="form-input" id="iss-dept">${DEPTS.map(d=>`<option>${d}</option>`).join('')}</select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Issued To (Technician)</label><select class="form-input" id="iss-to">
+      <option value="">— Select —</option>
+      ${USERS.filter(u=>u.status==='active').map(u=>`<option value="${u.name}">${u.name} (${ROLE_DEFS[u.role]?.label||u.role})</option>`).join('')}
+    </select></div>
+    <div class="form-group"><label class="form-label">Purpose / Reference JO</label><input class="form-input" id="iss-ref" placeholder="e.g. JO-00001 — Bearing replacement"/></div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-danger" onclick="doIssue('${id}')">📤 Issue Stock</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  openModal('asset-modal');
+}
+function doIssue(id){
+  const i=INVENTORY.find(x=>x.id===id);if(!i)return;
+  const qty=parseInt(document.getElementById('iss-qty')?.value)||0;
+  if(qty<1||qty>i.qty){toast('⚠️ Invalid quantity','var(--warn)');return;}
+  i.qty-=qty;
+  if(i.qty<=i.reorder) toast(`⚠️ ${i.name} is now below reorder level! Current: ${i.qty}`,'var(--warn)');
+  else toast(`📤 Issued ${qty}x ${i.name}. Remaining: ${i.qty}`,'var(--green)');
+  closeModal('asset-modal'); renderStockroom();
+}
+function adjustStock(id,delta){openReceive(id);}
+function openAddItem(){
+  document.getElementById('asset-modal-title').textContent='➕ Add New Inventory Item';
+  document.getElementById('asset-modal-body').innerHTML=`
+    <div class="form-row col-2">
+      <div class="form-group"><label class="form-label">Item Name *</label><input class="form-input" id="ni-name" placeholder="Item description"/></div>
+      <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="ni-cat">
+        ${['Mechanical','Electrical','Instrumentation','PLC Spare','Hydraulic','Pneumatic','Safety','Consumable','Tools','Others'].map(c=>`<option>${c}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="form-row col-2">
+      <div class="form-group"><label class="form-label">Brand</label><input class="form-input" id="ni-brand" placeholder="Brand name"/></div>
+      <div class="form-group"><label class="form-label">Model</label><input class="form-input" id="ni-model" placeholder="Model number"/></div>
+    </div>
+    <div class="form-row col-4">
+      <div class="form-group"><label class="form-label">Initial Qty</label><input class="form-input" id="ni-qty" type="number" value="0" min="0"/></div>
+      <div class="form-group"><label class="form-label">Reorder Level</label><input class="form-input" id="ni-reorder" type="number" value="2" min="0"/></div>
+      <div class="form-group"><label class="form-label">Unit</label><select class="form-input" id="ni-unit">
+        ${['pcs','sets','cans','rolls','meters','liters','kg','pairs','boxes'].map(u=>`<option>${u}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label class="form-label">Unit Price (₱)</label><input class="form-input" id="ni-price" type="number" value="0" min="0"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Storage Location</label><input class="form-input" id="ni-loc" placeholder="e.g. Shelf A-1"/></div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-solid" onclick="saveNewItem()">➕ Add Item</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  openModal('asset-modal');
+}
+function saveNewItem(){
+  const name=(document.getElementById('ni-name')?.value||'').trim();
+  if(!name){toast('⚠️ Item name required','var(--warn)');return;}
+  const nid='INV-'+String(INVENTORY.length+1).padStart(3,'0');
+  INVENTORY.push({
+    id:nid,name,
+    cat:document.getElementById('ni-cat')?.value||'Others',
+    brand:document.getElementById('ni-brand')?.value||'—',
+    model:document.getElementById('ni-model')?.value||'—',
+    qty:parseInt(document.getElementById('ni-qty')?.value)||0,
+    reorder:parseInt(document.getElementById('ni-reorder')?.value)||2,
+    unit:document.getElementById('ni-unit')?.value||'pcs',
+    price:parseFloat(document.getElementById('ni-price')?.value)||0,
+    loc:document.getElementById('ni-loc')?.value||'Stockroom'
+  });
+  closeModal('asset-modal');
+  toast(`✅ ${name} added to inventory!`,'var(--green)');
+  renderStockroom();
+}
+function editItem(id){const i=INVENTORY.find(x=>x.id===id);if(i)toast(`✏️ Edit: ${i.name} — full edit form in deployment.`,'var(--accent)');}
+function exportStock(){const ws=XLSX.utils.json_to_sheet(INVENTORY.map(i=>({'Item ID':i.id,'Name':i.name,'Category':i.cat,'Brand':i.brand,'Model':i.model,'Quantity':i.qty,'Unit':i.unit||'pcs','Reorder Level':i.reorder,'Unit (₱)':i.price,'Total (₱)':i.qty*i.price,'Location':i.loc,'Status':i.qty<=i.reorder?'LOW STOCK':'OK'})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,'Inventory',ws);XLSX.writeFile(wb,'FUSION_Inventory.xlsx');toast('📥 Inventory exported!','var(--green)');}
+function printStock(){
+  const rows=INVENTORY.map(i=>`<tr><td>${i.id}</td><td>${i.name}</td><td>${i.cat}</td><td>${i.brand}</td><td style="text-align:center;color:${i.qty<=i.reorder?'red':'green'};font-weight:700">${i.qty}</td><td style="text-align:center">${i.reorder}</td><td>${i.unit||'pcs'}</td><td>₱${i.price.toLocaleString()}</td><td>₱${(i.qty*i.price).toLocaleString()}</td><td>${i.loc}</td><td style="color:${i.qty<=i.reorder?'red':'green'};font-weight:700">${i.qty<=i.reorder?'LOW STOCK':'OK'}</td></tr>`).join('');
+  const w=window.open();
+  w.document.write(`<!DOCTYPE html><html><head><title>Inventory Report</title><style>body{font-family:Arial,sans-serif;font-size:10px;padding:12px}table{width:100%;border-collapse:collapse}th{background:#002b5b;color:#fff;padding:4px 6px}td{border:1px solid #ddd;padding:3px 6px}tr:nth-child(even){background:#f0f4ff}.hdr{text-align:center;margin-bottom:12px}</style></head><body>
+  <div class="hdr"><div style="font-size:18px;font-weight:900">FUSION IMS</div><div style="font-size:13px;font-weight:700">INVENTORY REPORT</div><div style="font-size:10px;color:#666">${new Date().toLocaleString('en-PH')}</div></div>
+  <table><thead><tr><th>ID</th><th>Name</th><th>Cat</th><th>Brand</th><th>Qty</th><th>Reorder</th><th>Unit</th><th>Unit Price</th><th>Total Value</th><th>Location</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+  <div style="margin-top:10px;font-size:9px;color:#666">Total Items: ${INVENTORY.length} · Total Value: ₱${INVENTORY.reduce((s,i)=>s+i.qty*i.price,0).toLocaleString()}</div>
+  </body></html>`);w.document.close();w.print();
+}
+
+// ── TAB 2: WITHDRAWAL SLIP ────────────────────────────────────────
+function renderStkWithdrawal(el){
+  el.innerHTML=`
+  <div class="action-bar">
+    <span class="abar-lbl">Withdrawal Slips:</span>
+    <button class="btn btn-solid btn-sm" onclick="openNewWithdrawal()">➕ New Withdrawal Slip</button>
+    <button class="btn btn-primary btn-sm" onclick="printWithdrawals()">🖨️ Print All</button>
+  </div>
+  <div class="stat-row" style="margin-bottom:14px">
+    <div class="stat-card"><div class="sc-num" style="color:var(--accent)">${WITHDRAWAL_SLIPS.length}</div><div class="sc-lbl">Total Slips</div><div class="sc-ico">📤</div></div>
+    <div class="stat-card"><div class="sc-num" style="color:var(--warn)">${WITHDRAWAL_SLIPS.filter(w=>w.status==='pending').length}</div><div class="sc-lbl">Pending</div><div class="sc-ico">⏳</div></div>
+    <div class="stat-card"><div class="sc-num" style="color:var(--green)">${WITHDRAWAL_SLIPS.filter(w=>w.status==='approved').length}</div><div class="sc-lbl">Approved</div><div class="sc-ico">✅</div></div>
+  </div>
+  <div class="tbl-wrap">
+    <table class="ftbl">
+      <thead><tr><th>WS No.</th><th>Date</th><th>Department</th><th>Items</th><th>Requested By</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${WITHDRAWAL_SLIPS.map(w=>`<tr>
+          <td class="mono fw7" style="color:var(--accent)">WS-${w.wsNo}</td>
+          <td class="fs7">${w.date}</td>
+          <td><span class="tag">${w.dept}</span></td>
+          <td class="fs7">${w.items.length} item(s): ${w.items.slice(0,2).map(i=>i.item).join(', ')}${w.items.length>2?`... +${w.items.length-2} more`:''}</td>
+          <td class="fs7">${w.requestedBy}</td>
+          <td>${w.status==='approved'?'<span class="badge badge-done">APPROVED</span>':w.status==='pending'?'<span class="badge badge-progress">PENDING</span>':'<span class="badge badge-open">DRAFT</span>'}</td>
+          <td>
+            <div style="display:flex;gap:3px">
+              <button class="btn btn-primary btn-xs" onclick="viewWithdrawal('${w.id}')">👁 View</button>
+              <button class="btn btn-primary btn-xs" onclick="printWithdrawal('${w.id}')">🖨️</button>
+              ${w.status!=='approved'?`<button class="btn btn-success btn-xs" onclick="approveWithdrawal('${w.id}')">✅</button>`:''}
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function openNewWithdrawal(){
+  const wsNo = String(parseInt(WITHDRAWAL_SLIPS[0]?.wsNo||'8943')+1).padStart(4,'0');
+  document.getElementById('asset-modal-title').textContent='📤 New Withdrawal Slip';
+  document.getElementById('asset-modal-body').innerHTML=`
+  <div style="text-align:center;margin-bottom:14px">
+    <div style="font-family:var(--font-hdr);font-size:1.3rem;font-weight:700;letter-spacing:3px">WITHDRAWAL SLIP</div>
+    <div style="font-size:.65rem;color:var(--text2)">DFSM_16-01_FR028</div>
+  </div>
+  <div class="form-row col-3" style="margin-bottom:10px">
+    <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="ws-date" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+    <div class="form-group"><label class="form-label">WS No.</label><input class="form-input" id="ws-no" value="${wsNo}"/></div>
+    <div class="form-group"><label class="form-label">Department</label><select class="form-input" id="ws-dept">${DEPTS.map(d=>`<option>${d}</option>`).join('')}</select></div>
+  </div>
+  <div style="font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;border-bottom:1px solid var(--bd);padding-bottom:5px">Items</div>
+  <table style="width:100%;border-collapse:collapse;font-size:.75rem;margin-bottom:10px" id="ws-items-tbl">
+    <thead><tr>
+      <th style="background:var(--bg3);padding:5px 8px;text-align:center;border:1px solid var(--bd);width:30px">No.</th>
+      <th style="background:var(--bg3);padding:5px 8px;border:1px solid var(--bd)">Items</th>
+      <th style="background:var(--bg3);padding:5px 8px;text-align:center;border:1px solid var(--bd);width:60px">Qty.</th>
+      <th style="background:var(--bg3);padding:5px 8px;text-align:center;border:1px solid var(--bd);width:60px">Unit</th>
+      <th style="background:var(--bg3);padding:5px 8px;border:1px solid var(--bd)">Purpose</th>
+      <th style="background:var(--bg3);padding:5px 8px;border:1px solid var(--bd);width:30px"></th>
+    </tr></thead>
+    <tbody id="ws-rows">
+      ${[1,2,3,4].map(n=>`<tr id="ws-row-${n}">
+        <td style="border:1px solid var(--bd);text-align:center;color:var(--text2);font-size:.68rem">${n}</td>
+        <td style="border:1px solid var(--bd);padding:2px"><input class="form-input" id="ws-item-${n}" placeholder="Item description" style="border:none;background:transparent;padding:4px 6px;font-size:.75rem;width:100%"/></td>
+        <td style="border:1px solid var(--bd);padding:2px"><input class="form-input" id="ws-qty-${n}" type="number" min="0" value="" placeholder="0" style="border:none;background:transparent;padding:4px;font-size:.75rem;width:100%;text-align:center"/></td>
+        <td style="border:1px solid var(--bd);padding:2px"><input class="form-input" id="ws-unit-${n}" placeholder="pcs" style="border:none;background:transparent;padding:4px;font-size:.75rem;width:100%;text-align:center"/></td>
+        <td style="border:1px solid var(--bd);padding:2px"><input class="form-input" id="ws-purp-${n}" placeholder="Purpose" style="border:none;background:transparent;padding:4px 6px;font-size:.75rem;width:100%"/></td>
+        <td style="border:1px solid var(--bd);text-align:center"><button onclick="addWSRow()" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:.8rem" title="Add row">+</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+  <div class="form-row col-2" style="margin-top:10px">
+    <div class="form-group"><label class="form-label">Requested By (Printed Name)</label><input class="form-input" id="ws-req" value="${currentUser.name}"/></div>
+    <div class="form-group"><label class="form-label">Approved By (Immediate Superior)</label><input class="form-input" id="ws-app" placeholder="Supervisor name"/></div>
+  </div>
+  <div class="form-group"><label class="form-label">Checked By</label><input class="form-input" id="ws-chk" placeholder="Stockroom checker"/></div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-solid" onclick="saveWithdrawal()">📤 Submit Withdrawal Slip</button>
+    <button class="btn btn-primary" onclick="printWSPreview()">🖨️ Print & Submit</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  openModal('asset-modal');
+}
+
+let wsRowCount = 4;
+function addWSRow(){
+  wsRowCount++;
+  const tbody=document.getElementById('ws-rows');if(!tbody)return;
+  const tr=document.createElement('tr');tr.id=`ws-row-${wsRowCount}`;
+  tr.innerHTML=`<td style="border:1px solid var(--bd);text-align:center;color:var(--text2);font-size:.68rem">${wsRowCount}</td>
+    <td style="border:1px solid var(--bd);padding:2px"><input class="form-input" id="ws-item-${wsRowCount}" placeholder="Item" style="border:none;background:transparent;padding:4px 6px;font-size:.75rem;width:100%"/></td>
+    <td style="border:1px solid var(--bd);padding:2px"><input class="form-input" id="ws-qty-${wsRowCount}" type="number" placeholder="0" style="border:none;background:transparent;padding:4px;font-size:.75rem;width:100%;text-align:center"/></td>
+    <td style="border:1px solid var(--bd);padding:2px"><input class="form-input" id="ws-unit-${wsRowCount}" placeholder="pcs" style="border:none;background:transparent;padding:4px;font-size:.75rem;width:100%;text-align:center"/></td>
+    <td style="border:1px solid var(--bd);padding:2px"><input class="form-input" id="ws-purp-${wsRowCount}" placeholder="Purpose" style="border:none;background:transparent;padding:4px 6px;font-size:.75rem;width:100%"/></td>
+    <td style="border:1px solid var(--bd);text-align:center"><button onclick="addWSRow()" style="background:none;border:none;color:var(--green);cursor:pointer">+</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function saveWithdrawal(){
+  const wsNo=(document.getElementById('ws-no')?.value||'').trim();
+  const dept=document.getElementById('ws-dept')?.value||'';
+  const date=document.getElementById('ws-date')?.value||new Date().toISOString().slice(0,10);
+  const items=[];
+  for(let n=1;n<=wsRowCount;n++){
+    const item=(document.getElementById(`ws-item-${n}`)?.value||'').trim();
+    const qty=parseFloat(document.getElementById(`ws-qty-${n}`)?.value)||0;
+    const unit=(document.getElementById(`ws-unit-${n}`)?.value||'pcs').trim();
+    const purpose=(document.getElementById(`ws-purp-${n}`)?.value||'').trim();
+    if(item) items.push({no:n,item,qty,unit,purpose});
+  }
+  if(!items.length){toast('⚠️ Add at least one item','var(--warn)');return;}
+  const ws={
+    id:'WS-'+wsNo,wsNo,date,dept,
+    requestedBy:document.getElementById('ws-req')?.value||currentUser.name,
+    approvedBy:document.getElementById('ws-app')?.value||'',
+    checkedBy:document.getElementById('ws-chk')?.value||'',
+    items,status:'pending',createdBy:currentUser.name,
+    ts:new Date().toLocaleString('en-PH')
+  };
+  // Deduct from inventory for matching items
+  items.forEach(it=>{
+    const inv=INVENTORY.find(x=>x.name.toLowerCase().includes(it.item.toLowerCase().slice(0,6)));
+    if(inv && it.qty>0) inv.qty=Math.max(0,inv.qty-it.qty);
+  });
+  WITHDRAWAL_SLIPS.unshift(ws);
+  wsRowCount=4;
+  closeModal('asset-modal');
+  toast(`📤 Withdrawal Slip WS-${wsNo} submitted!`,'var(--green)');
+  renderStockroom();
+}
+
+function viewWithdrawal(id){
+  const w=WITHDRAWAL_SLIPS.find(x=>x.id===id);if(!w)return;
+  document.getElementById('asset-modal-title').textContent=`📤 Withdrawal Slip — WS-${w.wsNo}`;
+  document.getElementById('asset-modal-body').innerHTML=`
+  <div style="background:var(--bg3);border-radius:8px;padding:14px;font-size:.8rem">
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-family:var(--font-hdr);font-size:1.4rem;font-weight:700;letter-spacing:3px">WITHDRAWAL SLIP</div>
+      <div style="font-size:.62rem;color:var(--text2)">DFSM_16-01_FR028</div>
+    </div>
+    <div class="form-row col-3" style="margin-bottom:10px">
+      <div><div class="vf-lbl">DATE</div><div class="vf-val">${w.date}</div></div>
+      <div><div class="vf-lbl">DEPARTMENT</div><div class="vf-val fw7">${w.dept}</div></div>
+      <div><div class="vf-lbl">WS NO.</div><div class="vf-val fw7" style="color:var(--accent);font-size:1.1rem">${w.wsNo}</div></div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:.72rem;margin-bottom:10px">
+      <thead><tr>
+        <th style="border:1px solid var(--bd);padding:5px;background:var(--bg2);text-align:center;width:30px">NO.</th>
+        <th style="border:1px solid var(--bd);padding:5px;background:var(--bg2)">ITEMS</th>
+        <th style="border:1px solid var(--bd);padding:5px;background:var(--bg2);text-align:center;width:50px">QTY.</th>
+        <th style="border:1px solid var(--bd);padding:5px;background:var(--bg2);text-align:center;width:50px">UNIT</th>
+        <th style="border:1px solid var(--bd);padding:5px;background:var(--bg2)">PURPOSE</th>
+      </tr></thead>
+      <tbody>
+        ${w.items.map(it=>`<tr>
+          <td style="border:1px solid var(--bd);padding:4px 6px;text-align:center">${it.no}</td>
+          <td style="border:1px solid var(--bd);padding:4px 8px;font-weight:600">${it.item}</td>
+          <td style="border:1px solid var(--bd);padding:4px 6px;text-align:center">${it.qty}</td>
+          <td style="border:1px solid var(--bd);padding:4px 6px;text-align:center">${it.unit}</td>
+          <td style="border:1px solid var(--bd);padding:4px 8px;color:var(--text2)">${it.purpose||'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="vgrid" style="grid-template-columns:1fr 1fr;gap:8px">
+      <div class="vf"><div class="vf-lbl">REQUESTED BY (Printed Name)</div><div class="vf-val">${w.requestedBy}</div></div>
+      <div class="vf"><div class="vf-lbl">APPROVED BY (Immediate Superior)</div><div class="vf-val">${w.approvedBy||'Pending'}</div></div>
+      <div class="vf"><div class="vf-lbl">CHECKED BY</div><div class="vf-val">${w.checkedBy||'—'}</div></div>
+      <div class="vf"><div class="vf-lbl">Status</div><div class="vf-val">${w.status==='approved'?'<span style="color:var(--green);font-weight:700">✅ APPROVED</span>':'<span style="color:var(--warn);font-weight:700">⏳ PENDING</span>'}</div></div>
+    </div>
+  </div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-primary" onclick="printWithdrawal('${id}')">🖨️ Print</button>
+    ${w.status!=='approved'?`<button class="btn btn-success" onclick="approveWithdrawal('${id}')">✅ Approve</button>`:''}
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Close</button>`;
+  openModal('asset-modal');
+}
+
+function approveWithdrawal(id){
+  const w=WITHDRAWAL_SLIPS.find(x=>x.id===id);if(!w)return;
+  w.status='approved';w.approvedBy=currentUser.name;
+  toast(`✅ WS-${w.wsNo} approved!`,'var(--green)');
+  closeModal('asset-modal');renderStockroom();
+}
+
+function printWithdrawal(id){
+  const w=WITHDRAWAL_SLIPS.find(x=>x.id===id);if(!w)return;
+  const win=window.open();
+  win.document.write(`<!DOCTYPE html><html><head><title>Withdrawal Slip WS-${w.wsNo}</title>
+  <style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:10px;padding:20px;max-width:700px;margin:0 auto}
+  .title{text-align:center;font-size:16px;font-weight:900;letter-spacing:3px;margin-bottom:2px}
+  .sub{text-align:center;font-size:8px;color:#666;margin-bottom:14px}
+  .hrow{display:flex;gap:20px;margin-bottom:12px;font-size:10px}
+  table{width:100%;border-collapse:collapse;margin-bottom:14px}
+  th,td{border:1px solid #000;padding:4px 6px}th{background:#f0f0f0;font-weight:700;text-align:center}
+  .foot{display:flex;gap:20px}
+  .foot-box{flex:1;border-top:1px solid #000;padding-top:4px;font-size:9px}
+  .label{font-size:8px;color:#666;font-weight:700}
+  @media print{button{display:none}}</style></head>
+  <body>
+  <div class="title">WITHDRAWAL SLIP</div>
+  <div class="sub">FUSION IMS · Form Ref: DFSM_16-01_FR028</div>
+  <div class="hrow">
+    <div><span class="label">DATE: </span>${w.date}</div>
+    <div><span class="label">DEPARTMENT: </span><strong>${w.dept}</strong></div>
+    <div style="margin-left:auto"><span class="label">WS NO.: </span><strong style="font-size:13px">${w.wsNo}</strong></div>
+  </div>
+  <table>
+    <thead><tr><th style="width:30px">NO.</th><th>ITEMS</th><th style="width:50px">QTY.</th><th style="width:50px">UNIT</th><th>PURPOSE</th></tr></thead>
+    <tbody>
+      ${w.items.map(it=>`<tr><td style="text-align:center">${it.no}</td><td>${it.item}</td><td style="text-align:center">${it.qty}</td><td style="text-align:center">${it.unit}</td><td>${it.purpose||''}</td></tr>`).join('')}
+      ${Array(Math.max(0,6-w.items.length)).fill('<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>').join('')}
+    </tbody>
+  </table>
+  <div class="foot">
+    <div class="foot-box"><div>${w.requestedBy}</div><div class="label">REQUESTED BY (Printed Name)</div></div>
+    <div style="width:20px"></div>
+    <div class="foot-box"><div>${w.approvedBy||''}</div><div class="label">APPROVED BY (Immediate Superior)</div></div>
+  </div>
+  <div style="margin-top:14px"><div class="foot-box" style="max-width:250px"><div>${w.checkedBy||''}</div><div class="label">CHECKED BY</div></div></div>
+  </body></html>`);win.document.close();win.print();
+}
+function printWithdrawals(){if(WITHDRAWAL_SLIPS.length)printWithdrawal(WITHDRAWAL_SLIPS[0].id);else toast('No slips to print','var(--warn)');}
+function printWSPreview(){saveWithdrawal();if(WITHDRAWAL_SLIPS.length)printWithdrawal(WITHDRAWAL_SLIPS[0].id);}
+
+// ── TAB 3: MATERIAL REQUISITION SLIP ─────────────────────────────
+function renderStkMRS(el){
+  el.innerHTML=`
+  <div class="action-bar">
+    <span class="abar-lbl">Material Requests:</span>
+    <button class="btn btn-solid btn-sm" onclick="openNewMRS()">➕ New Material Request</button>
+    <button class="btn btn-primary btn-sm" onclick="printMRSList()">🖨️ Print All</button>
+  </div>
+  <div class="tbl-wrap">
+    <table class="ftbl">
+      <thead><tr><th>MRS No.</th><th>Date</th><th>Requested By</th><th>For Department</th><th>Items</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${MATERIAL_REQUESTS.map(m=>`<tr>
+          <td class="mono fw7" style="color:var(--accent)">${m.mrsNo}</td>
+          <td class="fs7">${m.date}</td>
+          <td class="fs7">${m.requestedBy}</td>
+          <td><span class="tag">${m.forDept}</span></td>
+          <td class="fs7">${m.items.length} item(s)</td>
+          <td>${m.status==='approved'?'<span class="badge badge-done">APPROVED</span>':m.status==='pending'?'<span class="badge badge-progress">PENDING</span>':'<span class="badge badge-open">DRAFT</span>'}</td>
+          <td><div style="display:flex;gap:3px">
+            <button class="btn btn-primary btn-xs" onclick="viewMRS('${m.id}')">👁</button>
+            <button class="btn btn-primary btn-xs" onclick="printMRS('${m.id}')">🖨️</button>
+            ${m.status==='pending'?`<button class="btn btn-success btn-xs" onclick="approveMRS('${m.id}')">✅</button>`:''}
+          </div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+let mrsRowCount = 5;
+function openNewMRS(){
+  const mrsNo='MRS-'+String(MATERIAL_REQUESTS.length+1).padStart(3,'0');
+  document.getElementById('asset-modal-title').textContent='📋 New Material Requisition Slip';
+  document.getElementById('asset-modal-body').innerHTML=`
+  <div style="text-align:center;margin-bottom:10px">
+    <div style="font-family:var(--font-hdr);font-size:.7rem;font-weight:700;letter-spacing:2px;color:var(--text2)">FUSION IMS</div>
+    <div style="font-family:var(--font-hdr);font-size:1.2rem;font-weight:700;letter-spacing:2px">MATERIALS REQUISITION SLIP</div>
+    <div style="font-size:.6rem;color:var(--text2)">Doc. No. FUSION-F-PUR-001 · Rev 00</div>
+  </div>
+  <div class="form-row col-3" style="margin-bottom:10px">
+    <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="mrs-date" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+    <div class="form-group"><label class="form-label">MRS No.</label><input class="form-input" id="mrs-no" value="${mrsNo}"/></div>
+    <div class="form-group"><label class="form-label">Requested By</label><input class="form-input" id="mrs-req" value="${currentUser.name}"/></div>
+  </div>
+  <div class="form-group"><label class="form-label">For (Department / Equipment)</label><input class="form-input" id="mrs-for" placeholder="e.g. Instrumentation — DeepWell Pump G-PP-930"/></div>
+  <div style="font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin:8px 0 6px">Items</div>
+  <table style="width:100%;border-collapse:collapse;font-size:.72rem;margin-bottom:10px" id="mrs-tbl">
+    <thead><tr>
+      <th style="background:var(--bg3);padding:4px 6px;border:1px solid var(--bd);width:25px;text-align:center">NO</th>
+      <th style="background:var(--bg3);padding:4px 6px;border:1px solid var(--bd)">ITEM / DESCRIPTION</th>
+      <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:50px;text-align:center">QTY</th>
+      <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:50px;text-align:center">UNIT</th>
+      <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:80px;text-align:center">DATE NEEDED</th>
+      <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:55px;text-align:center">CURR. INV.</th>
+      <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:55px;text-align:center">DAYS CONS.</th>
+      <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd)">REMARKS</th>
+    </tr></thead>
+    <tbody id="mrs-rows">
+      ${[1,2,3,4,5].map(n=>`<tr><td style="border:1px solid var(--bd);text-align:center;color:var(--text2);font-size:.65rem">${n}</td>
+        <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px 5px;font-size:.72rem;width:100%;color:var(--text1)" id="mrs-item-${n}" placeholder="Item"/></td>
+        <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="mrs-qty-${n}" type="number"/></td>
+        <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="mrs-unit-${n}" placeholder="pcs"/></td>
+        <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.65rem;width:100%;color:var(--text1)" id="mrs-date-${n}" type="date"/></td>
+        <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="mrs-inv-${n}" type="number" placeholder="0"/></td>
+        <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="mrs-days-${n}" type="number" placeholder="0"/></td>
+        <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px 5px;font-size:.72rem;width:100%;color:var(--text1)" id="mrs-rem-${n}" placeholder="Remarks"/></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+  <button onclick="addMRSRow()" class="btn btn-sm" style="background:var(--bg3);border-color:var(--bd);color:var(--text2);margin-bottom:10px">+ Add Row</button>
+  <div class="form-row col-2" style="margin-top:6px">
+    <div class="form-group"><label class="form-label">Approved By</label><input class="form-input" id="mrs-app" placeholder="Manager / Supervisor"/></div>
+    <div class="form-group"><label class="form-label">Date Received</label><input class="form-input" id="mrs-drec" type="date"/></div>
+  </div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-solid" onclick="saveMRS()">📋 Submit MRS</button>
+    <button class="btn btn-primary" onclick="printMRSOnSubmit()">🖨️ Print & Submit</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  openModal('asset-modal');
+}
+
+function addMRSRow(){
+  mrsRowCount++;
+  const n=mrsRowCount;
+  const tbody=document.getElementById('mrs-rows');if(!tbody)return;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="border:1px solid var(--bd);text-align:center;color:var(--text2);font-size:.65rem">${n}</td>
+    <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px 5px;font-size:.72rem;width:100%;color:var(--text1)" id="mrs-item-${n}" placeholder="Item"/></td>
+    <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="mrs-qty-${n}" type="number"/></td>
+    <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="mrs-unit-${n}" placeholder="pcs"/></td>
+    <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.65rem;width:100%;color:var(--text1)" id="mrs-date-${n}" type="date"/></td>
+    <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="mrs-inv-${n}" type="number" placeholder="0"/></td>
+    <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="mrs-days-${n}" type="number" placeholder="0"/></td>
+    <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px 5px;font-size:.72rem;width:100%;color:var(--text1)" id="mrs-rem-${n}" placeholder="Remarks"/></td>`;
+  tbody.appendChild(tr);
+}
+
+function saveMRS(){
+  const items=[];
+  for(let n=1;n<=mrsRowCount;n++){
+    const item=(document.getElementById(`mrs-item-${n}`)?.value||'').trim();
+    const qty=parseFloat(document.getElementById(`mrs-qty-${n}`)?.value)||0;
+    if(item) items.push({no:n,item,qty,unit:document.getElementById(`mrs-unit-${n}`)?.value||'pcs',dateNeeded:document.getElementById(`mrs-date-${n}`)?.value||'',currentInventory:parseInt(document.getElementById(`mrs-inv-${n}`)?.value)||0,daysConsumption:parseInt(document.getElementById(`mrs-days-${n}`)?.value)||0,remarks:document.getElementById(`mrs-rem-${n}`)?.value||''});
+  }
+  if(!items.length){toast('⚠️ Add at least one item','var(--warn)');return;}
+  const mrsNo=(document.getElementById('mrs-no')?.value||'').trim();
+  const mr={id:mrsNo,mrsNo,date:document.getElementById('mrs-date')?.value||new Date().toISOString().slice(0,10),requestedBy:document.getElementById('mrs-req')?.value||currentUser.name,forDept:document.getElementById('mrs-for')?.value||'',approvedBy:document.getElementById('mrs-app')?.value||'',dateReceived:document.getElementById('mrs-drec')?.value||'',items,status:'pending',createdBy:currentUser.name,ts:new Date().toLocaleString('en-PH')};
+  MATERIAL_REQUESTS.unshift(mr);
+  mrsRowCount=5;
+  closeModal('asset-modal');
+  toast(`📋 ${mrsNo} submitted!`,'var(--green)');
+  renderStockroom();
+}
+function approveMRS(id){const m=MATERIAL_REQUESTS.find(x=>x.id===id);if(!m)return;m.status='approved';m.approvedBy=currentUser.name;toast('✅ MRS Approved!','var(--green)');closeModal('asset-modal');renderStockroom();}
+function viewMRS(id){const m=MATERIAL_REQUESTS.find(x=>x.id===id);if(!m)return;toast(`📋 Viewing ${m.mrsNo} — Print view coming in full deployment`,'var(--accent)');}
+function printMRS(id){
+  const m=MATERIAL_REQUESTS.find(x=>x.id===id);if(!m)return;
+  const win=window.open();
+  win.document.write(`<!DOCTYPE html><html><head><title>MRS ${m.mrsNo}</title>
+  <style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:10px;padding:20px;max-width:800px;margin:0 auto}
+  .co{font-size:14px;font-weight:900;letter-spacing:2px}.title{font-size:12px;font-weight:700;text-align:center;margin:4px 0}
+  .hdr{display:flex;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;margin-bottom:14px}th,td{border:1px solid #000;padding:4px 5px}th{background:#eee;font-weight:700;font-size:9px}
+  .foot{display:flex;gap:30px;margin-top:14px}.foot-box{flex:1;border-top:1px solid #000;padding-top:4px}
+  @media print{button{display:none}}</style></head>
+  <body>
+  <div class="hdr"><div><div class="co">FUSION IMS</div><div style="font-size:8px;color:#666">Industrial Management System</div></div>
+  <div style="text-align:center"><div class="title">MATERIALS REQUISITION SLIP</div></div>
+  <div style="text-align:right;font-size:8px">Doc. No. FUSION-F-PUR-001<br>Revision No. 00</div></div>
+  <div style="display:flex;gap:30px;margin-bottom:10px">
+    <div><span style="font-weight:700">Date: </span>${m.date}</div>
+    <div style="margin-left:auto"><span style="font-weight:700">MRS No.: </span>${m.mrsNo}</div>
+  </div>
+  <table>
+    <thead><tr><th style="width:25px">NO</th><th>ITEM / DESCRIPTION</th><th style="width:40px">QTY</th><th style="width:40px">UNIT</th><th style="width:70px">DATE NEEDED</th><th style="width:55px">CURRENT INVENTORY LEVEL</th><th style="width:55px">NO. OF DAYS CONSUMPTION</th><th>REMARKS</th></tr></thead>
+    <tbody>
+      ${m.items.map(it=>`<tr><td style="text-align:center">${it.no}</td><td>${it.item}</td><td style="text-align:center">${it.qty}</td><td style="text-align:center">${it.unit}</td><td>${it.dateNeeded||''}</td><td style="text-align:center">${it.currentInventory||''}</td><td style="text-align:center">${it.daysConsumption||''}</td><td>${it.remarks||''}</td></tr>`).join('')}
+      ${Array(Math.max(0,8-m.items.length)).fill('<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>').join('')}
+    </tbody>
+  </table>
+  <div class="foot">
+    <div class="foot-box"><div>${m.requestedBy}</div><div style="font-size:8px">REQUESTED BY</div></div>
+    <div class="foot-box"><div>${m.dateReceived||''}</div><div style="font-size:8px">DATE RECEIVED</div></div>
+    <div class="foot-box"><div>${m.forDept||''}</div><div style="font-size:8px">FOR</div></div>
+    <div class="foot-box"><div>${m.approvedBy||''}</div><div style="font-size:8px">APPROVED BY</div></div>
+  </div>
+  </body></html>`);win.document.close();win.print();
+}
+function printMRSList(){if(MATERIAL_REQUESTS.length)printMRS(MATERIAL_REQUESTS[0].id);else toast('No MRS to print','var(--warn)');}
+function printMRSOnSubmit(){saveMRS();if(MATERIAL_REQUESTS.length)printMRS(MATERIAL_REQUESTS[0].id);}
+
+// ── TAB 4: DELIVERY RECEIPT ──────────────────────────────────────
+function renderStkDelivery(el){
+  el.innerHTML=`
+  <div class="action-bar">
+    <span class="abar-lbl">Delivery Receipts:</span>
+    <button class="btn btn-solid btn-sm" onclick="openNewDR()">➕ Record Delivery</button>
+    <button class="btn btn-purple btn-sm" onclick="stkTab='ocr';renderStockroom()">🤖 AI Scan Receipt</button>
+    <button class="btn btn-primary btn-sm" onclick="printDRList()">🖨️ Print All</button>
+  </div>
+  <div class="tbl-wrap">
+    <table class="ftbl">
+      <thead><tr><th>DR No.</th><th>Date</th><th>Supplier</th><th>Items</th><th>Total Amount</th><th>PO Ref</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${DELIVERY_RECEIPTS.map(d=>`<tr>
+          <td class="mono fw7" style="color:var(--accent)">${d.drNo}</td>
+          <td class="fs7">${d.date}</td>
+          <td class="fs7 fw7">${d.supplier}</td>
+          <td class="fs7">${d.items.length} item(s)</td>
+          <td class="fw7" style="color:var(--green)">₱${d.totalAmount.toLocaleString()}</td>
+          <td class="fs7 tm">${d.poRef||'—'}</td>
+          <td>${d.status==='posted'?'<span class="badge badge-done">POSTED</span>':'<span class="badge badge-progress">PENDING</span>'}</td>
+          <td><div style="display:flex;gap:3px">
+            <button class="btn btn-primary btn-xs" onclick="viewDR('${d.id}')">👁</button>
+            <button class="btn btn-primary btn-xs" onclick="printDR('${d.id}')">🖨️</button>
+          </div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+function openNewDR(){
+  const drNo='DR-'+String(DELIVERY_RECEIPTS.length+1).padStart(3,'0');
+  document.getElementById('asset-modal-title').textContent='📥 Record Delivery Receipt';
+  document.getElementById('asset-modal-body').innerHTML=`
+    <div class="form-row col-3">
+      <div class="form-group"><label class="form-label">DR No.</label><input class="form-input" id="dr-no" value="${drNo}"/></div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="dr-date" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+      <div class="form-group"><label class="form-label">PO Reference</label><input class="form-input" id="dr-poref" placeholder="PO-001"/></div>
+    </div>
+    <div class="form-row col-2">
+      <div class="form-group"><label class="form-label">Supplier *</label><input class="form-input" id="dr-supplier" placeholder="Supplier name"/></div>
+      <div class="form-group"><label class="form-label">Received By</label><input class="form-input" id="dr-rcvby" value="${currentUser.name}"/></div>
+    </div>
+    <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--text2);margin:8px 0 5px">Items Received</div>
+    <table style="width:100%;border-collapse:collapse;font-size:.73rem" id="dr-tbl">
+      <thead><tr>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:25px">#</th>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd)">Item</th>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:50px">Qty</th>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:50px">Unit</th>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:75px">Unit Price</th>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:75px">Total</th>
+      </tr></thead>
+      <tbody id="dr-rows">
+        ${[1,2,3].map(n=>`<tr id="dr-row-${n}">
+          <td style="border:1px solid var(--bd);text-align:center;font-size:.65rem;color:var(--text2)">${n}</td>
+          <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px 5px;font-size:.72rem;width:100%;color:var(--text1)" id="dr-item-${n}" placeholder="Item description" oninput="calcDRRow(${n})"/></td>
+          <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="dr-qty-${n}" type="number" value="0" oninput="calcDRRow(${n})"/></td>
+          <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="dr-unit-${n}" placeholder="pcs"/></td>
+          <td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:right;color:var(--text1)" id="dr-price-${n}" type="number" value="0" oninput="calcDRRow(${n})"/></td>
+          <td style="border:1px solid var(--bd);padding:4px 6px;text-align:right;font-weight:700;color:var(--green)" id="dr-total-${n}">₱0</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+      <button onclick="addDRRow()" class="btn btn-sm" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)">+ Add Row</button>
+      <div style="font-size:.85rem;font-weight:700;color:var(--green)">Total: <span id="dr-grand">₱0</span></div>
+    </div>`;
+  document.getElementById('asset-modal-foot').innerHTML=`
+    <button class="btn btn-solid" onclick="saveDR()">📥 Post Delivery</button>
+    <button class="btn" style="background:var(--bg3);border-color:var(--bd);color:var(--text2)" onclick="closeModal('asset-modal')">Cancel</button>`;
+  openModal('asset-modal');
+}
+let drRowCount=3;
+function calcDRRow(n){const qty=parseFloat(document.getElementById(`dr-qty-${n}`)?.value)||0;const price=parseFloat(document.getElementById(`dr-price-${n}`)?.value)||0;const tot=qty*price;const el=document.getElementById(`dr-total-${n}`);if(el)el.textContent='₱'+tot.toLocaleString();let grand=0;for(let i=1;i<=drRowCount;i++){const q=parseFloat(document.getElementById(`dr-qty-${i}`)?.value)||0;const p=parseFloat(document.getElementById(`dr-price-${i}`)?.value)||0;grand+=q*p;}const ge=document.getElementById('dr-grand');if(ge)ge.textContent='₱'+grand.toLocaleString();}
+function addDRRow(){drRowCount++;const n=drRowCount;const tbody=document.getElementById('dr-rows');if(!tbody)return;const tr=document.createElement('tr');tr.id=`dr-row-${n}`;tr.innerHTML=`<td style="border:1px solid var(--bd);text-align:center;font-size:.65rem;color:var(--text2)">${n}</td><td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px 5px;font-size:.72rem;width:100%;color:var(--text1)" id="dr-item-${n}" placeholder="Item" oninput="calcDRRow(${n})"/></td><td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="dr-qty-${n}" type="number" value="0" oninput="calcDRRow(${n})"/></td><td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:center;color:var(--text1)" id="dr-unit-${n}" placeholder="pcs"/></td><td style="border:1px solid var(--bd);padding:2px"><input style="border:none;background:transparent;padding:3px;font-size:.72rem;width:100%;text-align:right;color:var(--text1)" id="dr-price-${n}" type="number" value="0" oninput="calcDRRow(${n})"/></td><td style="border:1px solid var(--bd);padding:4px 6px;text-align:right;font-weight:700;color:var(--green)" id="dr-total-${n}">₱0</td>`;tbody.appendChild(tr);}
+function saveDR(){
+  const items=[];let grand=0;
+  for(let n=1;n<=drRowCount;n++){const item=(document.getElementById(`dr-item-${n}`)?.value||'').trim();const qty=parseFloat(document.getElementById(`dr-qty-${n}`)?.value)||0;const price=parseFloat(document.getElementById(`dr-price-${n}`)?.value)||0;const unit=document.getElementById(`dr-unit-${n}`)?.value||'pcs';if(item&&qty>0){const total=qty*price;items.push({no:n,item,qty,unit,unitPrice:price,total});grand+=total;const inv=INVENTORY.find(x=>x.name.toLowerCase().includes(item.toLowerCase().slice(0,6)));if(inv)inv.qty+=qty;}}
+  if(!items.length){toast('⚠️ Add at least one item with qty > 0','var(--warn)');return;}
+  const drNo=(document.getElementById('dr-no')?.value||'').trim();
+  DELIVERY_RECEIPTS.unshift({id:drNo,drNo,date:document.getElementById('dr-date')?.value||new Date().toISOString().slice(0,10),supplier:document.getElementById('dr-supplier')?.value||'',receivedBy:document.getElementById('dr-rcvby')?.value||currentUser.name,checkedBy:'',items,totalAmount:grand,status:'posted',poRef:document.getElementById('dr-poref')?.value||'',ts:new Date().toLocaleString('en-PH')});
+  drRowCount=3;closeModal('asset-modal');toast(`📥 ${drNo} posted! Inventory updated.`,'var(--green)');renderStockroom();
+}
+function viewDR(id){const d=DELIVERY_RECEIPTS.find(x=>x.id===id);if(!d)return;toast(`📥 DR ${d.drNo} from ${d.supplier} — ₱${d.totalAmount.toLocaleString()}`,'var(--accent)');}
+function printDR(id){toast('🖨️ Print DR in full deployment','var(--accent)');}
+function printDRList(){toast('🖨️ Print all DRs in full deployment','var(--accent)');}
+
+// ── TAB 5: PURCHASE ORDERS ───────────────────────────────────────
+function renderStkPO(el){
+  const lowItems=INVENTORY.filter(i=>i.qty<=i.reorder);
+  el.innerHTML=`
+  <div class="action-bar">
+    <span class="abar-lbl">Purchase Orders:</span>
+    <button class="btn btn-solid btn-sm" onclick="openNewPO()">➕ New PO</button>
+    ${lowItems.length?`<button class="btn btn-warn btn-sm" onclick="autoGenPO()">⚡ Auto-Generate PO (${lowItems.length} low items)</button>`:''}
+    <button class="btn btn-primary btn-sm" onclick="printPOList()">🖨️ Print All</button>
+  </div>
+  ${lowItems.length?`
+  <div style="background:rgba(255,184,0,.05);border:1px solid rgba(255,184,0,.25);border-radius:8px;padding:12px;margin-bottom:12px">
+    <div style="font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--warn);margin-bottom:6px">🛒 ${lowItems.length} item(s) need purchasing</div>
+    ${lowItems.map(i=>`<div style="font-size:.72rem;padding:3px 0;display:flex;justify-content:space-between;border-bottom:1px solid var(--bd)">
+      <span>${i.name}</span><span style="color:var(--danger);font-weight:700">Stock: ${i.qty} / Reorder: ${i.reorder}</span>
+    </div>`).join('')}
+  </div>`:''}
+  <div class="tbl-wrap">
+    <table class="ftbl">
+      <thead><tr><th>PO No.</th><th>Date</th><th>Supplier</th><th>Items</th><th>Total</th><th>Urgency</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${PURCHASE_ORDERS.map(p=>`<tr>
+          <td class="mono fw7" style="color:var(--accent)">${p.poNo}</td>
+          <td class="fs7">${p.date}</td>
+          <td class="fs7 fw7">${p.supplier||'—'}</td>
+          <td class="fs7">${p.items.length} item(s)</td>
+          <td class="fw7" style="color:var(--green)">₱${p.totalAmount.toLocaleString()}</td>
+          <td><span class="badge ${p.urgency==='urgent'?'badge-danger':'badge-progress'}">${(p.urgency||'normal').toUpperCase()}</span></td>
+          <td>${p.status==='received'?'<span class="badge badge-done">RECEIVED</span>':p.status==='approved'?'<span class="badge badge-progress">APPROVED</span>':'<span class="badge badge-open">PENDING</span>'}</td>
+          <td><div style="display:flex;gap:3px">
+            <button class="btn btn-primary btn-xs" onclick="viewPO('${p.id}')">👁</button>
+            <button class="btn btn-primary btn-xs" onclick="printPO('${p.id}')">🖨️</button>
+            ${p.status==='pending'?`<button class="btn btn-success btn-xs" onclick="approvePO('${p.id}')">✅</button>`:''}
+          </div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+function autoGenPO(){
+  const lowItems=INVENTORY.filter(i=>i.qty<=i.reorder);
+  if(!lowItems.length){toast('✅ No low stock items!','var(--green)');return;}
+  const poNo='PO-'+String(PURCHASE_ORDERS.length+1).padStart(3,'0');
+  const items=lowItems.map(i=>({item:i.name,qty:i.reorder*3,unit:i.unit||'pcs',unitPrice:i.price,total:i.reorder*3*i.price}));
+  const po={id:poNo,poNo,date:new Date().toISOString().slice(0,10),requestedBy:currentUser.name,approvedBy:'',supplier:'',items,totalAmount:items.reduce((s,i)=>s+i.total,0),status:'pending',urgency:'normal',ts:new Date().toLocaleString('en-PH')};
+  PURCHASE_ORDERS.unshift(po);
+  USERS.filter(u=>u.role==='manager'||u.privs?.approve_manager).forEach(u=>pushNotif('warn',`🛒 Auto-PO ${poNo} generated for ${lowItems.length} low stock items. Awaiting approval.`,u.id));
+  USERS.filter(u=>u.role==='finance'||u.privs?.stock_approve).forEach(u=>pushNotif('warn',`🛒 New PO ${poNo} requires finance review`,u.id));
+  toast(`🛒 PO ${poNo} auto-generated for ${lowItems.length} items! Finance & Manager notified.`,'var(--warn)');
+  renderStockroom();
+}
+function openGenPO(invId){const i=INVENTORY.find(x=>x.id===invId);if(!i)return;autoGenPO();}
+function openNewPO(){toast('➕ Manual PO form — same as auto-gen but with manual supplier/item input. In full deployment.','var(--accent)');}
+function viewPO(id){const p=PURCHASE_ORDERS.find(x=>x.id===id);if(!p)return;toast(`📋 PO ${p.poNo} — ${p.items.length} items, Total: ₱${p.totalAmount.toLocaleString()}`,'var(--accent)');}
+function printPO(id){toast('🖨️ Print PO — full print in deployment','var(--accent)');}
+function printPOList(){toast('🖨️ Print all POs — in deployment','var(--accent)');}
+function approvePO(id){const p=PURCHASE_ORDERS.find(x=>x.id===id);if(!p)return;p.status='approved';p.approvedBy=currentUser.name;toast(`✅ PO ${p.poNo} approved!`,'var(--green)');renderStockroom();}
+
+// ── TAB 6: AI OCR SCAN ────────────────────────────────────────────
+function renderStkOCR(el){
+  el.innerHTML=`
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+    <!-- LEFT: CAPTURE -->
+    <div>
+      <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px">
+        <div style="font-family:var(--font-hdr);font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:14px">🤖 AI OCR SCANNER</div>
+        <div style="font-size:.75rem;color:var(--text2);line-height:1.6;margin-bottom:14px">
+          Take a photo of any handwritten or printed receipt, withdrawal slip, or material request form.
+          Claude AI will read the text and auto-populate the fields.
+        </div>
+
+        <!-- SCAN TYPE -->
+        <div class="form-group" style="margin-bottom:12px">
+          <label class="form-label">Document Type to Scan</label>
+          <select class="form-input" id="ocr-doctype">
+            <option value="withdrawal">Withdrawal Slip</option>
+            <option value="mrs">Material Requisition Slip</option>
+            <option value="delivery">Delivery Receipt</option>
+            <option value="po">Purchase Order</option>
+          </select>
+        </div>
+
+        <!-- UPLOAD OR CAMERA -->
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="btn btn-purple" onclick="openCam('ocr')" style="flex:1">📷 Camera</button>
+          <button class="btn btn-solid" onclick="document.getElementById('ocr-file').click()" style="flex:1">🖼️ Upload Image</button>
+        </div>
+        <input type="file" id="ocr-file" accept="image/*" style="display:none" onchange="ocrFileSelected(event)"/>
+
+        <!-- PREVIEW -->
+        <div id="ocr-preview" style="border:2px dashed var(--bd);border-radius:8px;min-height:140px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+          <div id="ocr-prev-inner" style="text-align:center;color:var(--text2);font-size:.75rem">
+            <div style="font-size:2rem;margin-bottom:6px">📄</div>
+            <div>No image captured yet</div>
+          </div>
+        </div>
+
+        <button class="btn btn-solid" id="ocr-scan-btn" onclick="runOCR()" style="width:100%;display:none">
+          🤖 Scan with Claude AI
+        </button>
+      </div>
+
+      <!-- PAST SCANS -->
+      ${OCR_RECORDS.length?`
+      <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-top:12px">
+        <div style="font-family:var(--font-hdr);font-size:.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:10px">📋 Recent Scans</div>
+        ${OCR_RECORDS.slice(0,5).map(r=>`
+          <div style="padding:7px 0;border-bottom:1px solid var(--bd);font-size:.72rem">
+            <div class="fw7">${r.docType.toUpperCase()} — ${r.ts}</div>
+            <div class="tm">${r.summary}</div>
+            <div style="color:${r.confidence>80?'var(--green)':r.confidence>60?'var(--warn)':'var(--danger)'};font-size:.65rem;font-weight:700">Confidence: ${r.confidence}%</div>
+          </div>`).join('')}
+      </div>`:''}
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div>
+      <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px;min-height:300px" id="ocr-results-panel">
+        <div style="font-family:var(--font-hdr);font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:14px">📝 SCAN RESULTS</div>
+        <div id="ocr-results" style="color:var(--text2);font-size:.78rem">
+          <div style="text-align:center;padding:40px 20px">
+            <div style="font-size:2.5rem;margin-bottom:12px">🤖</div>
+            <div style="line-height:1.6">Capture or upload a document image and click <strong style="color:var(--accent)">Scan with Claude AI</strong> to extract and auto-populate the data.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+let ocrImageData = null;
+function ocrFileSelected(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    ocrImageData=ev.target.result;
+    const inner=document.getElementById('ocr-prev-inner');
+    const prev=document.getElementById('ocr-preview');
+    if(prev){prev.innerHTML=`<img src="${ocrImageData}" style="max-width:100%;max-height:200px;border-radius:6px;object-fit:contain"/>`;}
+    const btn=document.getElementById('ocr-scan-btn');
+    if(btn)btn.style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function runOCR(){
+  const docType=document.getElementById('ocr-doctype')?.value||'withdrawal';
+  const resultsEl=document.getElementById('ocr-results');
+  if(!ocrImageData&&!capturedPhoto){toast('⚠️ Please capture or upload an image first','var(--warn)');return;}
+  const imgData=capturedPhoto||ocrImageData;
+  if(!imgData){toast('⚠️ No image available','var(--warn)');return;}
+
+  resultsEl.innerHTML=`<div style="text-align:center;padding:30px">
+    <div style="font-size:2rem;margin-bottom:10px">🔄</div>
+    <div style="font-size:.8rem;color:var(--accent)">Claude AI is reading the document...</div>
+    <div style="font-size:.7rem;color:var(--text2);margin-top:4px">Extracting handwriting and text</div>
+  </div>`;
+
+  const docTypeLabels={withdrawal:'Withdrawal Slip',mrs:'Material Requisition Slip',delivery:'Delivery Receipt',po:'Purchase Order'};
+  const base64=imgData.split(',')[1];
+  const mimeMatch=imgData.match(/^data:([^;]+);/);
+  const mimeType=mimeMatch?mimeMatch[1]:'image/jpeg';
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mimeType,data:base64}},
+          {type:'text',text:`This is a ${docTypeLabels[docType]} from an industrial plant. Extract ALL text from this document including handwritten text. Return ONLY a JSON object with this structure (no markdown, no explanation):
+{
+  "docType": "${docType}",
+  "date": "extracted date or null",
+  "number": "document number (WS No / MRS No / DR No / PO No) or null",
+  "department": "department name or null",
+  "supplier": "supplier name or null",
+  "requestedBy": "person name or null",
+  "approvedBy": "approver name or null",
+  "items": [{"no":1,"item":"item name","qty":0,"unit":"pcs","purpose":"or dateNeeded or remarks"}],
+  "confidence": 85,
+  "rawText": "all raw extracted text from the image"
+}`}
+        ]}]
+      })
+    });
+    const data=await resp.json();
+    if(data.error){throw new Error(data.error.message);}
+    const text=data.content?.map(c=>c.text||'').join('')||'';
+    let parsed;
+    try{parsed=JSON.parse(text.replace(/```json|```/g,'').trim());}
+    catch{parsed={rawText:text,confidence:0,items:[]};}
+
+    // Save OCR record
+    const ocrRec={id:'OCR-'+Date.now(),docType,ts:new Date().toLocaleString('en-PH'),confidence:parsed.confidence||50,summary:`${parsed.items?.length||0} items extracted from ${docTypeLabels[docType]}`,parsed,imagePath:imgData};
+    OCR_RECORDS.unshift(ocrRec);
+
+    // Render results
+    renderOCRResults(parsed,docType,imgData);
+
+  }catch(err){
+    resultsEl.innerHTML=`<div style="padding:20px;background:rgba(255,61,90,.06);border:1px solid rgba(255,61,90,.2);border-radius:8px">
+      <div style="color:var(--danger);font-weight:700;margin-bottom:6px">⚠️ AI Scan Error</div>
+      <div style="font-size:.75rem;color:var(--text2)">${err.message}</div>
+      <div style="font-size:.7rem;color:var(--text3);margin-top:8px">Make sure you are connected to the internet. In local/offline mode, manually enter the extracted data using the form buttons below.</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-solid btn-sm" onclick="stkTab='withdrawal';renderStockroom()">📤 Open Withdrawal Form</button>
+      <button class="btn btn-primary btn-sm" onclick="stkTab='mrs';renderStockroom()">📋 Open MRS Form</button>
+      <button class="btn btn-success btn-sm" onclick="stkTab='delivery';renderStockroom()">📥 Open Delivery Form</button>
+    </div>`;
+  }
+}
+
+function renderOCRResults(parsed,docType,imgData){
+  const el=document.getElementById('ocr-results');
+  const confColor=parsed.confidence>80?'var(--green)':parsed.confidence>60?'var(--warn)':'var(--danger)';
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:.75rem;font-weight:700;color:var(--green)">✅ AI Scan Complete</div>
+      <div style="font-size:.68rem;font-weight:700;color:${confColor}">Confidence: ${parsed.confidence||50}%</div>
+    </div>
+
+    <!-- EXTRACTED FIELDS -->
+    <div style="background:var(--bg3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:.75rem">
+      ${[
+        ['Document Type', parsed.docType||docType],
+        ['Date',          parsed.date||'Not detected'],
+        ['Document No.',  parsed.number||'Not detected'],
+        ['Department',    parsed.department||'Not detected'],
+        ['Supplier',      parsed.supplier||'N/A'],
+        ['Requested By',  parsed.requestedBy||'Not detected'],
+        ['Approved By',   parsed.approvedBy||'Not detected'],
+      ].map(([k,v])=>`<div style="display:flex;padding:3px 0;border-bottom:1px solid var(--bd)">
+        <span style="color:var(--text2);width:120px;flex-shrink:0">${k}</span>
+        <span class="fw7">${v}</span>
+      </div>`).join('')}
+    </div>
+
+    <!-- EXTRACTED ITEMS -->
+    ${parsed.items?.length?`
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:6px">Items Extracted (${parsed.items.length})</div>
+    <table style="width:100%;border-collapse:collapse;font-size:.72rem;margin-bottom:12px">
+      <thead><tr>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:25px">#</th>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd)">Item</th>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:45px">Qty</th>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd);width:45px">Unit</th>
+        <th style="background:var(--bg3);padding:4px;border:1px solid var(--bd)">Purpose/Remarks</th>
+      </tr></thead>
+      <tbody>
+        ${parsed.items.map(it=>`<tr>
+          <td style="border:1px solid var(--bd);text-align:center">${it.no||''}</td>
+          <td style="border:1px solid var(--bd);padding:3px 6px;font-weight:600">${it.item||''}</td>
+          <td style="border:1px solid var(--bd);text-align:center">${it.qty||''}</td>
+          <td style="border:1px solid var(--bd);text-align:center">${it.unit||'pcs'}</td>
+          <td style="border:1px solid var(--bd);padding:3px 6px;color:var(--text2)">${it.purpose||''}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`:'<div style="color:var(--warn);font-size:.75rem;margin-bottom:10px">⚠️ No items could be extracted from the image.</div>'}
+
+    <!-- RAW TEXT -->
+    <details style="margin-bottom:12px">
+      <summary style="font-size:.68rem;color:var(--text2);cursor:pointer">📄 Raw extracted text</summary>
+      <div style="font-size:.67rem;color:var(--text2);background:var(--bg3);border-radius:6px;padding:8px;margin-top:5px;white-space:pre-wrap;line-height:1.5">${parsed.rawText||'No raw text'}</div>
+    </details>
+
+    <!-- ACTIONS -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      ${docType==='withdrawal'?`<button class="btn btn-solid btn-sm" onclick="applyOCRToWithdrawal(${JSON.stringify(parsed).replace(/"/g,'&quot;')})">📤 Create Withdrawal Slip</button>`:''}
+      ${docType==='mrs'?`<button class="btn btn-solid btn-sm" onclick="applyOCRToMRS(${JSON.stringify(parsed).replace(/"/g,'&quot;')})">📋 Create MRS</button>`:''}
+      ${docType==='delivery'?`<button class="btn btn-solid btn-sm" onclick="applyOCRToDR(${JSON.stringify(parsed).replace(/"/g,'&quot;')})">📥 Create Delivery Record</button>`:''}
+      <button class="btn btn-primary btn-sm" onclick="ocrImageData=null;capturedPhoto=null;renderStkTab()">🔄 Scan Another</button>
+    </div>`;
+}
+
+function applyOCRToWithdrawal(parsed){
+  stkTab='withdrawal';renderStockroom();
+  setTimeout(()=>{openNewWithdrawal();setTimeout(()=>{
+    if(parsed.date&&document.getElementById('ws-date')) document.getElementById('ws-date').value=parsed.date;
+    if(parsed.number&&document.getElementById('ws-no')) document.getElementById('ws-no').value=parsed.number;
+    if(parsed.department&&document.getElementById('ws-dept')){
+      const sel=document.getElementById('ws-dept');
+      Array.from(sel.options).forEach(o=>{if(o.text.toLowerCase().includes((parsed.department||'').toLowerCase()))sel.value=o.value;});
+    }
+    if(parsed.requestedBy&&document.getElementById('ws-req')) document.getElementById('ws-req').value=parsed.requestedBy;
+    if(parsed.approvedBy&&document.getElementById('ws-app')) document.getElementById('ws-app').value=parsed.approvedBy;
+    parsed.items?.forEach((it,i)=>{
+      const n=i+1;
+      if(document.getElementById(`ws-item-${n}`)) document.getElementById(`ws-item-${n}`).value=it.item||'';
+      if(document.getElementById(`ws-qty-${n}`)) document.getElementById(`ws-qty-${n}`).value=it.qty||'';
+      if(document.getElementById(`ws-unit-${n}`)) document.getElementById(`ws-unit-${n}`).value=it.unit||'pcs';
+      if(document.getElementById(`ws-purp-${n}`)) document.getElementById(`ws-purp-${n}`).value=it.purpose||'';
+    });
+    toast('🤖 OCR data applied to withdrawal form!','var(--green)');
+  },400);},100);
+}
+function applyOCRToMRS(parsed){stkTab='mrs';renderStockroom();setTimeout(()=>{openNewMRS();toast('🤖 OCR data ready — fill remaining fields.','var(--accent)');},100);}
+function applyOCRToDR(parsed){stkTab='delivery';renderStockroom();setTimeout(()=>{openNewDR();if(parsed.supplier&&document.getElementById('dr-supplier'))document.getElementById('dr-supplier').value=parsed.supplier;toast('🤖 OCR data applied to delivery form!','var(--green)');},100);}
 
 // ── KPI ────────────────────────────────────────────────────────────
 function renderKPI(){
@@ -2803,6 +4041,735 @@ function renderProfile(){
       </div>`).join('')}
     </div>
   </div>`;
+}
+
+// ── HELPER: re-render current stockroom tab ───────────────────────
+function renderStkTab(){renderStockroom();}
+
+// ══════════════════════════════════════════════════════════════════
+// ── JO APPROVALS WORKFLOW ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+function renderApprovals(){
+  const el=document.getElementById('pg-approvals');
+  if(!el)return;
+  const u=currentUser;
+
+  // Determine this user's approval stage based on privileges
+  let myStage=null, myKey='', myLabel='';
+  if(u.privs?.all||u.privs?.approve_safety)          {myStage='pending_safety';    myKey='safety';    myLabel='🦺 Safety Officer Approval';}
+  else if(u.privs?.approve_supervisor)                {myStage='pending_supervisor';myKey='supervisor';myLabel='👔 Supervisor Approval';}
+  else if(u.privs?.approve_requestor||u.privs?.approve_operator){myStage='pending_requestor';myKey='requestor';myLabel='🧑‍🏭 Requestor Acceptance';}
+  else if(u.privs?.approve_qa)                        {myStage='pending_qa';        myKey='qa';        myLabel='🔬 QA / QC Approval';}
+  else if(u.privs?.approve_fsms)                      {myStage='pending_fsms';      myKey='fsms';      myLabel='🏭 FSMS Approval';}
+  else if(u.privs?.approve_manager)                   {myStage='pending_manager';   myKey='manager';   myLabel='👑 Plant Manager Final Approval';}
+  if(u.privs?.all && !myKey)                          {myStage='all';               myKey='all';       myLabel='👁 Admin — All Stages';}
+
+  const myJOs = myStage==='all'
+    ? JOBS.filter(j=>j.approvalStage&&!['fully_approved','rejected'].includes(j.approvalStage))
+    : JOBS.filter(j=>j.approvalStage===myStage);
+
+  const pendingAssign   = JOBS.filter(j=>j.approvalStage==='pending_assignment');
+  const rejectedJOs     = JOBS.filter(j=>j.approvalStage==='rejected');
+  const closedJOs       = JOBS.filter(j=>j.approvalStage==='fully_approved');
+
+  // Pipeline counts for each stage
+  const pc = k => JOBS.filter(j=>j.approvalStage===k).length;
+
+  el.innerHTML=`
+
+  <!-- ═══ WORKFLOW DIAGRAM ══════════════════════════════════════════ -->
+  <div style="background:var(--panel);border:1px solid var(--bd);border-radius:14px;padding:18px 20px;margin-bottom:16px">
+    <div style="font-family:var(--font-hdr);font-size:.75rem;font-weight:700;letter-spacing:3px;color:var(--text2);margin-bottom:16px;text-transform:uppercase">📋 Job Order Workflow — Live Status</div>
+
+    <!-- ROW 1: Creation → Risk → Branch -->
+    <div style="display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px">
+
+      <!-- REQUESTOR BOX -->
+      <div style="text-align:center;min-width:100px;flex-shrink:0">
+        <div style="background:rgba(0,85,204,.15);border:2px solid #4a9fff;border-radius:10px;padding:10px 8px">
+          <div style="font-size:1.4rem">🧑‍🏭</div>
+          <div style="font-size:.72rem;font-weight:700;color:#4a9fff;margin-top:4px">JO REQUESTOR</div>
+          <div style="font-size:.6rem;color:var(--text2);margin-top:2px">Operator / Supervisor</div>
+          <div style="font-size:.58rem;color:var(--text3);margin-top:3px;font-style:italic">Task Details<br>Priority · Risk Level</div>
+        </div>
+      </div>
+
+      <div style="color:#4a9fff;font-size:1.4rem;padding:0 6px;flex-shrink:0">→</div>
+
+      <!-- RISK ASSESSMENT DIAMOND -->
+      <div style="text-align:center;min-width:90px;flex-shrink:0">
+        <div style="background:rgba(167,139,250,.12);border:2px solid #a78bfa;border-radius:10px;padding:10px 8px;position:relative">
+          <div style="font-size:1.1rem">⚖️</div>
+          <div style="font-size:.72rem;font-weight:700;color:#a78bfa;margin-top:3px">RISK</div>
+          <div style="font-size:.62rem;font-weight:700;color:#a78bfa">ASSESSMENT</div>
+          <div style="font-size:.55rem;color:var(--text3);margin-top:2px">Auto-check on<br>JO creation</div>
+        </div>
+      </div>
+
+      <!-- BRANCH SPLIT -->
+      <div style="display:flex;flex-direction:column;gap:5px;padding:0 8px;flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="background:#ff3d5a;color:#fff;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap">⚠️ HIGH RISK</span>
+          <span style="color:#ff3d5a;font-size:1.1rem">→</span>
+          <!-- SAFETY OFFICER -->
+          <div style="background:rgba(255,61,90,.1);border:2px solid #ff3d5a;border-radius:8px;padding:8px 10px;text-align:center;min-width:100px;cursor:${pc('pending_safety')>0?'pointer':'default'}"
+               onclick="${pc('pending_safety')>0?'navigate(\'approvals\')':''}">
+            <div style="font-size:1rem">🦺</div>
+            <div style="font-size:.68rem;font-weight:700;color:#ff3d5a;margin-top:2px">SAFETY OFFICER</div>
+            <div style="font-size:.58rem;color:var(--text3)">Approval Required</div>
+            <div style="font-size:.85rem;font-weight:700;color:#ff3d5a;margin-top:3px">${pc('pending_safety')} pending</div>
+          </div>
+          <span style="color:#ff3d5a;font-size:1.1rem">↓</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="background:#00ff9d;color:#000;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap">✅ LOW / NO RISK</span>
+          <span style="color:#00ff9d;font-size:1.1rem">──────────────────→</span>
+        </div>
+      </div>
+
+      <!-- SUPERVISOR APPROVAL -->
+      <div style="background:rgba(167,139,250,.1);border:2px solid #a78bfa;border-radius:8px;padding:8px 10px;text-align:center;min-width:100px;flex-shrink:0;cursor:${pc('pending_supervisor')>0?'pointer':'default'}"
+           onclick="${pc('pending_supervisor')>0?'navigate(\'approvals\')':''}">
+        <div style="font-size:1rem">👔</div>
+        <div style="font-size:.68rem;font-weight:700;color:#a78bfa;margin-top:2px">SUPERVISOR</div>
+        <div style="font-size:.58rem;color:var(--text3)">Approve + Assign</div>
+        <div style="font-size:.85rem;font-weight:700;color:#a78bfa;margin-top:3px">${pc('pending_supervisor')} pending</div>
+      </div>
+
+      <div style="color:#a78bfa;font-size:1.1rem;padding:0 5px;flex-shrink:0">→</div>
+
+      <!-- ASSIGN JOB -->
+      <div style="background:rgba(0,212,255,.08);border:2px dashed #00d4ff;border-radius:8px;padding:8px 10px;text-align:center;min-width:90px;flex-shrink:0">
+        <div style="font-size:1rem">📋</div>
+        <div style="font-size:.68rem;font-weight:700;color:#00d4ff;margin-top:2px">ASSIGN JOB</div>
+        <div style="font-size:.58rem;color:var(--text3)">To Technician<br>/ Dept</div>
+        <div style="font-size:.85rem;font-weight:700;color:#00d4ff;margin-top:3px">${pc('pending_assignment')} waiting</div>
+      </div>
+
+      <div style="color:#00d4ff;font-size:1.1rem;padding:0 5px;flex-shrink:0">→</div>
+
+      <!-- IN PROGRESS -->
+      <div style="background:rgba(0,212,255,.12);border:2px solid #00d4ff;border-radius:8px;padding:8px 10px;text-align:center;min-width:90px;flex-shrink:0">
+        <div style="font-size:1rem">⚙️</div>
+        <div style="font-size:.68rem;font-weight:700;color:#00d4ff;margin-top:2px">IN PROGRESS</div>
+        <div style="font-size:.58rem;color:var(--text3)">Technician<br>Working</div>
+        <div style="font-size:.85rem;font-weight:700;color:#00d4ff;margin-top:3px">${JOBS.filter(j=>j.st==='progress').length} active</div>
+      </div>
+
+      <div style="color:#00d4ff;font-size:1.1rem;padding:0 5px;flex-shrink:0">→</div>
+
+      <!-- REQUESTOR ACCEPTANCE -->
+      <div style="background:rgba(0,212,255,.08);border:2px solid #00bfff;border-radius:8px;padding:8px 10px;text-align:center;min-width:95px;flex-shrink:0;cursor:${pc('pending_requestor')>0?'pointer':'default'}"
+           onclick="${pc('pending_requestor')>0?'navigate(\'approvals\')':''}">
+        <div style="font-size:1rem">🧑‍🏭</div>
+        <div style="font-size:.68rem;font-weight:700;color:#00bfff;margin-top:2px">REQUESTOR</div>
+        <div style="font-size:.58rem;color:var(--text3)">Acceptance</div>
+        <div style="font-size:.85rem;font-weight:700;color:#00bfff;margin-top:3px">${pc('pending_requestor')} pending</div>
+      </div>
+
+      <div style="color:#00bfff;font-size:1.1rem;padding:0 4px;flex-shrink:0">→</div>
+
+      <!-- RIGHT CHAIN: QA → FSMS → MANAGER → CLOSED -->
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+        ${[
+          {k:'pending_qa',    ico:'🔬',lbl:'QA / QC',   color:'#f472b6'},
+          {k:'pending_fsms',  ico:'🏭',lbl:'FSMS',       color:'#ffb800'},
+          {k:'pending_manager',ico:'👑',lbl:'PLANT MGR', color:'#00ff9d'},
+          {k:'fully_approved',ico:'✅',lbl:'JOB CLOSED', color:'#00ff9d'},
+        ].map((s,i,arr)=>`
+          <div style="display:flex;align-items:center;gap:3px">
+            ${i>0?`<div style="font-size:.7rem;color:${arr[i-1].color};padding-right:2px">↓</div>`:'<div style="width:14px"></div>'}
+            <div style="background:${s.k==='fully_approved'?'rgba(0,43,91,.8)':'rgba('+parseInt(s.color.slice(1,3),16)+','+parseInt(s.color.slice(3,5),16)+','+parseInt(s.color.slice(5,7),16)+',.08)'};border:${s.k==='fully_approved'?'2px':'1.5px'} solid ${s.color};border-radius:7px;padding:5px 8px;text-align:center;min-width:78px;cursor:${pc(s.k)>0?'pointer':'default'}"
+                 onclick="${pc(s.k)>0?'navigate(\'approvals\')':''}">
+              <div style="font-size:.85rem">${s.ico}</div>
+              <div style="font-size:.62rem;font-weight:700;color:${s.color}">${s.lbl}</div>
+              <div style="font-size:.75rem;font-weight:700;color:${s.color};margin-top:1px">${pc(s.k)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+    </div>
+
+    <!-- REJECTION PATH NOTE -->
+    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;font-size:.65rem;flex-wrap:wrap">
+      <div style="background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.3);border-radius:6px;padding:4px 12px;color:var(--danger);font-weight:700;white-space:nowrap">
+        ❌ Job Rejected → Rework Needed → Reopen as "Open"
+      </div>
+      <div style="color:var(--text3)">Any approver can reject at any stage. JO returns to Open status with reason logged.</div>
+      <div style="margin-left:auto;font-size:.62rem;color:var(--text3)">📧 Automated notifications sent to HR &amp; Manager at every stage</div>
+    </div>
+  </div>
+
+  <!-- ═══ MY APPROVAL QUEUE ════════════════════════════════════════ -->
+  <div style="background:var(--panel);border:2px solid ${myJOs.length>0?'rgba(255,184,0,.5)':'var(--bd)'};border-radius:12px;padding:18px;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:var(--font-hdr);font-size:.9rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${myJOs.length>0?'var(--warn)':'var(--text2)'}">${myLabel||'No approval queue assigned to your role'}</div>
+        <div style="font-size:.72rem;color:var(--text2);margin-top:4px">${myJOs.length} job order${myJOs.length!==1?'s':''} in your queue right now</div>
+      </div>
+      ${myJOs.length>0&&myKey&&myKey!=='all'?`<button class="btn btn-success" onclick="approveAllJOs()" style="font-size:.8rem">✅ Approve All (${myJOs.length})</button>`:''}
+    </div>
+
+    ${myJOs.length===0?`
+      <div style="text-align:center;padding:44px 20px;color:var(--text2)">
+        <div style="font-size:3.5rem;margin-bottom:12px">✅</div>
+        <div style="font-family:var(--font-hdr);font-size:1rem;color:var(--green)">Queue Clear</div>
+        <div style="font-size:.75rem;margin-top:6px;color:var(--text3)">No job orders are waiting for your approval right now.</div>
+      </div>
+    `:`
+      <div class="tbl-wrap">
+        <table class="ftbl">
+          <thead><tr>
+            <th>JO #</th>
+            <th>Equipment / Defect</th>
+            <th>Dept</th>
+            <th>Risk</th>
+            <th>P#</th>
+            <th>Created By</th>
+            <th>Assigned To</th>
+            <th>Date</th>
+            <th>Audit Trail</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${myJOs.map(j=>`<tr>
+              <td class="mono fw7" style="color:var(--accent);cursor:pointer;white-space:nowrap" onclick="viewJO('${j.id}')">${j.id}</td>
+              <td style="max-width:200px">
+                <div class="fw7 fs7" style="cursor:pointer" onclick="viewJO('${j.id}')">${j.equip}</div>
+                <div class="tm" style="font-size:.62rem">${(j.defect||'').slice(0,55)}</div>
+              </td>
+              <td><span class="tag">${j.dept}</span></td>
+              <td>
+                <span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:4px;
+                  background:${(j.riskLevel||'low')==='high'?'rgba(255,61,90,.12)':'rgba(0,255,157,.08)'};
+                  color:${(j.riskLevel||'low')==='high'?'var(--danger)':'var(--green)'};
+                  border:1px solid ${(j.riskLevel||'low')==='high'?'rgba(255,61,90,.3)':'rgba(0,255,157,.2)'}">
+                  ${(j.riskLevel||'low')==='high'?'⚠️ HIGH':'✅ LOW'}
+                </span>
+              </td>
+              <td><span style="color:${PC(j.pn)};font-weight:700;font-size:.9rem">P${j.pn}</span></td>
+              <td class="fs7">${j.req||'—'}</td>
+              <td class="fs7">${j.assignedTo||'<span style="color:var(--text3)">Not assigned</span>'}</td>
+              <td class="fs7 tm" style="white-space:nowrap">${(j.date||'—').slice(0,10)}</td>
+              <td>
+                <div style="font-size:.6rem;display:flex;flex-direction:column;gap:1px;min-width:110px">
+                  ${j.approvals?.safety?   `<span style="color:var(--green)">✅ Safety: ${j.approvals.safety.by}</span>`:''}
+                  ${j.approvals?.supervisor?`<span style="color:#a78bfa">✅ Supervisor: ${j.approvals.supervisor.by}</span>`:''}
+                  ${j.approvals?.requestor?`<span style="color:#00bfff">✅ Requestor: ${j.approvals.requestor.by}</span>`:''}
+                  ${j.approvals?.qa?       `<span style="color:#f472b6">✅ QA: ${j.approvals.qa.by}</span>`:''}
+                  ${j.approvals?.fsms?     `<span style="color:#ffb800">✅ FSMS: ${j.approvals.fsms.by}</span>`:''}
+                  ${(!j.approvals?.safety&&!j.approvals?.supervisor&&!j.approvals?.requestor&&!j.approvals?.qa&&!j.approvals?.fsms)?'<span style="color:var(--text3);font-style:italic">First in chain</span>':''}
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <button class="btn btn-primary btn-xs" onclick="viewJO('${j.id}')">👁 View</button>
+                  ${myKey&&myKey!=='all'&&myKey!=='supervisor'?`
+                    <button class="btn btn-success btn-xs" onclick="approveJO('${j.id}','${myKey}',true)">✅ Approve</button>
+                    <button class="btn btn-danger btn-xs" onclick="approveJO('${j.id}','${myKey}',false)">❌ Reject</button>
+                  `:''}
+                  ${myKey==='supervisor'?`
+                    <button class="btn btn-success btn-xs" onclick="supervisorApproveAndAssign('${j.id}')">✅ Approve &amp; Assign</button>
+                    <button class="btn btn-danger btn-xs" onclick="approveJO('${j.id}','supervisor',false)">❌ Reject</button>
+                  `:''}
+                  ${myKey==='all'?`
+                    <div style="font-size:.6rem;color:var(--text3)">Stage: ${j.approvalStage||'—'}</div>
+                  `:''}
+                </div>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    `}
+  </div>
+
+  <!-- ═══ PENDING ASSIGNMENT (after supervisor approval) ════════════ -->
+  ${pendingAssign.length>0?`
+  <div style="background:var(--panel);border:2px solid rgba(0,212,255,.4);border-radius:12px;padding:16px;margin-bottom:14px">
+    <div style="font-family:var(--font-hdr);font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px">
+      📋 Pending Technician Assignment (${pendingAssign.length}) — Supervisor Approved
+    </div>
+    <div class="tbl-wrap"><table class="ftbl">
+      <thead><tr><th>JO #</th><th>Equipment</th><th>Dept</th><th>Risk</th><th>P#</th><th>Supervisor</th><th>Actions</th></tr></thead>
+      <tbody>${pendingAssign.map(j=>`<tr>
+        <td class="mono fw7" style="color:var(--accent)">${j.id}</td>
+        <td class="fw7 fs7">${j.equip}</td>
+        <td><span class="tag">${j.dept}</span></td>
+        <td><span style="font-size:.68rem;font-weight:700;color:${j.riskLevel==='high'?'var(--danger)':'var(--green)'}">${j.riskLevel==='high'?'⚠️ HIGH':'✅ LOW'}</span></td>
+        <td><span style="color:${PC(j.pn)};font-weight:700">P${j.pn}</span></td>
+        <td class="fs7">${j.approvals?.supervisor?.by||'—'}</td>
+        <td>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-primary btn-xs" onclick="viewJO('${j.id}')">👁 View</button>
+            ${(currentUser.privs?.all||currentUser.privs?.jo_assign||currentUser.role==='supervisor'||currentUser.role==='administrator')?`<button class="btn btn-success btn-xs" onclick="openAssignModal('${j.id}')">👤 Assign Tech</button>`:''}
+          </div>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>`:''}
+
+  <!-- ═══ REJECTED JOs ═══════════════════════════════════════════════ -->
+  ${rejectedJOs.length>0?`
+  <div style="background:var(--panel);border:2px solid rgba(255,61,90,.35);border-radius:12px;padding:16px;margin-bottom:14px">
+    <div style="font-family:var(--font-hdr);font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--danger);margin-bottom:12px">
+      ❌ Rejected JOs — Rework Required (${rejectedJOs.length})
+    </div>
+    <div class="tbl-wrap"><table class="ftbl">
+      <thead><tr><th>JO #</th><th>Equipment</th><th>Dept</th><th>Rejected At Stage</th><th>Rejected By</th><th>Reason</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody>${rejectedJOs.map(j=>`<tr>
+        <td class="mono fw7" style="color:var(--danger)">${j.id}</td>
+        <td class="fw7 fs7">${j.equip}</td>
+        <td><span class="tag">${j.dept}</span></td>
+        <td><span style="font-size:.68rem;font-weight:600;color:var(--danger)">${(j.rejectedAt_stage||'—').toUpperCase()}</span></td>
+        <td class="fs7">${j.rejectedBy||'—'}</td>
+        <td class="fs7 tm">${(j.rejectReason||'No reason').slice(0,60)}</td>
+        <td class="fs7 tm">${(j.rejectedAt||'—').slice(0,14)}</td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-xs" onclick="viewJO('${j.id}')">👁 View</button>
+            ${(currentUser.privs?.all||currentUser.role==='supervisor'||currentUser.privs?.jo_close)?`<button class="btn btn-warn btn-xs" onclick="reopenJO('${j.id}')">🔄 Reopen</button>`:''}
+          </div>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>`:''}
+
+  <!-- ═══ FULLY CLOSED JOs ═══════════════════════════════════════════ -->
+  <div style="background:var(--panel);border:1px solid rgba(0,255,157,.2);border-radius:12px;padding:16px">
+    <div style="font-family:var(--font-hdr);font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:12px">
+      ✅ Fully Closed JOs — All Approvals Complete (${closedJOs.length})
+    </div>
+    ${closedJOs.length===0?`<div style="padding:20px;text-align:center;color:var(--text2);font-size:.8rem">No fully closed JOs yet.</div>`:`
+    <div class="tbl-wrap"><table class="ftbl">
+      <thead><tr>
+        <th>JO #</th><th>Equipment</th><th>Dept</th>
+        <th style="color:#ff3d5a">Safety</th>
+        <th style="color:#a78bfa">Supervisor</th>
+        <th style="color:#00bfff">Requestor</th>
+        <th style="color:#f472b6">QA/QC</th>
+        <th style="color:#ffb800">FSMS</th>
+        <th style="color:#00ff9d">Manager</th>
+        <th>Closed</th>
+      </tr></thead>
+      <tbody>${closedJOs.slice(0,15).map(j=>`<tr>
+        <td class="mono fw7" style="color:var(--green);cursor:pointer" onclick="viewJO('${j.id}')">${j.id}</td>
+        <td class="fs7 fw7">${j.equip}</td>
+        <td><span class="tag">${j.dept}</span></td>
+        <td class="fs7" style="color:var(--green)">${j.approvals?.safety?'✅ '+j.approvals.safety.by:'<span style="color:var(--text3)">N/A</span>'}</td>
+        <td class="fs7" style="color:#a78bfa">${j.approvals?.supervisor?'✅ '+j.approvals.supervisor.by:'—'}</td>
+        <td class="fs7" style="color:#00bfff">${j.approvals?.requestor?'✅ '+j.approvals.requestor.by:'—'}</td>
+        <td class="fs7" style="color:#f472b6">${j.approvals?.qa?'✅ '+j.approvals.qa.by:'—'}</td>
+        <td class="fs7" style="color:#ffb800">${j.approvals?.fsms?'✅ '+j.approvals.fsms.by:'—'}</td>
+        <td class="fs7" style="color:#00ff9d">${j.approvals?.manager?'✅ '+j.approvals.manager.by:'—'}</td>
+        <td class="fs7 tm" style="white-space:nowrap">${(j.closedFinal||j.closedAt||'—').slice(0,14)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`}
+  </div>`;
+}
+
+function supervisorApproveAndAssign(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  // First approve as supervisor
+  approveJO(id,'supervisor',true);
+  // Then open assign modal
+  setTimeout(()=>openAssignModal(id),300);
+}
+
+function approveJO(id, stage, approved){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  const ts=new Date().toLocaleString('en-PH',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  if(!j.approvals) j.approvals={safety:null,supervisor:null,requestor:null,qa:null,fsms:null,manager:null};
+  if(!j.auditLog) j.auditLog=[];
+
+  // Exact stage chain per JO Workflow diagram:
+  // HIGH RISK: safety → supervisor → assign(progress) → [done] → requestor → qa → fsms → manager → fully_approved
+  // LOW RISK:  supervisor → assign(progress) → [done] → requestor → qa → fsms → manager → fully_approved
+  const stageNext={
+    safety:'pending_supervisor',
+    supervisor:'assigned',       // supervisor assigns tech → JO becomes open/in-progress
+    requestor:'pending_qa',
+    qa:'pending_fsms',
+    fsms:'pending_manager',
+    manager:'fully_approved'
+  };
+  const stageLabels={
+    safety:'Safety Officer',supervisor:'Supervisor',requestor:'Requestor',
+    qa:'QA / QC',fsms:'FSMS',manager:'Plant Manager'
+  };
+  const nextPriv={
+    safety:'approve_supervisor',
+    supervisor:null,   // next is assign tech (manual)
+    requestor:'approve_qa',
+    qa:'approve_fsms',
+    fsms:'approve_manager',
+    manager:null
+  };
+
+  if(approved){
+    j.approvals[stage]={by:currentUser.name,at:ts,approved:true};
+    j.auditLog.push({by:currentUser.name,at:ts,action:`✅ Approved by ${stageLabels[stage]}`});
+
+    const next = stageNext[stage];
+
+    if(stage==='supervisor'){
+      // Supervisor approves + assigns tech → JO goes back to open status
+      // The actual assignment is done via the Assign modal
+      j.approvalStage='pending_assignment';
+      j.st='open'; // Ready to be accepted by technician
+      // Notify assigned tech or all dept techs
+      USERS.filter(u=>u.dept===j.dept&&['technician'].includes(u.role)&&u.status==='active').forEach(u=>{
+        pushNotif('warn',`⚙️ ${id} approved! Ready for technician to ACCEPT. Equipment: ${j.equip}`,u.id);
+      });
+      // Notify HR & Manager (per diagram)
+      USERS.filter(u=>['manager','administrator','hr'].includes(u.role)&&u.status==='active').forEach(u=>{
+        pushNotif('info',`👔 ${id} supervisor-approved. Assigned to ${j.dept} dept.`,u.id);
+      });
+      toast(`✅ ${id} approved! JO assigned to ${j.dept}. Technician can now accept the job.`,'var(--green)');
+    } else if(stage==='manager'){
+      j.approvalStage='fully_approved';
+      j.closedFinal=ts;
+      // Notify all stakeholders — JOB CLOSED
+      [j.reqId,j.assignedId].filter(Boolean).forEach(uid=>{
+        pushNotif('success',`🎉 ${id} FULLY CLOSED! All approvals complete. Job is officially done.`,uid);
+      });
+      USERS.filter(u=>['manager','administrator','hr'].includes(u.role)&&u.status==='active').forEach(u=>{
+        pushNotif('success',`✅ ${id} fully closed by Plant Manager ${currentUser.name}.`,u.id);
+      });
+      j.auditLog.push({by:currentUser.name,at:ts,action:'🎉 JOB CLOSED — All approvals complete.'});
+      toast(`🎉 ${id} FULLY CLOSED! Job is officially complete.`,'var(--green)');
+    } else {
+      j.approvalStage=next;
+      // Notify next approver group
+      if(nextPriv[stage]){
+        USERS.filter(u=>u.privs?.[nextPriv[stage]]&&u.status==='active').forEach(u=>{
+          pushNotif('warn',`📋 ${id} needs your ${stageLabels[stageNext[stage]?.replace('pending_','')]||'approval'}. Equipment: ${j.equip}`,u.id);
+        });
+      }
+      toast(`✅ ${id} approved by ${stageLabels[stage]}! Moving to next stage.`,'var(--green)');
+    }
+  } else {
+    // REJECTION — per diagram: Job Rejected → Reopen as "Open" Status
+    const rejectReason = prompt(`Reason for rejecting ${id}:`) || 'No reason given';
+    j.approvalStage='rejected';
+    j.rejectedAt=ts;
+    j.rejectedBy=currentUser.name;
+    j.rejectedAt_stage=stage;
+    j.rejectReason=rejectReason;
+    j.approvals[stage]={by:currentUser.name,at:ts,approved:false,reason:rejectReason};
+    j.auditLog.push({by:currentUser.name,at:ts,action:`❌ REJECTED by ${stageLabels[stage]}: ${rejectReason}`});
+    
+    // Notify requestor and technician
+    if(j.reqId) pushNotif('danger',`❌ ${id} REJECTED at ${stageLabels[stage]} by ${currentUser.name}. Reason: ${rejectReason}. Rework needed.`,j.reqId);
+    if(j.assignedId) pushNotif('danger',`❌ ${id} rejected. Please review and correct. Reason: ${rejectReason}`,j.assignedId);
+    USERS.filter(u=>['manager','administrator','hr'].includes(u.role)&&u.status==='active').forEach(u=>{
+      pushNotif('warn',`⚠️ ${id} rejected at ${stageLabels[stage]} stage. Rework needed.`,u.id);
+    });
+    toast(`❌ ${id} rejected at ${stageLabels[stage]} stage. Will be reopened for correction.`,'var(--danger)');
+  }
+  renderApprovals();
+}
+
+function reopenJO(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  if(!confirm(`Reopen ${id} as OPEN status for rework?`))return;
+  const ts=new Date().toLocaleString('en-PH');
+  j.st='open';
+  j.approvalStage='open'; // back to start
+  j.approvals={safety:null,supervisor:null,requestor:null,qa:null,fsms:null,manager:null};
+  if(!j.auditLog) j.auditLog=[];
+  j.auditLog.push({by:currentUser.name,at:ts,action:'🔄 REOPENED for rework after rejection.'});
+  // Notify original requestor
+  if(j.reqId) pushNotif('warn',`🔄 ${id} reopened for rework. Please correct and resubmit.`,j.reqId);
+  if(j.assignedId) pushNotif('warn',`🔄 ${id} reopened. Please fix the issue and close again.`,j.assignedId);
+  toast(`🔄 ${id} reopened as OPEN. Rework in progress.`,'var(--warn)');
+  renderApprovals();
+}
+
+function approveAllJOs(){
+  const u=currentUser;
+  let myStage=null;
+  if(u.privs?.approve_safety) myStage='pending_safety';
+  else if(u.privs?.approve_supervisor) myStage='pending_supervisor';
+  else if(u.privs?.approve_requestor||u.privs?.approve_operator) myStage='pending_requestor';
+  else if(u.privs?.approve_qa) myStage='pending_qa';
+  else if(u.privs?.approve_fsms) myStage='pending_fsms';
+  else if(u.privs?.approve_manager) myStage='pending_manager';
+  if(!myStage){toast('⚠️ No approval queue for your role.','var(--warn)');return;}
+  const toApprove=JOBS.filter(j=>j.approvalStage===myStage);
+  if(!toApprove.length){toast('✅ No JOs in your queue.','var(--green)');return;}
+  const stageKey=myStage.replace('pending_','');
+  toApprove.forEach(j=>approveJO(j.id,stageKey,true));
+  toast(`✅ Approved all ${toApprove.length} JOs in your queue.`,'var(--green)');
+}
+function approveAllJOs(){
+  const u=currentUser;
+  let stage=null;
+  if(u.privs?.approve_operator) stage='operator';
+  else if(u.privs?.approve_qa) stage='qa';
+  else if(u.privs?.approve_fsms) stage='fsms';
+  else if(u.privs?.approve_manager) stage='manager';
+  if(!stage) return;
+  const stageKey='pending_'+stage;
+  const toApprove=JOBS.filter(j=>j.approvalStage===stageKey);
+  if(!toApprove.length){toast('No jobs in queue.','var(--warn)');return;}
+  toApprove.forEach(j=>approveJO(j.id,stage,true));
+  toast(`✅ Approved ${toApprove.length} job orders!`,'var(--green)');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ── SHIFT MANAGEMENT ──────────────────────────────────────════════
+// ══════════════════════════════════════════════════════════════════
+const SHIFT_OPTIONS = {
+  '2shift': {
+    label:'2-Shift System',
+    shifts:[
+      {id:'day',  label:'Day Shift',   start:'06:00',end:'18:00',color:'var(--warn)'},
+      {id:'night',label:'Night Shift', start:'18:00',end:'06:00',color:'var(--purple)'},
+    ]
+  },
+  '3shift': {
+    label:'3-Shift System',
+    shifts:[
+      {id:'morning', label:'Morning Shift', start:'06:00',end:'14:00',color:'var(--warn)'},
+      {id:'afternoon',label:'Afternoon Shift',start:'14:00',end:'22:00',color:'var(--accent)'},
+      {id:'night',   label:'Night Shift',   start:'22:00',end:'06:00',color:'var(--purple)'},
+    ]
+  }
+};
+
+function renderShifts(){
+  const el=document.getElementById('pg-shifts');
+  const canManage=currentUser.privs?.shift_manage||currentUser.privs?.all;
+  const cfg=SHIFT_CONFIG;
+  const opts=SHIFT_OPTIONS[cfg.mode];
+  const techUsers=USERS.filter(u=>['technician','supervisor','mech_supervisor'].includes(u.role)&&u.status==='active');
+
+  el.innerHTML=`
+  <!-- SHIFT MODE SELECTOR (manager/supervisor only) -->
+  ${canManage?`
+  <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:14px">
+    <div style="font-family:var(--font-hdr);font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:12px">⚙️ Shift Configuration</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
+      <!-- Mode Selection -->
+      <div style="flex:1;min-width:220px">
+        <label class="form-label">Shift System Mode</label>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <button onclick="setShiftMode('2shift')" class="btn ${cfg.mode==='2shift'?'btn-solid':'btn-sm'}" style="${cfg.mode!=='2shift'?'background:var(--bg3);border-color:var(--bd);color:var(--text2)':''}">
+            🔄 2-Shift<br><span style="font-size:.6rem">(6AM–6PM / 6PM–6AM)</span>
+          </button>
+          <button onclick="setShiftMode('3shift')" class="btn ${cfg.mode==='3shift'?'btn-solid':'btn-sm'}" style="${cfg.mode!=='3shift'?'background:var(--bg3);border-color:var(--bd);color:var(--text2)':''}">
+            🔁 3-Shift<br><span style="font-size:.6rem">(6AM–2PM / 2PM–10PM / 10PM–6AM)</span>
+          </button>
+        </div>
+      </div>
+      <!-- Effective Date -->
+      <div>
+        <label class="form-label">Effective Date</label>
+        <input class="form-input" type="date" id="shift-eff-date" value="${cfg.effectiveDate||new Date().toISOString().slice(0,10)}" style="margin-top:4px"/>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn btn-success btn-sm" onclick="saveShiftConfig()">💾 Save Configuration</button>
+      </div>
+    </div>
+  </div>`:''}
+
+  <!-- CURRENT SHIFT SCHEDULE SUMMARY -->
+  <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:14px">
+    <div style="font-family:var(--font-hdr);font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:12px">
+      📅 Current Mode: <span style="color:var(--accent)">${opts.label}</span>
+      ${cfg.effectiveDate?`<span style="font-size:.65rem;font-weight:400;color:var(--text2);margin-left:8px">Effective: ${cfg.effectiveDate}</span>`:''}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      ${opts.shifts.map(s=>`
+      <div style="background:var(--bg3);border:1px solid ${s.color};border-radius:8px;padding:10px 16px;min-width:160px">
+        <div style="color:${s.color};font-family:var(--font-hdr);font-weight:700;font-size:.85rem">${s.label}</div>
+        <div style="font-family:var(--font-mono);font-size:1.1rem;font-weight:700;margin-top:4px">${s.start} – ${s.end}</div>
+        <div style="font-size:.65rem;color:var(--text2);margin-top:2px">
+          ${cfg.assignments?.filter(a=>a.shiftId===s.id)?.length||0} personnel
+        </div>
+      </div>`).join('')}
+    </div>
+
+    <!-- TECHNICIAN ASSIGNMENT GRID -->
+    <div style="font-family:var(--font-hdr);font-size:.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:8px">👷 Personnel Shift Assignments</div>
+    <div class="tbl-wrap">
+      <table class="ftbl">
+        <thead><tr>
+          <th>Personnel</th><th>Role</th><th>Subtype / Specialty</th><th>Department</th>
+          <th>Assigned Shift</th><th>Shift Hours</th>
+          ${canManage?'<th>Action</th>':''}
+        </tr></thead>
+        <tbody>
+          ${techUsers.map(u=>{
+            const assign=cfg.assignments?.find(a=>a.userId===u.id);
+            const shift=opts.shifts.find(s=>s.id===assign?.shiftId)||null;
+            const rd=ROLE_DEFS[u.role];
+            return `<tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="av ${rd?.avClass||''}" style="width:26px;height:26px;font-size:.62rem">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+                  <div>
+                    <div class="fw7 fs7">${u.name}</div>
+                    <div style="font-size:.6rem;color:var(--text2)">${u.empId}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span style="color:${rd?.color||'var(--text2)'};font-size:.72rem;font-weight:700">${rd?.label||u.role}</span></td>
+              <td class="fs7">${u.subtype||'General'}</td>
+              <td><span class="tag">${u.dept}</span></td>
+              <td>
+                ${shift
+                  ? `<span style="color:${shift.color};font-family:var(--font-hdr);font-weight:700;font-size:.85rem">${shift.label}</span>`
+                  : `<span style="color:var(--warn);font-size:.72rem">⚠️ Unassigned</span>`}
+              </td>
+              <td class="mono" style="font-size:.8rem;color:var(--text1)">
+                ${shift?`${shift.start} – ${shift.end}`:'—'}
+              </td>
+              ${canManage?`
+              <td>
+                <div style="display:flex;gap:3px;flex-wrap:wrap">
+                  ${opts.shifts.map(s=>`
+                  <button class="btn btn-xs ${assign?.shiftId===s.id?'btn-solid':''}"
+                    style="${assign?.shiftId!==s.id?'background:var(--bg3);border-color:var(--bd);color:var(--text2)':''}"
+                    onclick="assignShift(${u.id},'${s.id}')">
+                    ${s.label.split(' ')[0]}
+                  </button>`).join('')}
+                  ${assign?`<button class="btn btn-danger btn-xs" onclick="assignShift(${u.id},null)" title="Clear">✕</button>`:''}
+                </div>
+              </td>`:''}
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- QUICK ASSIGN ALL PANEL (supervisor/manager) -->
+  ${canManage?`
+  <div style="background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px">
+    <div style="font-family:var(--font-hdr);font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:10px">⚡ Quick Assign — Set All By Specialty</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${opts.shifts.map(s=>`
+      <div style="background:var(--bg3);border:1px solid ${s.color};border-radius:8px;padding:10px 14px">
+        <div style="color:${s.color};font-weight:700;font-size:.75rem;margin-bottom:6px">${s.label} (${s.start}–${s.end})</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          ${TECH_SUBTYPES.map(st=>`
+          <button class="btn btn-xs" style="background:var(--bg3);border-color:${s.color};color:${s.color}" onclick="quickAssignBySubtype('${s.id}','${st}')">
+            ${st}
+          </button>`).join('')}
+        </div>
+      </div>`).join('')}
+    </div>
+    <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-danger btn-sm" onclick="clearAllShifts()">🗑️ Clear All Assignments</button>
+      <button class="btn btn-success btn-sm" onclick="exportShiftSchedule()">📥 Export Schedule</button>
+      <button class="btn btn-primary btn-sm" onclick="printShiftSchedule()">🖨️ Print Schedule</button>
+    </div>
+  </div>`:''}`;
+}
+
+function setShiftMode(mode){
+  SHIFT_CONFIG.mode=mode;
+  // Clear assignments when switching modes
+  SHIFT_CONFIG.assignments=[];
+  toast(`✅ Switched to ${SHIFT_OPTIONS[mode].label}. Assign personnel below.`,'var(--accent)');
+  renderShifts();
+}
+
+function saveShiftConfig(){
+  const d=document.getElementById('shift-eff-date')?.value;
+  if(d) SHIFT_CONFIG.effectiveDate=d;
+  // Notify all technicians
+  const techUsers=USERS.filter(u=>['technician','supervisor','mech_supervisor'].includes(u.role)&&u.status==='active');
+  techUsers.forEach(u=>{
+    const assign=SHIFT_CONFIG.assignments?.find(a=>a.userId===u.id);
+    const opts=SHIFT_OPTIONS[SHIFT_CONFIG.mode];
+    const shift=opts.shifts.find(s=>s.id===assign?.shiftId);
+    if(shift) pushNotif('info',`📅 Shift schedule updated. Your shift: ${shift.label} (${shift.start}–${shift.end}), Effective: ${d||'Immediately'}`,u.id);
+    else pushNotif('info',`📅 Shift schedule updated by ${currentUser.name}. Please check your shift assignment.`,u.id);
+  });
+  toast(`💾 Shift configuration saved! Effective: ${d||'Immediately'}`,'var(--green)');
+  renderShifts();
+}
+
+function assignShift(userId, shiftId){
+  if(!SHIFT_CONFIG.assignments) SHIFT_CONFIG.assignments=[];
+  const idx=SHIFT_CONFIG.assignments.findIndex(a=>a.userId===userId);
+  if(shiftId===null){ if(idx>-1) SHIFT_CONFIG.assignments.splice(idx,1); }
+  else if(idx>-1){ SHIFT_CONFIG.assignments[idx].shiftId=shiftId; }
+  else { SHIFT_CONFIG.assignments.push({userId,shiftId}); }
+  const u=USERS.find(x=>x.id===userId);
+  const opts=SHIFT_OPTIONS[SHIFT_CONFIG.mode];
+  const shift=opts.shifts.find(s=>s.id===shiftId);
+  if(shift&&u) pushNotif('info',`📅 Your shift has been set to: ${shift.label} (${shift.start}–${shift.end}) by ${currentUser.name}`,u.id);
+  renderShifts();
+}
+
+function quickAssignBySubtype(shiftId, subtype){
+  if(!SHIFT_CONFIG.assignments) SHIFT_CONFIG.assignments=[];
+  const matched=USERS.filter(u=>u.subtype===subtype&&['technician'].includes(u.role)&&u.status==='active');
+  matched.forEach(u=>{
+    const idx=SHIFT_CONFIG.assignments.findIndex(a=>a.userId===u.id);
+    if(idx>-1) SHIFT_CONFIG.assignments[idx].shiftId=shiftId;
+    else SHIFT_CONFIG.assignments.push({userId:u.id,shiftId});
+  });
+  const shift=SHIFT_OPTIONS[SHIFT_CONFIG.mode].shifts.find(s=>s.id===shiftId);
+  toast(`✅ ${matched.length} ${subtype} technicians assigned to ${shift?.label||shiftId}`,'var(--green)');
+  renderShifts();
+}
+
+function clearAllShifts(){
+  SHIFT_CONFIG.assignments=[];
+  toast('🗑️ All shift assignments cleared.','var(--warn)');
+  renderShifts();
+}
+
+function exportShiftSchedule(){
+  const opts=SHIFT_OPTIONS[SHIFT_CONFIG.mode];
+  const techUsers=USERS.filter(u=>['technician','supervisor','mech_supervisor'].includes(u.role)&&u.status==='active');
+  const rows=techUsers.map(u=>{
+    const assign=SHIFT_CONFIG.assignments?.find(a=>a.userId===u.id);
+    const shift=opts.shifts.find(s=>s.id===assign?.shiftId);
+    return {'Employee ID':u.empId,'Name':u.name,'Role':ROLE_DEFS[u.role]?.label||u.role,'Specialty':u.subtype||'General','Department':u.dept,'Shift':shift?.label||'Unassigned','Shift Start':shift?.start||'—','Shift End':shift?.end||'—','Effective':SHIFT_CONFIG.effectiveDate||new Date().toISOString().slice(0,10)};
+  });
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,'Shift Schedule',ws);
+  XLSX.writeFile(wb,`FUSION_ShiftSchedule_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('📥 Shift schedule exported!','var(--green)');
+}
+
+function printShiftSchedule(){
+  const opts=SHIFT_OPTIONS[SHIFT_CONFIG.mode];
+  const techUsers=USERS.filter(u=>['technician','supervisor','mech_supervisor'].includes(u.role)&&u.status==='active');
+  const rows=techUsers.map(u=>{
+    const assign=SHIFT_CONFIG.assignments?.find(a=>a.userId===u.id);
+    const shift=opts.shifts.find(s=>s.id===assign?.shiftId);
+    return `<tr>
+      <td>${u.empId}</td><td><strong>${u.name}</strong></td><td>${ROLE_DEFS[u.role]?.label||u.role}</td>
+      <td>${u.subtype||'General'}</td><td>${u.dept}</td>
+      <td style="font-weight:700;color:${shift?.id==='night'?'#333':shift?.id==='afternoon'?'#003':shift?'#000':'#999'}">${shift?.label||'Unassigned'}</td>
+      <td style="font-family:monospace">${shift?shift.start+' – '+shift.end:'—'}</td>
+    </tr>`;
+  }).join('');
+  const win=window.open();
+  win.document.write(`<!DOCTYPE html><html><head><title>Shift Schedule</title>
+  <style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:10px;padding:20px}
+  h1{font-size:14px;margin:0 0 4px}.sub{color:#666;font-size:9px;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse}th{background:#002b5b;color:#fff;padding:5px 8px;border:1px solid #ccc}
+  td{border:1px solid #ddd;padding:4px 8px}tr:nth-child(even){background:#f5f5f5}
+  @media print{button{display:none}}</style></head>
+  <body>
+  <h1>FUSION IMS — Shift Schedule</h1>
+  <div class="sub">${opts.label} · Effective: ${SHIFT_CONFIG.effectiveDate||'—'} · Printed: ${new Date().toLocaleString('en-PH')}</div>
+  <table>
+    <thead><tr><th>Emp ID</th><th>Name</th><th>Role</th><th>Specialty</th><th>Department</th><th>Shift</th><th>Hours</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  </body></html>`);
+  win.document.close();win.print();
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────
